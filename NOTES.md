@@ -25,8 +25,24 @@
 - Verified: `python -m draftlab.models info` exit 0 — 0.494B/1.544B/0.494B params, BF16,
   vocab=151936 (tokenizer n=151665), shared-vocab assert passes.
   Evidence: .agent-evidence/models-{fetch,fetch2,info,check}.log.
-- `make check` exit 0 (5 passed; test_shared_vocab active once models present, skipif otherwise).
+- `make check` exit 0; test_shared_vocab active once models present, skipif otherwise.
 - Gotcha: HF download is unauthenticated (HF_TOKEN unset) — fine at this size; ~5 GB total.
 
+## Corpus (id: corpus, done 2026-09-29)
+- `python -m draftlab.data build`: data/raw/agent_turns.jsonl → data/corpus/{train,val,test}.parquet,
+  columns run/project/seq/role/kind/tool/text/n_tokens (Qwen 0.5b-instruct tokenizer).
+  kind: fenced code split out of `text` blocks; tool = name from tool_use JSON.
+  Drops <8 tok, dedupes exact (kind,text) repeats, truncates at 4096 tok.
+  Splits = whole runs, ordered by sha1(run): 26/3/3 runs (81/9/9% of 32), disjoint.
+  Real build: 45257/667/566 blocks, 24 s. Evidence: .agent-evidence/corpus-build.log.
+- `python -m draftlab.data stats`: runs draftlab/data/stats.sql (DuckDB, `-- @query NAME` sections) over the
+  3 parquets → results/corpus_stats.json (by_split, by_kind, by_tool, by_project,
+  length_percentiles p50/p90/p99/max per kind). p50 tokens: tool_result 243, thinking 132,
+  code 101, tool_use 85, text 29.
+- Tests: draftlab/tests/test_corpus.py (stub WordTok, no model needed) — kinds, code split,
+  dedupe, min/max token filter, split disjointness, assign_splits determinism. make check exit 0.
+- Gotchas: capture.py cannot take `VAR=x cmd` (use `sh -c`) and refuses existing log paths (rm
+  first). Unanchored `data/` in .gitignore shadowed the draftlab/data/ source package — now `/data/`.
+
 ## Next
-- Corpus to Parquet (id: corpus): data/corpus.py over data/raw/agent_turns.jsonl.
+- N-gram lookup baseline (id: ngram, after corpus) over data/corpus splits.

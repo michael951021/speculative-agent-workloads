@@ -1,0 +1,286 @@
+{
+ "files": {
+  "train": "/work/data/corpus/train.parquet",
+  "val": "/work/data/corpus/val.parquet",
+  "test": "/work/data/corpus/test.parquet"
+ },
+ "by_split": [
+  {
+   "split": "test",
+   "blocks": 566,
+   "tokens": 252500,
+   "runs": 3
+  },
+  {
+   "split": "train",
+   "blocks": 45257,
+   "tokens": 15697302,
+   "runs": 26
+  },
+  {
+   "split": "val",
+   "blocks": 667,
+   "tokens": 236985,
+   "runs": 3
+  }
+ ],
+ "by_kind": [
+  {
+   "split": "test",
+   "kind": "tool_use",
+   "blocks": 179,
+   "tokens": 51271
+  },
+  {
+   "split": "test",
+   "kind": "thinking",
+   "blocks": 163,
+   "tokens": 77998
+  },
+  {
+   "split": "test",
+   "kind": "tool_result",
+   "blocks": 123,
+   "tokens": 113227
+  },
+  {
+   "split": "test",
+   "kind": "text",
+   "blocks": 97,
+   "tokens": 9779
+  },
+  {
+   "split": "test",
+   "kind": "code",
+   "blocks": 4,
+   "tokens": 225
+  },
+  {
+   "split": "train",
+   "kind": "tool_use",
+   "blocks": 14018,
+   "tokens": 2739505
+  },
+  {
+   "split": "train",
+   "kind": "thinking",
+   "blocks": 12872,
+   "tokens": 5079065
+  },
+  {
+   "split": "train",
+   "kind": "tool_result",
+   "blocks": 11955,
+   "tokens": 6848761
+  },
+  {
+   "split": "train",
+   "kind": "text",
+   "blocks": 6047,
+   "tokens": 957678
+  },
+  {
+   "split": "train",
+   "kind": "code",
+   "blocks": 365,
+   "tokens": 72293
+  },
+  {
+   "split": "val",
+   "kind": "tool_use",
+   "blocks": 210,
+   "tokens": 48476
+  },
+  {
+   "split": "val",
+   "kind": "thinking",
+   "blocks": 186,
+   "tokens": 89471
+  },
+  {
+   "split": "val",
+   "kind": "tool_result",
+   "blocks": 161,
+   "tokens": 86447
+  },
+  {
+   "split": "val",
+   "kind": "text",
+   "blocks": 101,
+   "tokens": 11720
+  },
+  {
+   "split": "val",
+   "kind": "code",
+   "blocks": 9,
+   "tokens": 871
+  }
+ ],
+ "by_tool": [
+  {
+   "tool": "Bash",
+   "blocks": 10648,
+   "tokens": 1330150
+  },
+  {
+   "tool": "Edit",
+   "blocks": 2237,
+   "tokens": 730368
+  },
+  {
+   "tool": "Read",
+   "blocks": 963,
+   "tokens": 33639
+  },
+  {
+   "tool": "Write",
+   "blocks": 490,
+   "tokens": 731075
+  },
+  {
+   "tool": "mcp__websearch__fetch_page",
+   "blocks": 19,
+   "tokens": 915
+  },
+  {
+   "tool": "mcp__websearch__web_search",
+   "blocks": 17,
+   "tokens": 664
+  },
+  {
+   "tool": "Agent",
+   "blocks": 14,
+   "tokens": 11440
+  },
+  {
+   "tool": "TaskStop",
+   "blocks": 9,
+   "tokens": 208
+  },
+  {
+   "tool": "SendMessage",
+   "blocks": 5,
+   "tokens": 607
+  },
+  {
+   "tool": "WebFetch",
+   "blocks": 3,
+   "tokens": 151
+  },
+  {
+   "tool": "ListAgents",
+   "blocks": 1,
+   "tokens": 12
+  },
+  {
+   "tool": "WebSearch",
+   "blocks": 1,
+   "tokens": 23
+  }
+ ],
+ "by_project": [
+  {
+   "project": "contrib-loop-w1",
+   "blocks": 27835,
+   "tokens": 9709312,
+   "runs": 7
+  },
+  {
+   "project": "contrib-loop-w2",
+   "blocks": 14636,
+   "tokens": 4986048,
+   "runs": 7
+  },
+  {
+   "project": "contrib-loop",
+   "blocks": 2732,
+   "tokens": 1157218,
+   "runs": 4
+  },
+  {
+   "project": "apply",
+   "blocks": 970,
+   "tokens": 286942,
+   "runs": 2
+  },
+  {
+   "project": "smoke",
+   "blocks": 105,
+   "tokens": 15385,
+   "runs": 6
+  },
+  {
+   "project": "smoke-llama-w2",
+   "blocks": 81,
+   "tokens": 14258,
+   "runs": 1
+  },
+  {
+   "project": "smoke-par-w2",
+   "blocks": 67,
+   "tokens": 8247,
+   "runs": 1
+  },
+  {
+   "project": "smoke-par-w1",
+   "blocks": 28,
+   "tokens": 2483,
+   "runs": 1
+  },
+  {
+   "project": "smoke-llama-w1",
+   "blocks": 24,
+   "tokens": 3161,
+   "runs": 1
+  },
+  {
+   "project": "smoke-llama",
+   "blocks": 6,
+   "tokens": 232,
+   "runs": 1
+  },
+  {
+   "project": "captest",
+   "blocks": 6,
+   "tokens": 3501,
+   "runs": 1
+  }
+ ],
+ "length_percentiles": [
+  {
+   "kind": "tool_result",
+   "p50": 243,
+   "p90": 1539,
+   "p99": 4096,
+   "max_tokens": 4096
+  },
+  {
+   "kind": "thinking",
+   "p50": 132,
+   "p90": 1039,
+   "p99": 4096,
+   "max_tokens": 4096
+  },
+  {
+   "kind": "code",
+   "p50": 101,
+   "p90": 332,
+   "p99": 1820,
+   "max_tokens": 4096
+  },
+  {
+   "kind": "tool_use",
+   "p50": 85,
+   "p90": 410,
+   "p99": 1932,
+   "max_tokens": 4096
+  },
+  {
+   "kind": "text",
+   "p50": 29,
+   "p90": 163,
+   "p99": 3098,
+   "max_tokens": 4096
+  }
+ ]
+}

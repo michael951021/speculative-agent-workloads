@@ -1,6 +1,6 @@
 .venv/
 .tools/
-data/
+/data/
 models/
 ckpt/
 node_modules/

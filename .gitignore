@@ -1,0 +1,13 @@
+.venv/
+.tools/
+data/
+models/
+ckpt/
+node_modules/
+web/dist/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.terraform/
+*.tfstate*
+.agent-evidence/

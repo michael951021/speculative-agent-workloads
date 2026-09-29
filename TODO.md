@@ -1,4 +1,86 @@
-# Tasks
+# Goal: measure how predictable a coding agent is — speculative decoding on this machine's own agent traffic, end to end
+> why: done = REPORT.md answers "how many agent tokens could a draft model have guessed, per kind of content, and what speedup does that buy?" with CIs, backed by a working engine, trained drafters, a served gateway with metrics, deploy configs and an interactive explorer.
+<!-- The plan as a tree: this goal, sections (## / ###), tasks. Every section has a `> why:` line and every task an
+     indented `why:` line. Scheduling: (id: x) names a task, (after: x, y) waits for those, (after: -) waits for nothing.
+     Keep the tags when checking a line. Line format: `- [ ] **Short title** — spec (tags)`.
+     Model roles (CPU, in the sandbox): target T = Qwen/Qwen2.5-1.5B-Instruct; small target for engine tests
+     T0 = Qwen/Qwen2.5-0.5B-Instruct; drafters: ngram, tiny (JAX-distilled), Qwen/Qwen2.5-0.5B (base), +LoRA, +LoRA+DPO.
+     GPU run (host, scripts/gpu_run.sh): T = Qwen/Qwen2.5-7B-Instruct served by vLLM with the same drafters. -->
 
-<!-- One task per line. The loop does the first unchecked one each iteration. -->
-- [ ] First task
+## Foundations
+> why: every later task assumes one reproducible toolchain (Python, Go, Node, deploy linters) and one `make check` that proves the repo is green; without it agents break each other's work.
+- [ ] **Bootstrap toolchain and make check** — tools/bootstrap.sh (idempotent): install uv (pip into a bootstrap venv or the standalone binary into .tools/bin), `uv venv -p 3.12 .venv`, pyproject.toml (package draftlab, extras: jax[cpu], flax, optax, orbax-checkpoint, torch (CPU index), transformers, safetensors, peft, trl, datasets, triton, ray[default], polars, duckdb, pyarrow, fastapi, uvicorn, httpx, openai, matplotlib, pytest, ruff); download pinned Go, helm, kubeconform, terraform, tflint, hadolint, promtool into .tools/ (versions in tools/versions.txt). Makefile: bootstrap, check (each sub-check skips with a message until its directory exists), fmt. .github/workflows/ci.yml mirrors `make check`. Done when `make bootstrap && make check` passes on the skeleton and `python -c "import jax, torch, triton, ray"` works. (id: boot) (after: -)
+  why: one command sets up and verifies everything, so each later task only adds its own check.
+- [ ] **Model downloads** — draftlab/models.py `fetch` (huggingface_hub snapshot_download into models/, safetensors + tokenizer only) for Qwen2.5-0.5B-Instruct, Qwen2.5-1.5B-Instruct, Qwen2.5-0.5B; `info` prints params, dtype, vocab and asserts all three share the tokenizer vocab. Also `tiny_config()` = a 2-layer, d=64, vocab-512 random Qwen2 config used by fast tests. Done when `python -m draftlab.models info` lists all three. (id: models) (after: boot)
+  why: every engine, drafter and eval task loads these; a shared tokenizer is what makes speculative decoding between them legal.
+
+## Corpus: what agent traffic looks like
+> why: the question is about this machine's real agent traffic; the corpus must be clean, labelled by kind and split by run so every later number is trustworthy.
+- [ ] **Corpus to Parquet** — draftlab/data/corpus.py: data/raw/agent_turns.jsonl → data/corpus/{train,val,test}.parquet (split 80/10/10 by sha1(run)); columns run, project, seq, role, kind, tool, text, n_tokens (Qwen tokenizer). kind: thinking | text | code (fenced blocks split out of text) | tool_use (tool = name) | tool_result; drop blocks < 8 tokens, dedupe exact repeats, truncate at 4096 tokens. data/stats.sql (DuckDB) + `python -m draftlab.data stats` writing results/corpus_stats.json (blocks, tokens per kind/tool/project, length percentiles). Tests: fixture lines → correct kinds, code split, no run in two splits. (id: corpus) (after: models)
+  why: the labelled, leak-free corpus every drafter trains on and every metric is broken down by.
+- [ ] **N-gram lookup baseline** — draftlab/drafters/ngram.py: prompt-lookup drafting (as vLLM's ngram speculator: match the last n∈{1..4} tokens against the block's preceding context + the previous 8 blocks of the same run, propose the next k). Teacher-forced on the val split: greedy acceptance per position and mean accepted length for k∈{1,2,4,8}, per kind; results/ngram.json with bootstrap 95% CIs (resampling runs). Done when the JSON exists and a test checks the matcher on a hand-made sequence. (id: ngram) (after: corpus)
+  why: a free, model-less first answer (tool calls and tool results repeat context a lot) and the floor every trained drafter must beat.
+
+## JAX engine
+> why: a from-scratch engine shows the mechanics (KV cache, verification, rollback) and gives exact per-step acceptance data that a black-box server would hide.
+- [ ] **Qwen2 in JAX** — draftlab/jaxlm/model.py: Qwen2 architecture (RMSNorm, RoPE with the config's theta, GQA, SwiGLU, QKV bias, tied embeddings when configured) as pure-function pytrees or Flax NNX; load HF safetensors; preallocated KV cache, jit-compiled prefill and single/multi-token decode steps. Tests: float32 logits match transformers for T0 on 3 prompts (atol 2e-3); 32 greedy tokens identical; tiny_config runs in < 5 s. (id: jaxmodel) (after: models)
+  why: the target and drafters must run in one engine that exposes logits and cache control for speculative decoding.
+- [ ] **Speculative sampling** — draftlab/jaxlm/spec.py: draft k tokens, score k+1 positions with one target call, accept/reject with residual resampling (Leviathan 2023 / Chen 2023), roll back both KV caches; Drafter protocol (propose(ctx, k) → tokens, probs) with ngram and model drafters. Per-step stats (drafted, accepted, per-position accept, wall ms). Tests: T=0 output identical to target greedy; T=1 on tiny_config with vocab 16: chi-square of 20k first tokens vs the target distribution, p > 0.01; rollback leaves cache equal to a fresh prefill. (id: spec) (after: jaxmodel, ngram)
+  why: the core algorithm; the distribution test proves it is lossless, which the judge later confirms end to end.
+- [ ] **Engine server** — draftlab/serve/app.py (FastAPI): OpenAI-compatible POST /v1/chat/completions (chat template from the tokenizer, stream via SSE and non-stream), GET /v1/models; `usage` adds draft_tokens and accepted_tokens; drafter and k chosen per model name (e.g. `qwen0.5b+ngram-k4`). Tests with TestClient on tiny_config: stream chunk order, usage fields, 400 on bad input. (id: engine) (after: spec)
+  why: gives the gateway, the judge and the explorer's live demo a real backend with acceptance numbers in every response.
+
+## Drafters
+> why: the interesting data is how much a drafter trained on agent traffic beats generic ones; three training methods (distillation, LoRA SFT, DPO) cover the usual toolbox.
+- [ ] **Alpha metric** — draftlab/eval/alpha.py: teacher-forced along corpus blocks, per position α = Σ min(p, q) and greedy match, for T vs any drafter (HF torch or JAX), batched, top-k-free (full vocab). Aggregate per kind/tool with bootstrap CIs over runs, plus expected tokens per target call and speedup for k∈{1..8} at the measured cost ratio c. Budget flag --blocks (default 400 val blocks, ≤ 256 tokens each). results/alpha/<drafter>.json. Tests: α=1 for identical models, α matches a hand-computed 3-token vocab case. (id: alpha) (after: corpus, models)
+  why: one cheap, exact metric that ranks drafters without running full generations, and converts directly into expected speedup.
+- [ ] **Distilled tiny drafter (JAX)** — draftlab/drafters/distill.py: cache T's top-64 logits on train blocks (--tokens default 1M, data/teacher/*.npz); train a 4-layer d=256 Qwen2-shaped student sharing T's embeddings vocab with Optax AdamW + cosine schedule, loss KL(T‖student) on the top-64 (+ renormalised tail mass); orbax checkpoints in ckpt/tiny/; log loss curves to results/distill_curve.json. Done when val KL falls ≥ 30% from step 0 and results/alpha/tiny.json exists. (id: distill) (after: alpha, jaxmodel)
+  why: shows JAX training end to end and tests whether a very small drafter trained on agent traffic is enough.
+- [ ] **LoRA drafter with FSDP** — draftlab/drafters/lora.py (PyTorch, PEFT): LoRA (r=16, attention+MLP) SFT of Qwen2.5-0.5B on train blocks (this is the 27B agent's own output), sequence packing, `--fsdp` path via torchrun (FSDP wrapping, gloo on CPU, NCCL on GPU), `--qlora` path (bitsandbytes 4-bit, GPU only: exits with a clear message on CPU). Test: `torchrun --nproc_per_node 2` on tiny_config for 5 steps, loss decreases, both ranks save identical adapter weights. Default run: --steps 300 on CPU; adapter in ckpt/lora/; results/alpha/lora.json. (id: lora) (after: alpha)
+  why: covers production fine-tuning (LoRA/QLoRA) and distributed training (FSDP) while testing whether style-matching the agent raises acceptance.
+- [ ] **Acceptance-aware DPO** — draftlab/drafters/dpo.py: from spec runs of T with the LoRA drafter at T=1 on train prompts, build pairs (context, chosen = token span the target accepted or resampled, rejected = the drafter's rejected span); TRL DPOTrainer (beta 0.1) on the LoRA adapter; --pairs default 2000. Report α before/after per kind with CIs in results/dpo.json. Test: pair builder on a fake spec log. (id: dpo) (after: lora, spec)
+  why: preference optimisation where the "preference" is the verifier's own accept/reject signal — an RLHF-style method with a measurable payoff.
+
+## Kernels
+> why: verification is the per-step overhead of speculative decoding; a fused kernel shows GPU-kernel skills and makes the alpha eval cheap at full vocab.
+- [ ] **Triton verify and alpha kernels** — draftlab/kernels/verify.py: (1) fused verify: given target logits [k+1, V], draft logits [k, V], drafted tokens and uniforms → online-softmax both rows, accept test p/q ≥ u, first-reject index, and the normalised residual max(0, p−q) at that row (one launch, V tiled); (2) fused alpha: Σ min(softmax p, softmax q) per row. Torch reference implementations; tests under TRITON_INTERPRET=1 with V=1000, random logits, fp32 tolerance 1e-5; bench.py prints a table vs torch (skips without CUDA). alpha.py uses the kernel when CUDA is present. (id: triton) (after: boot)
+  why: the kernel the GPU run uses for α at 150k vocab, and the clearest demonstration of Triton/CUDA work in the project.
+
+## Serving and observability
+> why: a drafter is only useful behind a real API; the gateway turns engine and vLLM backends into one authenticated, rate-limited, observable endpoint.
+- [ ] **Go gateway** — gateway/ (Go module, stdlib net/http + prometheus/client_golang + slog): OpenAI-compatible reverse proxy for /v1/chat/completions and /v1/models; API keys stored as SHA-256 hashes in config.yaml, Bearer auth; per-key token-bucket rate limit (429 + Retry-After); routing by model name to backends (engine, llama-server, vLLM) with health checks, retries on connect errors and a circuit breaker; SSE passthrough with flushing; /metrics: requests by key/model/status, TTFT and total latency histograms, output tokens/s, draft and accepted token counters from `usage`; serves web/dist at /ui. Tests (httptest fake backends): bad key 401, rate limit 429, stream order preserved, breaker opens after 5 failures and half-opens, metrics counted. (id: gateway) (after: boot)
+  why: covers Go, enterprise-style API auth and fault tolerance, and produces the live acceptance metrics the dashboards show.
+- [ ] **Prometheus and Grafana** — deploy/prometheus/{prometheus.yml,rules.yml} (recording rules: acceptance rate = accepted/draft by model; alerts: acceptance < 0.4 for 10m, p95 TTFT > 2s), deploy/grafana/draftlab.json dashboard (TTFT p50/p95, tok/s, acceptance by model, 429s, breaker state). `promtool check config/rules` in make check; a rules unit test file (promtool test rules). (id: obs) (after: gateway)
+  why: observability as code: the same dashboard works locally and in the Helm chart.
+
+## Experiments
+> why: the headline data: acceptance and speedup across drafters, k, temperature and content kind, with the lossless claim checked by an independent judge.
+- [ ] **Ray sweep** — draftlab/sweep.py (Ray core, local cluster, num_cpus from flag): grid drafter ∈ {ngram, tiny, base-0.5b, lora, lora+dpo} × k ∈ {1,2,4,8} × temperature ∈ {0, 0.7} over 100 val prompts per kind with the JAX engine (T0 target to keep CPU cost sane) — measured accepted length and wall-clock tokens/s vs no drafter; resumable (skips cells already in results/sweep.parquet). Test: 2-cell sweep in Ray local mode. (id: sweep) (after: engine, distill, dpo)
+  why: measured (not just expected) speedups per configuration, the main table of the report.
+- [ ] **LLM-as-judge lossless check** — draftlab/eval/judge.py with the `openai` SDK against $OLLAMA_BASE_URL: 50 test-split prompts, outputs from target-only vs speculative (best drafter) at T=0.7, plus drafter-alone outputs; blind pairwise judging in both orders (order-bias = disagreement rate reported), rubric in the prompt, JSON verdicts; cap 150 calls, responses cached in data/judge_cache/. results/judge.json: win/tie/loss with Wilson CIs. Test with a fake OpenAI server. (id: judge) (after: engine, lora)
+  why: an independent end-to-end check that speculative outputs are as good as the target's while drafter-alone ones are not.
+
+## Deploy
+> why: shows how this would run on a real cluster: images, a Helm chart with GPU serving and autoscaling, and a GKE cluster as code — validated, never applied.
+- [ ] **Dockerfiles** — deploy/docker/: gateway (multi-stage, distroless static, non-root), engine (python:3.12-slim, CPU), vllm (vllm/vllm-openai base + drafter adapter mount); .dockerignore; hadolint clean in make check. (id: docker) (after: gateway, engine)
+  why: the images the chart deploys; linted since the sandbox cannot build them.
+- [ ] **Helm chart** — deploy/helm/draftlab: gateway Deployment/Service/HPA (custom metric via prometheus-adapter), API-key Secret, engine Deployment, optional vLLM Deployment (nvidia.com/gpu: 1, tolerations, `--speculative-config` with the trained drafter from a PVC, readiness on /health), ServiceMonitor, Grafana dashboard ConfigMap from deploy/grafana, NetworkPolicy, PodDisruptionBudget; values for cpu-only and gpu profiles. make check: helm lint + `helm template | kubeconform -strict` (CRD schemas for ServiceMonitor). (id: helm) (after: docker, obs)
+  why: Kubernetes-native deployment of the whole stack, the most-requested missing skill in the postings.
+- [ ] **Terraform GKE** — deploy/terraform/gke: VPC + subnet, GKE Standard cluster, L4 GPU node pool (autoscale 0-2, taint), Artifact Registry repo, Workload Identity service account; variables and outputs documented. `terraform init -backend=false && terraform validate` + tflint in make check. Never plan/apply. (id: tf) (after: boot)
+  why: cloud infrastructure as code for the GPU pool the chart targets.
+- [ ] **kind end-to-end script** — deploy/kind/e2e.sh (host only, needs docker): build images, kind cluster, load images, helm install cpu profile with tiny models, port-forward, curl the gateway with a key, check /metrics shows accepted tokens; shellcheck clean. Document in README; do not run it in the sandbox. (id: kind) (after: helm)
+  why: a one-command demo Kevin can run on the host (or once the microVM sandbox allows Docker).
+
+## Explorer
+> why: the cool output: an interactive page where you can see, token by token, which parts of a real agent turn a drafter would have guessed.
+- [ ] **Results export** — draftlab/export_ui.py: results/*.json + sweep.parquet → web/public/data/{summary,alpha,sweep,replays}.json; replays = 30 val blocks (5 per kind) with per-token target prob, drafter prob and accept flag for the best drafter and ngram. Test: schema check. (id: export) (after: alpha, sweep)
+  why: one small, versioned data contract between the Python results and the web UI.
+- [ ] **React explorer** — web/ (Vite + React + TypeScript + Recharts): Overview (KPI tiles, best speedup, corpus stats); Acceptance heatmap (kind × drafter, CI on hover); Speedup vs k lines per drafter with CI bands, measured vs expected; Token replay (pick a block, tokens coloured accepted/rejected, hover shows p and q); light/dark. Vitest + Testing Library tests per page; `npm run build` in make check; gateway serves it at /ui. (id: web) (after: export)
+  why: makes the findings explorable and shows full-stack web skills in the same project.
+
+## Results
+> why: the goal is answered only when the numbers are written down, with the GPU-scale run and an honest account of what did not work.
+- [ ] **GPU run script** — scripts/gpu_run.sh (host, after `./agent stop` frees the GPUs): alpha eval at T = Qwen2.5-7B-Instruct with the Triton kernel; vLLM serving with --speculative-config for ngram and the LoRA drafter, a throughput/latency benchmark through the gateway at concurrency 1/4/16; results/gpu/*.json. In the sandbox only `--dry-run` (prints the plan, checks files exist). (id: gpu) (after: triton, helm, lora)
+  why: the numbers at a realistic target size, which CPU runs can only approximate.
+- [ ] **REPORT and README** — REPORT.md: question, corpus, method, headline table (drafter × kind α, measured speedups), figures (matplotlib PNGs in results/fig/), judge result, what failed and why, GPU results if present. README.md: architecture diagram (mermaid), quickstart, and a skills map table (skill → files: JAX, PyTorch/FSDP, LoRA/QLoRA, DPO, Triton, Ray, Go, Prometheus/Grafana, Kubernetes/Helm, Terraform/GKE, React/TS, LLM-as-judge, OpenAI API). (id: report) (after: judge, web, kind, tf)
+  why: the portfolio artifact: findings first, then how to reproduce and what each part demonstrates.

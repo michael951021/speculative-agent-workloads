@@ -1,0 +1,6 @@
+# Gitignored runtime data every parallel agent shares with this checkout (see ../../agent).
+.venv
+.tools
+data
+models
+ckpt

@@ -16,5 +16,17 @@
   ray[default]). Smoke test draftlab/tests/test_smoke.py guards heavy imports.
 - tools/export_traces.py was ruff-cleaned (behavior unchanged) to get `make check` green on skeleton.
 
+## Models (id: models, done 2026-09-29)
+- `draftlab/models.py`: `fetch [--name K]` (snapshot_download, allow_patterns = *.safetensors +
+  tokenizer*/vocab*/merges*/config.json) → `models/{qwen2.5-0.5b-instruct,qwen2.5-1.5b-instruct,
+  qwen2.5-0.5b}` (~4.9 GB total); idempotent (2nd fetch 0.6 s). `info` prints params via
+  safetensors headers + dtype + vocab, asserts all three `get_vocab()` equal. `tiny_config()` =
+  Qwen2Config(2 layers, d=64, inter=128, heads 4/2, head_dim 16, vocab 512) for fast tests.
+- Verified: `python -m draftlab.models info` exit 0 — 0.494B/1.544B/0.494B params, BF16,
+  vocab=151936 (tokenizer n=151665), shared-vocab assert passes.
+  Evidence: .agent-evidence/models-{fetch,fetch2,info,check}.log.
+- `make check` exit 0 (5 passed; test_shared_vocab active once models present, skipif otherwise).
+- Gotcha: HF download is unauthenticated (HF_TOKEN unset) — fine at this size; ~5 GB total.
+
 ## Next
-- Models download (id: models): draftlab/models.py fetch/info, needs network to huggingface.
+- Corpus to Parquet (id: corpus): data/corpus.py over data/raw/agent_turns.jsonl.

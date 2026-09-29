@@ -1,0 +1,8 @@
+# Pinned tool versions, consumed by tools/bootstrap.sh (one NAME=version per line).
+go=1.26.8
+helm=v3.16.4
+kubeconform=v0.6.7
+terraform=1.9.8
+tflint=0.50.3
+hadolint=v2.12.0
+promtool=2.53.1

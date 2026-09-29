@@ -44,5 +44,24 @@
 - Gotchas: capture.py cannot take `VAR=x cmd` (use `sh -c`) and refuses existing log paths (rm
   first). Unanchored `data/` in .gitignore shadowed the draftlab/data/ source package — now `/data/`.
 
+## N-gram baseline (id: ngram, done 2026-09-29)
+- `draftlab/drafters/ngram.py`: NGramMatcher.proposals(ctx) — vLLM-style prompt
+  lookup, n=1..4 longest-first, first-occurrence continuation, no self-match (an
+  n-gram is usable only once its continuation token is in context). Chain
+  property: accepted proposals equal the real prefix, so per-position
+  proposals precompute the whole k-draft chain (runs of accepts, capped at k).
+  `python -m draftlab.drafters.ngram` → results/ngram.json (5 s, val: 667 blocks,
+  236,985 pos, context = prev-8 same-run blocks + own prefix, bootstrap B=200
+  resampling the 3 val runs, seed 0).
+- Results (greedy accept per position; tokens/target call @k=8): tool_use
+  0.548 (3.34), tool_result 0.309 (2.08), code 0.286 (1.89), thinking 0.246
+  (1.73), text 0.199 (1.56); overall 0.329 (1.76). Tool traffic far more
+  predictable than prose — floor confirmed. CIs wide (only 3 val runs).
+- Tests: draftlab/tests/test_ngram.py — hand-made sequences (first occurrence,
+  longest-n priority, no self-match, accept_runs, mean accepted length by k).
+  make check exit 0. Evidence: .agent-evidence/ngram-run.log.
+- Gotcha: longest-first lookup must `continue` past n>t (break skips valid
+  shorter n's); bootstrap resampling 3 runs makes per-kind CIs coarse.
+
 ## Next
-- N-gram lookup baseline (id: ngram, after corpus) over data/corpus splits.
+- Qwen2 in JAX (id: jaxmodel) / speculative sampling (id: spec) need ngram Drafter.

@@ -1,0 +1,287 @@
+{
+ "method": "ngram prompt-lookup: match last n=1..4 (longest first), first-occurrence continuation",
+ "split": "val",
+ "max_n": 4,
+ "max_prev_blocks": 8,
+ "k_values": [
+  1,
+  2,
+  4,
+  8
+ ],
+ "n_runs": 3,
+ "n_blocks": 667,
+ "by_kind": {
+  "code": {
+   "n_positions": 871,
+   "coverage": 0.7898966704936854,
+   "greedy_accept": 0.28587830080367393,
+   "accept_given_proposal": 0.36191860465116277,
+   "by_k": {
+    "1": {
+     "mean_accepted": 0.28587830080367393,
+     "exp_tokens_per_call": 1.2858783008036738
+    },
+    "2": {
+     "mean_accepted": 0.45579793340987373,
+     "exp_tokens_per_call": 1.4557979334098738
+    },
+    "4": {
+     "mean_accepted": 0.6590126291618829,
+     "exp_tokens_per_call": 1.6590126291618827
+    },
+    "8": {
+     "mean_accepted": 0.8886337543053962,
+     "exp_tokens_per_call": 1.8886337543053962
+    }
+   }
+  },
+  "text": {
+   "n_positions": 11720,
+   "coverage": 0.7645904436860068,
+   "greedy_accept": 0.19897610921501707,
+   "accept_given_proposal": 0.2602388126325187,
+   "by_k": {
+    "1": {
+     "mean_accepted": 0.19897610921501707,
+     "exp_tokens_per_call": 1.198976109215017
+    },
+    "2": {
+     "mean_accepted": 0.3075085324232082,
+     "exp_tokens_per_call": 1.307508532423208
+    },
+    "4": {
+     "mean_accepted": 0.4306313993174061,
+     "exp_tokens_per_call": 1.4306313993174062
+    },
+    "8": {
+     "mean_accepted": 0.5645051194539249,
+     "exp_tokens_per_call": 1.564505119453925
+    }
+   }
+  },
+  "thinking": {
+   "n_positions": 89471,
+   "coverage": 0.8391769400140828,
+   "greedy_accept": 0.2459232600507427,
+   "accept_given_proposal": 0.29305292879784767,
+   "by_k": {
+    "1": {
+     "mean_accepted": 0.2459232600507427,
+     "exp_tokens_per_call": 1.2459232600507426
+    },
+    "2": {
+     "mean_accepted": 0.38738809223100223,
+     "exp_tokens_per_call": 1.3873880922310022
+    },
+    "4": {
+     "mean_accepted": 0.556336690100703,
+     "exp_tokens_per_call": 1.556336690100703
+    },
+    "8": {
+     "mean_accepted": 0.7307283924400085,
+     "exp_tokens_per_call": 1.7307283924400085
+    }
+   }
+  },
+  "tool_result": {
+   "n_positions": 86447,
+   "coverage": 0.8304972989230396,
+   "greedy_accept": 0.30875565375316666,
+   "accept_given_proposal": 0.3717720143744603,
+   "by_k": {
+    "1": {
+     "mean_accepted": 0.30875565375316666,
+     "exp_tokens_per_call": 1.3087556537531666
+    },
+    "2": {
+     "mean_accepted": 0.5097574236237232,
+     "exp_tokens_per_call": 1.5097574236237232
+    },
+    "4": {
+     "mean_accepted": 0.7749141092229921,
+     "exp_tokens_per_call": 1.774914109222992
+    },
+    "8": {
+     "mean_accepted": 1.0828021793700187,
+     "exp_tokens_per_call": 2.0828021793700184
+    }
+   }
+  },
+  "tool_use": {
+   "n_positions": 48476,
+   "coverage": 0.9156283521742719,
+   "greedy_accept": 0.5484775971614819,
+   "accept_given_proposal": 0.5990177082863967,
+   "by_k": {
+    "1": {
+     "mean_accepted": 0.5484775971614819,
+     "exp_tokens_per_call": 1.548477597161482
+    },
+    "2": {
+     "mean_accepted": 0.9605990593283275,
+     "exp_tokens_per_call": 1.9605990593283273
+    },
+    "4": {
+     "mean_accepted": 1.5660120471986136,
+     "exp_tokens_per_call": 2.5660120471986136
+    },
+    "8": {
+     "mean_accepted": 2.3407046786038452,
+     "exp_tokens_per_call": 3.3407046786038452
+    }
+   }
+  }
+ },
+ "overall": {
+  "n_positions": 236985,
+  "coverage": 0.8477793953203789,
+  "greedy_accept": 0.32855665970420067,
+  "accept_given_proposal": 0.3875497110660939,
+  "by_k": {
+   "1": {
+    "mean_accepted": 0.32855665970420067,
+    "exp_tokens_per_call": 1.3285566597042007
+   },
+   "2": {
+    "mean_accepted": 0.5455788341034242,
+    "exp_tokens_per_call": 1.5455788341034242
+   },
+   "4": {
+    "mean_accepted": 0.8367618203683778,
+    "exp_tokens_per_call": 1.8367618203683778
+   },
+   "8": {
+    "mean_accepted": 1.1808426693672596,
+    "exp_tokens_per_call": 2.1808426693672596
+   }
+  }
+ },
+ "bootstrap": {
+  "n_resamples": 200,
+  "seed": 0,
+  "unit": "runs (with replacement)",
+  "ci95": {
+   "code|greedy_accept": [
+    0.2527075812274368,
+    0.975
+   ],
+   "text|greedy_accept": [
+    0.06557377049180328,
+    0.2750865051903114
+   ],
+   "thinking|greedy_accept": [
+    0.08333333333333333,
+    0.2463431754370075
+   ],
+   "tool_result|greedy_accept": [
+    0.075,
+    0.3187984496124031
+   ],
+   "tool_use|greedy_accept": [
+    0.14285714285714285,
+    0.5538785237348907
+   ],
+   "overall|greedy_accept": [
+    0.24553571428571427,
+    0.3311446706062596
+   ],
+   "code|k1|exp_tokens_per_call": [
+    1.2527075812274369,
+    1.975
+   ],
+   "code|k2|exp_tokens_per_call": [
+    1.3850782190132371,
+    2.925
+   ],
+   "code|k4|exp_tokens_per_call": [
+    1.510228640192539,
+    4.75
+   ],
+   "code|k8|exp_tokens_per_call": [
+    1.5896510228640193,
+    8.1
+   ],
+   "text|k1|exp_tokens_per_call": [
+    1.0655737704918034,
+    1.2750865051903113
+   ],
+   "text|k2|exp_tokens_per_call": [
+    1.098360655737705,
+    1.434256055363322
+   ],
+   "text|k4|exp_tokens_per_call": [
+    1.1147540983606556,
+    1.6038062283737025
+   ],
+   "text|k8|exp_tokens_per_call": [
+    1.1147540983606556,
+    1.6660899653979238
+   ],
+   "thinking|k1|exp_tokens_per_call": [
+    1.0833333333333333,
+    1.2463431754370076
+   ],
+   "thinking|k2|exp_tokens_per_call": [
+    1.1041666666666667,
+    1.3881781541527036
+   ],
+   "thinking|k4|exp_tokens_per_call": [
+    1.1041666666666667,
+    1.5578751924644507
+   ],
+   "thinking|k8|exp_tokens_per_call": [
+    1.1041666666666667,
+    1.733799021827733
+   ],
+   "tool_result|k1|exp_tokens_per_call": [
+    1.075,
+    1.318798449612403
+   ],
+   "tool_result|k2|exp_tokens_per_call": [
+    1.1,
+    1.5232558139534884
+   ],
+   "tool_result|k4|exp_tokens_per_call": [
+    1.1,
+    1.7752972181551976
+   ],
+   "tool_result|k8|exp_tokens_per_call": [
+    1.1,
+    2.084778916544656
+   ],
+   "tool_use|k1|exp_tokens_per_call": [
+    1.1428571428571428,
+    1.5538785237348907
+   ],
+   "tool_use|k2|exp_tokens_per_call": [
+    1.1714285714285715,
+    1.9718745303475964
+   ],
+   "tool_use|k4|exp_tokens_per_call": [
+    1.1714285714285715,
+    2.5889387465916656
+   ],
+   "tool_use|k8|exp_tokens_per_call": [
+    1.1714285714285715,
+    3.3848251282821993
+   ],
+   "overall|k1|exp_tokens_per_call": [
+    1.2455357142857142,
+    1.3311446706062595
+   ],
+   "overall|k2|exp_tokens_per_call": [
+    1.4375,
+    1.5458585997794927
+   ],
+   "overall|k4|exp_tokens_per_call": [
+    1.7678571428571428,
+    1.8380564360529217
+   ],
+   "overall|k8|exp_tokens_per_call": [
+    1.9446268330050338,
+    2.366071428571429
+   ]
+  }
+ }
+}

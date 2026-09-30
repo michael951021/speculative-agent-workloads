@@ -4,6 +4,7 @@ transcripts (hand-verified parses are the known answers)."""
 import json
 import os
 import subprocess
+import time
 from pathlib import Path
 
 REPO = Path(__file__).parents[2]
@@ -28,13 +29,18 @@ def make_repo(tmp_path: Path, task: str = DISTILL_TASK) -> Path:
     return tmp_path
 
 
-def run_hook(repo: Path, transcript: Path, task: str,
-             active: bool = False) -> subprocess.CompletedProcess:
+def run_hook(repo: Path, transcript: Path, task: str, active: bool = False,
+             extra_env: dict | None = None) -> subprocess.CompletedProcess:
     payload = {"transcript_path": str(transcript), "session_id": "x", "cwd": str(repo),
                "hook_event_name": "Stop", "stop_hook_active": active}
-    env = {**os.environ, "AGENT_TASK": task, "AGENT_TASK_SRC": "TODO.md"}
+    env = {**os.environ, "AGENT_TASK": task, "AGENT_TASK_SRC": "TODO.md", **(extra_env or {})}
     return subprocess.run(["python3", str(HOOK)], input=json.dumps(payload), text=True,
                           env=env, capture_output=True, timeout=60)
+
+
+def msg(text: str) -> str:
+    return json.dumps({"type": "assistant", "message": {"content": [{"type": "text",
+                                                                     "text": text}]}})
 
 
 def git_count(repo: Path) -> str:
@@ -90,21 +96,43 @@ def test_prose_prefixed_fenced_block_registers(tmp_path):
     assert "0.0105" in log and "harnessreg" in log
 
 
-def test_not_done_and_missing_block_are_noops(tmp_path):
-    notdone = tmp_path / "notdone.jsonl"
-    msg = {"type": "assistant", "message": {"content": [
-        {"type": "text", "text": "RESULT: not done\nWHY: blocked on GPU"}]}}
-    notdone.write_text(json.dumps(msg) + "\n")
+def test_late_flushed_block_still_registers(tmp_path):
+    # Reproduces the a1/a2 failure: at Stop-hook fire time the final RESULT message is
+    # not in the transcript yet; it lands a few seconds later. Hook must poll and catch it.
     repo = make_repo(tmp_path)
-    assert run_hook(repo, notdone, DISTILL_TASK).returncode == 0
+    t = tmp_path / "lag.jsonl"
+    t.write_text(msg("Working on the task...") + "\n")
+    payload = {"transcript_path": str(t), "session_id": "x", "cwd": str(repo),
+               "hook_event_name": "Stop", "stop_hook_active": False}
+    env = {**os.environ, "AGENT_TASK": DISTILL_TASK, "AGENT_TASK_SRC": "TODO.md"}
+    p = subprocess.Popen(["python3", str(HOOK)], stdin=subprocess.PIPE, text=True,
+                         env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p.stdin.write(json.dumps(payload))
+    p.stdin.close()  # hook reads payload to EOF, then polls the transcript
+    time.sleep(2.5)
+    with open(t, "a") as fh:
+        fh.write(msg("RESULT: done\nSUMMARY: KL fell 30.6% to 2.63.\nAPPROACH: distill.\n"
+                     "BLOCKERS: none.") + "\n")
+    out, err = p.stdout.read(), p.stderr.read()  # communicate() reflushes closed stdin
+    rc = p.wait(timeout=60)
+    assert rc == 0, err
+    assert out.strip() == ""
+    assert "- [x] **Distilled tiny drafter" in (repo / "TODO.md").read_text()
+    assert "## distill — Distilled tiny drafter (JAX)" in (repo / "TASKLOG.md").read_text()
+
+
+def test_not_done_and_missing_block_are_noops(tmp_path):
+    fast = {"HARNESSREG_SETTLE": "1"}  # keep the settled-no-block path quick in tests
+    notdone = tmp_path / "notdone.jsonl"
+    notdone.write_text(msg("RESULT: not done\nWHY: blocked on GPU") + "\n")
+    repo = make_repo(tmp_path)
+    assert run_hook(repo, notdone, DISTILL_TASK, extra_env=fast).returncode == 0
     assert "- [ ] **Distilled tiny drafter" in (repo / "TODO.md").read_text()
     assert (repo / "TASKLOG.md").read_text() == TASKLOG_HDR
 
     none = tmp_path / "none.jsonl"
-    msg = {"type": "assistant", "message": {"content": [
-        {"type": "text", "text": "Just some prose."}]}}
-    none.write_text(json.dumps(msg) + "\n")
-    assert run_hook(repo, none, DISTILL_TASK).returncode == 0
+    none.write_text(msg("Just some prose.") + "\n")
+    assert run_hook(repo, none, DISTILL_TASK, extra_env=fast).returncode == 0
     assert "- [ ] **Distilled tiny drafter" in (repo / "TODO.md").read_text()
     assert git_count(repo) == "1"
 

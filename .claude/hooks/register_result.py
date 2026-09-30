@@ -13,6 +13,7 @@ import os
 import re
 import subprocess
 import sys
+import time
 
 TASKLOG = "TASKLOG.md"
 FIELDS = ("RESULT", "SUMMARY", "APPROACH", "BLOCKERS", "WHY", "NEEDED")
@@ -34,7 +35,7 @@ def main() -> int:
         transcript = cand if os.path.exists(cand) else ""
     if not transcript:
         return 0
-    block = parse_block(last_assistant_text(transcript))
+    block = final_block(transcript)
     audit(cwd, data.get("session_id", ""), (block or {}).get("RESULT", "none"), task)
     if not block or block["RESULT"] != "done":
         return 0
@@ -57,6 +58,34 @@ def audit(cwd: str, session_id: str, verdict: str, task: str) -> None:
             fh.write(line)
     except OSError:
         pass
+
+
+def final_block(path: str) -> dict | None:
+    """Last assistant RESULT block. The final message is flushed to the transcript at
+    stop time (observed: 9dcf5bf0/5b940b1d mtimes == Stop-hook fire time, both verdicts
+    `none` then, block present afterwards), so when the first read has none, poll until
+    it appears or the file settles for HARNESSREG_SETTLE s (cap HARNESSREG_WAIT s)."""
+    settle = float(os.environ.get("HARNESSREG_SETTLE", "4"))
+    deadline = time.monotonic() + float(os.environ.get("HARNESSREG_WAIT", "20"))
+    prev, stable = -1, None
+    while True:
+        block = parse_block(last_assistant_text(path))
+        if block:
+            return block
+        try:
+            size = os.path.getsize(path)
+        except OSError:
+            size = -1
+        if size == prev:
+            if stable is None:
+                stable = time.monotonic()
+            elif time.monotonic() - stable >= settle:
+                return None
+        else:
+            prev, stable = size, None
+        if time.monotonic() >= deadline:
+            return None
+        time.sleep(1.0)
 
 
 def last_assistant_text(path: str) -> str:

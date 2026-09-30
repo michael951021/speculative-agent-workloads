@@ -51,12 +51,14 @@
 - tiny.json (a20; a23 fresh 400-block re-run reproduces, worst |d| 3.67e-7, tpc@8
   analytic): alpha 0.0105, tpc@8 1.01; per-kind 0.004-0.015 vs ngram 0.155-0.56
   (ngram wins all kinds); 0.5B control 0.7675 → weak 43M drafter (KL 2.63), not metric.
-- Registration (harnessreg): host runner registered 0 RESULT blocks ever (prior checks
-  were agent self-checks; even bare-block runs skipped → total gap, not matching).
-  Stop hook `.claude/hooks/register_result.py`: at stop parse last RESULT block; done:
-  TODO line (text/id) + TASKLOG entry + commit, idempotent. Tests: 6, real transcripts.
-  a2: 6/6 + ruff green, hook wired in .claude/settings.json; end-to-end stop audit lands
-  in .agent-evidence/harnessreg-stops.log (verify next run).
+- Registration (harnessreg): host runner registered 0 RESULT blocks ever (total gap, not
+  matching). Stop hook `.claude/hooks/register_result.py` (wired in .claude/settings.json):
+  parse last RESULT block; done → TODO line (text/id) + TASKLOG entry + commit, idempotent.
+  a3: hook fired but verdict=none — final msg flushes to transcript AT stop (both transcript
+  mtimes == hook fire time). Fix: poll ≤20s (settle 4s; HARNESSREG_WAIT/SETTLE env). Tests 7
+  (late-flush repro appends block at t+2.5s); ruff green. This run's stop is the live
+  end-to-end test: line 13 + `## harnessreg` TASKLOG must appear unedited (verify next run;
+  audit in .agent-evidence/harnessreg-stops.log).
 
 ## Distilled tiny drafter (JAX) (id: distill, 2026-09-30)
 - `draftlab/drafters/distill.py`: cache (teacher top-64+tail → data/teacher/*.npz) +

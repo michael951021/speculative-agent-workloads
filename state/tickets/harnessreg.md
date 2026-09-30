@@ -24,15 +24,21 @@ matching bug.
   host runner not mounted; no host run-state files found.
 - Observed fact: host registration has never fired here → total gap, not "later blocks
   skipped". Guess: host runner lacks/never runs the registration step; sandbox fix = Stop hook.
+- a3: Stop hook WAS wired and fired (audit lines 07:36/07:37 for sids 5b940b1d, 9dcf5bf0)
+  but verdict=none: the final assistant message is flushed to the transcript at stop time
+  (both transcript mtimes == hook fire time; both transcripts contain `RESULT: done` now).
+  Fix: hook polls up to 20 s (settle 4 s, HARNESSREG_* env) until the block lands or the
+  file stops growing; regression test appends the block 2.5 s after hook start.
 
 ## Done when
 `pytest draftlab/tests/test_register_result.py` passes: hook run against REAL transcripts
 (db45b037 bare block, f2542893 prose+fenced) + fixture TODO/TASKLOG in a tmp git repo flips the
 line, appends the TASKLOG entry, commits; second run no-op; `not done` and missing block no-op;
-title-edited line still matched via `(id:)`. Known answers: expected parses hand-verified from
-the transcripts this run (RESULT=done; SUMMARY contains "30.6%" / "ebd0e83"). End-to-end: at
-this run's stop, TODO line 13 flips and a `## harnessreg —` TASKLOG entry appears without any
-agent edit (verified by the next run).
+title-edited line still matched via `(id:)`; late-flushed block (appended 2.5 s after hook
+start) still registers. Known answers: expected parses hand-verified from the transcripts
+(RESULT=done; SUMMARY contains "30.6%" / "ebd0e83"). End-to-end: at run end, TODO line 13
+flips and a `## harnessreg —` TASKLOG entry appear without any agent edit (a3's stop is the
+live test; verified by the next run).
 
 ## Stop when
 Host runner code is out of scope (unreachable here; Kevin fixes host side; hook is idempotent so

@@ -50,10 +50,10 @@
   (regression OK), tok/call@k8 1.50; tool_use:Edit 0.56 highest > tool_result 0.33 >
   code 0.26 > text 0.19.
 - Old alpha 0.0096 / "1.2% vs 27B" = off-by-one bug (fixed); tiny.json stale.
-- a17: 11/11 alpha tests (23.4s), make check 55 passed (120s); logs
-  alphafix-a17-*.log. Registration gap is host-side: attempt 5's final message
-  was exactly the RESULT block, still unregistered → format ruled out; no parser
-  in sandbox.
+- a18: 11/11 alpha tests 24.4s exit 0; ngram.json anchors unchanged (0.3341/
+  0.3335; tool_use 0.56 > text 0.19); log alphafix-a18-tests.log. Work complete
+  and committed; RESULT-block non-registration is host-side (a5 forensics: exact
+  block, no sandbox parser) — no repo-side fix exists.
 
 ## Distilled tiny drafter (JAX) (id: distill, 2026-09-30)
 - `draftlab/drafters/distill.py`: cache (teacher top-64+tail → data/teacher/*.npz,

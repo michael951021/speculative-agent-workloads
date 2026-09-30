@@ -141,3 +141,9 @@ Registration runs in the host loop runner; no parser code exists in the
 sandbox (/opt/agent has only hooks/prompts; task_done.py is a stop-hook).
 No repo ticket is actionable, so none added to TODO.md. All Done-when
 criteria met on this attempt.
+
+a18 (2026-09-30): re-verified from clean tree — 11/11 alpha tests exit 0 in
+24.4s (log .agent-evidence/alphafix-a18-tests.log); results/alpha/ngram.json
+unchanged vs pre-run anchors (alpha 0.3341, greedy_corpus 0.3335, target
+qwen2.5-1.5b-instruct, tool_use:Edit 0.5632 > text 0.189). All Done-when
+criteria met; no code changes needed.

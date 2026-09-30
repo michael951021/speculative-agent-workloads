@@ -53,3 +53,8 @@
 - Goal: draftlab/drafters/distill.py: cache T's top-64 logits on train blocks (--tokens default 1M, data/teacher/*.npz); train a 4-layer d=256 Qwen2-shaped student sharing T's embeddings vocab with Optax AdamW + cosine schedule, loss KL(T‖student) on the top-64 (+ renormalised tail mass); orbax checkpoints 
 - Approach: Re-verified the completed distilled tiny drafter (JAX): 4-layer d=256 student, top-64+tail KL distillation, val KL down 30.59%, alpha/tiny.json present — all committed, nothing to rebuild. Inspected existing artifacts from prior attempts, re-checked curve/JSON/ckpts, re-ran distill tests and ruff, updated NOTES.
 - Blockers: Prior attempts' work was fully done and committed; they failed only because the host-side RESULT registration was broken (systemic, since fixed by harnessreg a3 stop-hook polling).
+
+## lora — LoRA drafter with FSDP
+- Goal: draftlab/drafters/lora.py (PyTorch, PEFT): LoRA (r=16, attention+MLP) SFT of Qwen2.5-0.5B on train blocks (this is the 27B agent's own output), sequence packing, `--fsdp` path via torchrun (FSDP wrapping, gloo on CPU, NCCL on GPU), `--qlora` path (bitsandbytes 4-bit, GPU only: exits with a clear mes
+- Approach: 
+- Blockers: none.

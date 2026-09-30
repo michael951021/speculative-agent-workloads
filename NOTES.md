@@ -52,5 +52,24 @@
 - Gotcha: longest-first lookup must `continue` past n>t (break skips valid
   shorter n's); bootstrap resampling 3 runs makes per-kind CIs coarse.
 
+## JAX model (id: jaxmodel, done 2026-09-29)
+- `draftlab/jaxlm/model.py`: pure-function-pytree Qwen2 (RMSNorm, RoPE, GQA, SwiGLU,
+  QKV bias; tied or separate lm_head). `load_safetensors` reads HF checkpoints
+  (bf16 upcast to f32 first — torch bf16 has no `.numpy()` path). Preallocated
+  padded KV cache; one jitted `step` covers prefill (fresh cache) and multi-token
+  decode: dynamic-slice cache writes + causal/valid mask, no dynamic shapes.
+- Parity (0.5B f32 vs transformers f32, 3 prompts): prefill max abs diff 1.3e-4
+  (< 2e-3), argmax identical on all rows, greedy 32 tokens identical (torch
+  generate needs `eos_token_id=-1`: EOS 151643 lands within 32 steps). Tiny:
+  multi-token decode == single-token chain == prefill (1e-7); prefill 64 + 32
+  decode wall < 5 s incl. first jit. Tests: draftlab/tests/test_jaxmodel.py (4).
+  `make check` green (21 tests). Evidence: .agent-evidence/jaxmodel.log.
+- Gotcha (cost a long debug): a 1.32 full-prefill mismatch on the tiny config was
+  probe-side, not model — `tiny_config()` leaves `tie_word_embeddings` at the
+  Qwen2Config default (False), so JAX params carries a separate random `lm_head`;
+  the probe's torch state_dict had tied it to the embedding. Layers L0/L1 matched
+  torch at ~2e-8 all along.
+
 ## Next
-- Qwen2 in JAX (id: jaxmodel) / speculative sampling (id: spec) need ngram Drafter.
+- Speculative sampling (id: spec): verify loop over `jaxlm.step` logits + ngram
+  Drafter (both done). Greedy acceptance per kind, then speedup with draft cost ratio.

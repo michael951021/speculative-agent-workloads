@@ -1,0 +1,18 @@
+# GPU profile: vLLM target with drafter on tainted GPU nodes.
+#   helm install draftlab deploy/helm/draftlab -f deploy/helm/draftlab/values-gpu.yaml
+profile: gpu
+
+vllm:
+  enabled: true
+  replicas: 1
+  tolerations:
+    - key: nvidia.com/gpu
+      operator: Exists
+      effect: NoSchedule
+  nodeSelector:
+    nvidia.com/gpu: "true"
+  resources:
+    requests:
+      nvidia.com/gpu: 1
+    limits:
+      nvidia.com/gpu: 1

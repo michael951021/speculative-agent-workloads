@@ -7,6 +7,7 @@ export PATH="$PWD/.tools/go/bin:$PWD/.tools/bin:$PATH"
 export OMP_NUM_THREADS="${OMP_NUM_THREADS:-16}"
 export XLA_FLAGS="${XLA_FLAGS:---xla_cpu_multi_thread_eigen=true}"
 PY=.venv/bin/python
+ROOT=$PWD
 
 fail=0
 section() { printf '\n== %s ==\n' "$1"; }
@@ -46,10 +47,16 @@ else
 fi
 
 if [ -d deploy/helm ]; then
-  section "helm: lint + kubeconform"
-  check helm-lint helm lint deploy/helm
-  (cd deploy/helm && find . -name '*.yaml' -print0 | xargs -0 .tools/bin/kubeconform -strict -summary) \
-    || { echo "FAIL kubeconform" >&2; fail=1; }
+  section "helm: lint + kubeconform (cpu + gpu)"
+  check helm-lint helm lint deploy/helm/draftlab
+  (cd deploy/helm/draftlab && \
+    for extra in "" "-f values-gpu.yaml"; do
+      helm template draftlab . $extra \
+        | "$ROOT/.tools/bin/kubeconform" -strict -summary \
+          -schema-location default \
+          -schema-location "crd-schemas/{{ .ResourceKind }}{{ .KindSuffix }}.json" || exit 1
+    done) || { echo "FAIL kubeconform" >&2; fail=1; }
+  check grafana-sync diff -q deploy/helm/draftlab/grafana/draftlab.json deploy/grafana/draftlab.json
 else
   skip "helm" deploy/helm
 fi

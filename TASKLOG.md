@@ -87,3 +87,8 @@
 - Goal: deploy/docker/: gateway (multi-stage, distroless static, non-root), engine (python:3.12-slim, CPU), vllm (vllm/vllm-openai base + drafter adapter mount); .dockerignore; hadolint clean in make check
 - Approach: added deploy/docker Dockerfiles (gateway distroless nonroot, engine slim CPU, vllm openai base + drafter mount), .dockerignore, .hadolint.yaml; hadolint 3/3 clean in make check matched entrypoints/ports to gateway/main.go and draftlab.serve source, pinned bases (v0.11.2 verified on hub), iterated hadolint until 0 findings
 - Blockers: none
+
+## helm — Helm chart
+- Goal: deploy/helm/draftlab: gateway Deployment/Service/HPA (custom metric via prometheus-adapter), API-key Secret, engine Deployment, optional vLLM Deployment (nvidia.com/gpu: 1, tolerations, `--speculative-config` with the trained drafter from a PVC, readiness on /health), ServiceMonitor, Grafana dashboa
+- Approach: deploy/helm/draftlab chart (gateway+HPA+Secret, engine, optional vLLM GPU, ServiceMonitors, dashboard ConfigMap, NetworkPolicies, PDB) with cpu/gpu values; make check runs helm lint + template|kubeconform -strict with vendored ServiceMonitor schema — all pass. vendored prometheus-operator ServiceMonitor CRD schema, wrote chart from observed gateway/engine/vLLM interfaces, wired both profiles into tools/check.sh, verified known-answer properties on rendered output.
+- Blockers: kubeconform v0.6.7 schema-location template semantics undocumented (lowercased ResourceKind + KindSuffix filename) — found by reading its source; grafana-sync check initially ran with wrong cwd.

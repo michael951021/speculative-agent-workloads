@@ -1,0 +1,187 @@
+{
+  "title": "draftlab gateway",
+  "uid": "draftlab",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "time": { "from": "now-1h", "to": "now" },
+  "templating": {
+    "list": [
+      {
+        "name": "datasource",
+        "label": "Datasource",
+        "type": "datasource",
+        "query": "prometheus",
+        "current": {},
+        "hide": 0
+      },
+      {
+        "name": "model",
+        "label": "Model",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "query": "label_values(draftlab:acceptance_ratio5m, model)",
+        "refresh": 2,
+        "includeAll": true,
+        "multi": true
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "Draft acceptance ratio (5m)",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "draftlab:acceptance_ratio5m{model=~\"$model\"}",
+          "legendFormat": "{{model}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "green", "value": 0.4 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "TTFT p95 (5m)",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "draftlab:ttft_p95_seconds5m{model=~\"$model\"}",
+          "legendFormat": "p95 {{model}}"
+        },
+        {
+          "expr": "draftlab:ttft_p50_seconds5m{model=~\"$model\"}",
+          "legendFormat": "p50 {{model}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "s" }
+      }
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Request rate (5m)",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "targets": [
+        {
+          "expr": "draftlab:requests_rate5m{model=~\"$model\"}",
+          "legendFormat": "{{model}} {{status}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "reqps" }
+      }
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Draft vs accepted tokens (5m rate)",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "targets": [
+        {
+          "expr": "sum by (model) (rate(draftlab_draft_tokens_total{model=~\"$model\"}[5m]))",
+          "legendFormat": "draft {{model}}"
+        },
+        {
+          "expr": "sum by (model) (rate(draftlab_accepted_tokens_total{model=~\"$model\"}[5m]))",
+          "legendFormat": "accepted {{model}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "cps" }
+      }
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "TTFT histogram buckets (5m rate)",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 16 },
+      "targets": [
+        {
+          "expr": "sum by (model, le) (rate(draftlab_ttft_seconds_bucket{model=~\"$model\"}[5m]))",
+          "legendFormat": "{{model}} <={{le}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "reqps" }
+      }
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Output tok/s (last completed request)",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 24 },
+      "targets": [
+        { "expr": "draftlab_output_tokens_per_second" }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "cps" }
+      }
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Rate-limited (429) rate (5m)",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 24 },
+      "targets": [
+        {
+          "expr": "sum by (key) (rate(draftlab_rate_limited_total[5m]))",
+          "legendFormat": "{{key}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "reqps" }
+      }
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Circuit breaker state (0 closed, 1 open, 2 half-open)",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 24 },
+      "targets": [
+        {
+          "expr": "draftlab_breaker_state",
+          "legendFormat": "{{backend}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "max": 2,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 1 }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

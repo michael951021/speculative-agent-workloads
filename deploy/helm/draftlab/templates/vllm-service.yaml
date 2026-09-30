@@ -1,0 +1,19 @@
+{{- if .Values.vllm.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "draftlab.fullname" . }}-vllm
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "draftlab.labels" . | nindent 4 }}
+    app.kubernetes.io/component: vllm
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "draftlab.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: vllm
+  ports:
+    - name: http
+      port: {{ .Values.vllm.port }}
+      targetPort: http
+{{- end }}

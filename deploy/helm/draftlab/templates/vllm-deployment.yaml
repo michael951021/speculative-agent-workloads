@@ -1,0 +1,71 @@
+{{- if .Values.vllm.enabled }}
+# vLLM target with the trained drafter: the image entrypoint adds
+# --speculative-config when $DRAFTER_PATH/adapter_config.json exists.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "draftlab.fullname" . }}-vllm
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "draftlab.labels" . | nindent 4 }}
+    app.kubernetes.io/component: vllm
+spec:
+  replicas: {{ .Values.vllm.replicas }}
+  selector:
+    matchLabels:
+      {{- include "draftlab.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: vllm
+  template:
+    metadata:
+      labels:
+        {{- include "draftlab.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: vllm
+    spec:
+      {{- with .Values.vllm.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.vllm.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: vllm
+          image: "{{ .Values.image.vllm.repository }}:{{ .Values.image.vllm.tag }}"
+          imagePullPolicy: {{ .Values.image.vllm.pullPolicy }}
+          env:
+            - name: VLLM_MODEL
+              value: {{ .Values.vllm.model }}
+            - name: DRAFTER_PATH
+              value: {{ .Values.vllm.drafterPath }}
+            - name: DRAFTER_K
+              value: {{ .Values.vllm.drafterK | quote }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.vllm.port }}
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            failureThreshold: 40
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 120
+            periodSeconds: 30
+          volumeMounts:
+            - name: drafter
+              mountPath: {{ .Values.vllm.drafterPath }}
+              readOnly: true
+          {{- with .Values.vllm.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: drafter
+          persistentVolumeClaim:
+            claimName: {{ .Values.vllm.drafterPvc }}
+{{- end }}

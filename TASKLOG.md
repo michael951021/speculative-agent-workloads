@@ -73,3 +73,8 @@
 - Goal: gateway/ (Go module, stdlib net/http + prometheus/client_golang + slog): OpenAI-compatible reverse proxy for /v1/chat/completions and /v1/models; API keys stored as SHA-256 hashes in config.yaml, Bearer auth; per-key token-bucket rate limit (429 + Retry-After); routing by model name to backends (eng
 - Approach: Go gateway verified end-to-end: 8/8 httptest tests, live smoke (401/429+Retry-After/404/models merge, draft·accepted counters 24/14 exact), make check green; NOTES updated Re-verified the committed gateway from attempt 1 — go vet/test, a live fake-backend smoke exercising every Done-when item, and full make check
 - Blockers: none
+
+## obs — Prometheus and Grafana
+- Goal: deploy/prometheus/{prometheus.yml,rules.yml} (recording rules: acceptance rate = accepted/draft by model; alerts: acceptance < 0.4 for 10m, p95 TTFT > 2s), deploy/grafana/draftlab.json dashboard (TTFT p50/p95, tok/s, acceptance by model, 429s, breaker state)
+- Approach: Prometheus rules (acceptance/TTFT recordings + 2 alerts) with hand-computed-value unit tests, and a Grafana dashboard with TTFT p50/p95, tok/s, acceptance by model, 429s, breaker state; promtool wired into make check. Prior attempt had committed rules/tests but the dashboard lacked tok/s/429/breaker panels; added the 3 missing panels, re-ran promtool test rules, gateway go test, and full make check (exit 0).
+- Blockers: Prior run ended without emitting the RESULT registration line, leaving the ticket unchecked despite committed work.

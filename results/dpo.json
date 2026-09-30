@@ -1,0 +1,179 @@
+{
+ "metric": "acceptance-aware DPO: pairs (ctx, chosen=accepted/resampled, rejected=drafter draft) from T=1 spec runs of the target with the LoRA drafter; TRL DPO on the adapter. alpha = sum_x min(p(x),q(x)) per position vs the same target on val blocks (results/alpha).",
+ "pairs": null,
+ "dpo": null,
+ "adapter_before": "ckpt/lora",
+ "alpha": {
+  "before": {
+   "overall": {
+    "n_tokens": 29657,
+    "alpha": 0.7305878072289481,
+    "alpha_ci95": [
+     0.7302437052472674,
+     0.7307945088962718
+    ]
+   },
+   "by_kind": {
+    "code": {
+     "n_tokens": 871,
+     "alpha": 0.7243051794844204,
+     "alpha_ci95": [
+      0.7238689116045699,
+      0.7247414473642708
+     ]
+    },
+    "text": {
+     "n_tokens": 3758,
+     "alpha": 0.6575255644289818,
+     "alpha_ci95": [
+      0.6571441659957169,
+      0.6578010603491035
+     ]
+    },
+    "thinking": {
+     "n_tokens": 7717,
+     "alpha": 0.659300709388868,
+     "alpha_ci95": [
+      0.6592765003808363,
+      0.6593217058051705
+     ]
+    },
+    "tool_result": {
+     "n_tokens": 5132,
+     "alpha": 0.744231132892884,
+     "alpha_ci95": [
+      0.7437379373390259,
+      0.7450685240553091
+     ]
+    },
+    "tool_use:Bash": {
+     "n_tokens": 6113,
+     "alpha": 0.7668753155124375,
+     "alpha_ci95": [
+      0.7667325343297029,
+      0.7670180966951722
+     ]
+    },
+    "tool_use:Edit": {
+     "n_tokens": 5440,
+     "alpha": 0.8234562062066603,
+     "alpha_ci95": [
+      0.8234416727946663,
+      0.8234707396186542
+     ]
+    },
+    "tool_use:Read": {
+     "n_tokens": 198,
+     "alpha": 0.799833434338665,
+     "alpha_ci95": [
+      0.799757771984296,
+      0.7999090966930341
+     ]
+    },
+    "tool_use:WebFetch": {
+     "n_tokens": 35,
+     "alpha": 0.5717088971819196,
+     "alpha_ci95": [
+      0.5717088971819196,
+      0.5717088971819196
+     ]
+    },
+    "tool_use:Write": {
+     "n_tokens": 393,
+     "alpha": 0.8043733941386371,
+     "alpha_ci95": [
+      0.8043733941386371,
+      0.8043733941386371
+     ]
+    }
+   },
+   "source": "results/alpha/lora.json"
+  },
+  "after": {
+   "overall": {
+    "n_tokens": 29657,
+    "alpha": 0.7319405430664697,
+    "alpha_ci95": [
+     0.7316222892734501,
+     0.7321280841854608
+    ]
+   },
+   "by_kind": {
+    "code": {
+     "n_tokens": 871,
+     "alpha": 0.7252285269917207,
+     "alpha_ci95": [
+      0.7247982372622441,
+      0.7256588167211971
+     ]
+    },
+    "text": {
+     "n_tokens": 3758,
+     "alpha": 0.6597443772068423,
+     "alpha_ci95": [
+      0.6593956017314417,
+      0.6599911300434009
+     ]
+    },
+    "thinking": {
+     "n_tokens": 7717,
+     "alpha": 0.6628193825839164,
+     "alpha_ci95": [
+      0.6627943466855807,
+      0.6628397313158356
+     ]
+    },
+    "tool_result": {
+     "n_tokens": 5132,
+     "alpha": 0.7444891196213379,
+     "alpha_ci95": [
+      0.7440066629752962,
+      0.745314480372357
+     ]
+    },
+    "tool_use:Bash": {
+     "n_tokens": 6113,
+     "alpha": 0.7673003511051828,
+     "alpha_ci95": [
+      0.7671512568252966,
+      0.7674494453850689
+     ]
+    },
+    "tool_use:Edit": {
+     "n_tokens": 5440,
+     "alpha": 0.82340945120629,
+     "alpha_ci95": [
+      0.8233938896343087,
+      0.8234250127782714
+     ]
+    },
+    "tool_use:Read": {
+     "n_tokens": 198,
+     "alpha": 0.8003658747428714,
+     "alpha_ci95": [
+      0.8002924493501724,
+      0.8004393001355703
+     ]
+    },
+    "tool_use:WebFetch": {
+     "n_tokens": 35,
+     "alpha": 0.5706352233886719,
+     "alpha_ci95": [
+      0.5706352233886719,
+      0.5706352233886719
+     ]
+    },
+    "tool_use:Write": {
+     "n_tokens": 393,
+     "alpha": 0.8045474142215331,
+     "alpha_ci95": [
+      0.8045474142215331,
+      0.8045474142215331
+     ]
+    }
+   },
+   "source": "results/alpha/dpo.json"
+  }
+ },
+ "expected_alpha_range": "after overall alpha in [0.70, 0.78] (before 0.7306); |delta| > 0.1 is a bug until shown otherwise"
+}

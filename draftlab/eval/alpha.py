@@ -271,11 +271,18 @@ def _bootstrap(
         sums_v = np.array([np.concatenate([r[3] for r in by_run[rn]]).sum() for rn in runs])
         cnts = np.array([sum(r[0].size for r in by_run[rn]) for rn in runs])
         w = rng.multinomial(n_boot, np.full(len(runs), 1.0 / len(runs)), size=len(runs))
+        # per-run rates over the drafter's valid (proposed) positions: this is
+        # what the sweep's accept = n_acc/n_draft measures (spec.py only scores
+        # positions the drafter proposed)
+        gv = np.where(sums_v > 0, sums_g / np.maximum(sums_v, 1), 0.0)
+        av = np.where(sums_v > 0, sums_a / np.maximum(sums_v, 1), 0.0)
         out[scope] = (
             w @ sums_a / (w @ cnts),
             w @ sums_g / (w @ cnts),
             w @ sums_gc / (w @ cnts),
             w @ sums_v / (w @ cnts),
+            w @ gv / n_boot,
+            w @ av / n_boot,
             int(cnts.sum()),
             len(runs),
         )
@@ -352,7 +359,7 @@ def aggregate(
     """Per kind (+ overall): n_tokens, alpha, CIs, greedy (target agree),
     greedy_corpus (vs actual token), coverage, k tables."""
     out: dict[str, dict] = {}
-    for scope, (b_alpha, b_greedy, b_gc, b_cov, n_tok, n_runs) in sorted(
+    for scope, (b_alpha, b_greedy, b_gc, b_cov, b_gv, b_av, n_tok, n_runs) in sorted(
         _bootstrap(records, n_boot, seed).items()
     ):
         out[scope] = {
@@ -365,7 +372,16 @@ def aggregate(
             "greedy_corpus": float(b_gc.mean()),
             "greedy_corpus_ci95": _ci(b_gc),
             "coverage": float(b_cov.mean()),
+            # over valid (proposed) positions only: comparable to the engine's
+            # measured accept (n_acc/n_draft) and tpc (n_emit/n_steps)
+            "greedy_valid": float(b_gv.mean()),
+            "greedy_valid_ci95": _ci(b_gv),
+            "alpha_valid": float(b_av.mean()),
+            "alpha_valid_ci95": _ci(b_av),
             **_k_tables(b_alpha, c),
+            "tpc_valid_ci95": {
+                str(k): _ci(expected_tokens_per_call(b_av, k)) for k in K_VALUES
+            },
         }
     return out
 

@@ -63,3 +63,8 @@
 - Goal: draftlab/drafters/dpo.py: from spec runs of T with the LoRA drafter at T=1 on train prompts, build pairs (context, chosen = token span the target accepted or resampled, rejected = the drafter's rejected span); TRL DPOTrainer (beta 0.1) on the LoRA adapter; --pairs default 2000
 - Approach: Acceptance-aware DPO (TRL β=0.1) on 2000 T=1 spec-reject pairs: α 0.7306 → 0.7319 on 400 val (CIs disjoint), train-pair margin −3.794 → −3.530, all known-answer checks pass. PyTorch batched T=1 spec loop (1.5B target scores LoRA drafter, KV cache, accept u·q[d]<p[d], resample max(0,p−q)) → pairs (ctx, chosen=accepted/resampled, rejected=draft, no-op resamples dropped), cached data/pairs/dpo.jsonl; TRL DPOTrainer subclass over pre-tokenized rows (prompt = last 48 ctx, completion 1 token, ref = adapter disabled), bf16 default on CPU; after-eval via draftlab.eval.alpha hf drafter, merged with --r
 - Blockers: none
+
+## triton — Triton verify and alpha kernels
+- Goal: draftlab/kernels/verify.py: (1) fused verify: given target logits [k+1, V], draft logits [k, V], drafted tokens and uniforms → online-softmax both rows, accept test p/q ≥ u, first-reject index, and the normalised residual max(0, p−q) at that row (one launch, V tiled); (2) fused alpha: Σ min(softmax 
+- Approach: draftlab/kernels/verify.py with fused Triton verify (accept test, first-reject, normalised residual) and fused alpha kernels, torch references, 7 tests under TRITON_INTERPRET=1, bench.py (skips w/o CUDA), and alpha.py using the kernel on CUDA. wrote the failing test first, then two @triton.jit kernels (online-softmax with -inf-safe helpers, one launch each), validated against torch refs plus analytic anchors (uniform q, q=p, identical rows); full suite 77/77.
+- Blockers: none

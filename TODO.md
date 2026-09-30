@@ -49,7 +49,7 @@
 
 ## Kernels
 > why: verification is the per-step overhead of speculative decoding; a fused kernel shows GPU-kernel skills and makes the alpha eval cheap at full vocab.
-- [ ] **Triton verify and alpha kernels** — draftlab/kernels/verify.py: (1) fused verify: given target logits [k+1, V], draft logits [k, V], drafted tokens and uniforms → online-softmax both rows, accept test p/q ≥ u, first-reject index, and the normalised residual max(0, p−q) at that row (one launch, V tiled); (2) fused alpha: Σ min(softmax p, softmax q) per row. Torch reference implementations; tests under TRITON_INTERPRET=1 with V=1000, random logits, fp32 tolerance 1e-5; bench.py prints a table vs torch (skips without CUDA). alpha.py uses the kernel when CUDA is present. (id: triton) (after: boot)
+- [x] **Triton verify and alpha kernels** — draftlab/kernels/verify.py: (1) fused verify: given target logits [k+1, V], draft logits [k, V], drafted tokens and uniforms → online-softmax both rows, accept test p/q ≥ u, first-reject index, and the normalised residual max(0, p−q) at that row (one launch, V tiled); (2) fused alpha: Σ min(softmax p, softmax q) per row. Torch reference implementations; tests under TRITON_INTERPRET=1 with V=1000, random logits, fp32 tolerance 1e-5; bench.py prints a table vs torch (skips without CUDA). alpha.py uses the kernel when CUDA is present. (id: triton) (after: boot)
   why: the kernel the GPU run uses for α at 150k vocab, and the clearest demonstration of Triton/CUDA work in the project.
 
 ## Serving and observability

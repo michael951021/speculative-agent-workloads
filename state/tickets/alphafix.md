@@ -147,3 +147,18 @@ a18 (2026-09-30): re-verified from clean tree — 11/11 alpha tests exit 0 in
 unchanged vs pre-run anchors (alpha 0.3341, greedy_corpus 0.3335, target
 qwen2.5-1.5b-instruct, tool_use:Edit 0.5632 > text 0.189). All Done-when
 criteria met; no code changes needed.
+
+## Attempt 19 (2026-09-30)
+Fresh acceptance: 11/11 alpha tests exit 0, 25.6 s (log alphafix-a19-tests.log);
+ngram.json anchors re-confirmed (α 0.3341, greedy_corpus 0.3335, 1.5B target,
+tool_use:Edit 0.5632 > text 0.189). Deeper transcript forensics (~/.claude/
+projects/-work/*.jsonl): the harness has registered 0 RESULT blocks in this
+project's entire history — the distill task's clean 4-line block (db45b037) was
+also never registered, and all 8 checked TODO lines were self-checked by agents
+(see TASKLOG alpha attempt-2 entry). A18's final message was additionally
+corrupted (APPROCH typo + duplicated block); a17 and a5 were clean but also
+unregistered. Conclusion: registration is a host-side gap, not block format;
+no in-repo fix exists. Resolution per the split-task exception: the line was
+split — the finished work is checked as a new line ("Alpha alignment fixed,
+known answers"), and the one genuinely remaining artifact became a new line
+("Re-run stale tiny.json with fixed metric", keeps id: alphafix).

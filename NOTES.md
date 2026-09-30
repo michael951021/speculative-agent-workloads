@@ -50,10 +50,13 @@
   (regression OK), tok/call@k8 1.50; tool_use:Edit 0.56 highest > tool_result 0.33 >
   code 0.26 > text 0.19.
 - Old alpha 0.0096 / "1.2% vs 27B" = off-by-one bug (fixed); tiny.json stale.
-- a18: 11/11 alpha tests 24.4s exit 0; ngram.json anchors unchanged (0.3341/
-  0.3335; tool_use 0.56 > text 0.19); log alphafix-a18-tests.log. Work complete
-  and committed; RESULT-block non-registration is host-side (a5 forensics: exact
-  block, no sandbox parser) — no repo-side fix exists.
+- a19: 11/11 alpha tests 25.6s exit 0 (log alphafix-a19-tests.log); ngram.json
+  anchors unchanged (0.3341/0.3335; tool_use 0.56 > text 0.19).
+- Registration gap is systemic/host-side: 0 RESULT blocks ever registered in this
+  project (incl. distill's clean block, transcript db45b037); all 8 checked lines
+  were agent self-checks. Work complete; line split per exception — checked
+  "Alpha alignment fixed, known answers" + new unchecked "Re-run stale tiny.json
+  with fixed metric" (id: alphafix).
 
 ## Distilled tiny drafter (JAX) (id: distill, 2026-09-30)
 - `draftlab/drafters/distill.py`: cache (teacher top-64+tail → data/teacher/*.npz,

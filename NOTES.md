@@ -56,7 +56,7 @@
   a21); 0.5B control same pipeline 0.7675 → weak 43M drafter (val KL 2.63), not
   metric. a21 clean tree: 11/11 alpha tests exit 0. Logs alphafix-a20-*, -a21-*.
 - Registration gap host-side: 0 RESULT blocks ever registered; done lines stay
-  unchecked (incl. id: alphafix).
+  unchecked.
 
 ## Distilled tiny drafter (JAX) (id: distill, 2026-09-30)
 - `draftlab/drafters/distill.py`: cache (teacher top-64+tail → data/teacher/*.npz,

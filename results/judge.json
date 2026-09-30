@@ -1,0 +1,466 @@
+{
+ "meta": {
+  "created": "2026-09-30T20:25:29+00:00",
+  "judge_model": "qwen-agent",
+  "rubric_version": "v1",
+  "calls_used": 150,
+  "cache_hits": 8,
+  "invalid": 24,
+  "wall_s": 1984.5,
+  "n_prompts": 49,
+  "n_gen": 16,
+  "k": 4,
+  "temperature": 0.7,
+  "seed": 12345,
+  "target": "qwen2.5-0.5b-instruct",
+  "drafter": "dpo adapter merged into qwen2.5-0.5b"
+ },
+ "spec_vs_drafter_alone": {
+  "n_prompts": 22,
+  "n_verdicts": 24,
+  "wins": 15,
+  "ties": 0,
+  "losses": 9,
+  "win_rate": 0.625,
+  "win_ci95": [
+   0.4270996229526447,
+   0.7884063254095233
+  ],
+  "loss_rate": 0.375,
+  "loss_ci95": [
+   0.21159367459047676,
+   0.5729003770473553
+  ],
+  "order_bias_disagreement": 0.0,
+  "per_prompt": [
+   {
+    "run_seq": "contrib-loop-20260926-231240:77976",
+    "kind": "code",
+    "ab": null,
+    "ba": "loss"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:167",
+    "kind": "text",
+    "ab": null,
+    "ba": "loss"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:2921",
+    "kind": "text",
+    "ab": "win",
+    "ba": "win"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:2979",
+    "kind": "text",
+    "ab": "loss",
+    "ba": "loss"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:7564",
+    "kind": "text",
+    "ab": "win",
+    "ba": "win"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:7723",
+    "kind": "text",
+    "ab": "win",
+    "ba": "win"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:16654",
+    "kind": "text",
+    "ab": "win",
+    "ba": "win"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:16763",
+    "kind": "text",
+    "ab": "win",
+    "ba": "win"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:58",
+    "kind": "thinking",
+    "ab": "loss",
+    "ba": "loss"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:166",
+    "kind": "thinking",
+    "ab": "win",
+    "ba": "win"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:2978",
+    "kind": "thinking",
+    "ab": "win",
+    "ba": "win"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:16762",
+    "kind": "thinking",
+    "ab": null,
+    "ba": null
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:19605",
+    "kind": "thinking",
+    "ab": "win",
+    "ba": null
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:19644",
+    "kind": "thinking",
+    "ab": null,
+    "ba": null
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:20303",
+    "kind": "thinking",
+    "ab": null,
+    "ba": null
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:7568",
+    "kind": "tool_result",
+    "ab": null,
+    "ba": null
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:16656",
+    "kind": "tool_result",
+    "ab": null,
+    "ba": null
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:20932",
+    "kind": "tool_result",
+    "ab": null,
+    "ba": null
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:21194",
+    "kind": "tool_result",
+    "ab": null,
+    "ba": null
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:22704",
+    "kind": "tool_result",
+    "ab": null,
+    "ba": null
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:23388",
+    "kind": "tool_result",
+    "ab": null,
+    "ba": null
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:41705",
+    "kind": "tool_result",
+    "ab": null,
+    "ba": null
+   }
+  ]
+ },
+ "spec_vs_target": {
+  "n_prompts": 46,
+  "n_verdicts": 81,
+  "wins": 36,
+  "ties": 1,
+  "losses": 44,
+  "win_rate": 0.4444444444444444,
+  "win_ci95": [
+   0.3411955242755319,
+   0.5527242630705089
+  ],
+  "loss_rate": 0.5432098765432098,
+  "loss_ci95": [
+   0.4352401581386749,
+   0.6472666739255153
+  ],
+  "order_bias_disagreement": 0.08695652173913043,
+  "per_prompt": [
+   {
+    "run_seq": "contrib-loop-20260926-231240:77976",
+    "kind": "code",
+    "ab": null,
+    "ba": null
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:167",
+    "kind": "text",
+    "ab": "loss",
+    "ba": "loss"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:2921",
+    "kind": "text",
+    "ab": "win",
+    "ba": "win"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:2979",
+    "kind": "text",
+    "ab": "win",
+    "ba": "win"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:7564",
+    "kind": "text",
+    "ab": "loss",
+    "ba": "loss"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:7723",
+    "kind": "text",
+    "ab": "win",
+    "ba": "win"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:16654",
+    "kind": "text",
+    "ab": "win",
+    "ba": "win"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:16763",
+    "kind": "text",
+    "ab": "loss",
+    "ba": "loss"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:58",
+    "kind": "thinking",
+    "ab": "loss",
+    "ba": "loss"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:166",
+    "kind": "thinking",
+    "ab": "win",
+    "ba": "win"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:2978",
+    "kind": "thinking",
+    "ab": "win",
+    "ba": "win"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:16762",
+    "kind": "thinking",
+    "ab": "loss",
+    "ba": "loss"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:19605",
+    "kind": "thinking",
+    "ab": "loss",
+    "ba": "loss"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:19644",
+    "kind": "thinking",
+    "ab": "loss",
+    "ba": "loss"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:20303",
+    "kind": "thinking",
+    "ab": "win",
+    "ba": "win"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:7568",
+    "kind": "tool_result",
+    "ab": null,
+    "ba": "loss"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:16656",
+    "kind": "tool_result",
+    "ab": "win",
+    "ba": "win"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:20932",
+    "kind": "tool_result",
+    "ab": "loss",
+    "ba": "loss"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:21194",
+    "kind": "tool_result",
+    "ab": "loss",
+    "ba": "tie"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:22704",
+    "kind": "tool_result",
+    "ab": null,
+    "ba": null
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:23388",
+    "kind": "tool_result",
+    "ab": "loss",
+    "ba": "win"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:41705",
+    "kind": "tool_result",
+    "ab": "loss",
+    "ba": "loss"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:168",
+    "kind": "tool_use:Bash",
+    "ab": "win",
+    "ba": "win"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:170",
+    "kind": "tool_use:Bash",
+    "ab": null,
+    "ba": null
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:2922",
+    "kind": "tool_use:Bash",
+    "ab": "loss",
+    "ba": "loss"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:2924",
+    "kind": "tool_use:Bash",
+    "ab": "win",
+    "ba": "win"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:7566",
+    "kind": "tool_use:Bash",
+    "ab": "loss",
+    "ba": "loss"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:19646",
+    "kind": "tool_use:Bash",
+    "ab": null,
+    "ba": "loss"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:20304",
+    "kind": "tool_use:Bash",
+    "ab": "win",
+    "ba": "win"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:16657",
+    "kind": "tool_use:Edit",
+    "ab": null,
+    "ba": null
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:41727",
+    "kind": "tool_use:Edit",
+    "ab": "loss",
+    "ba": "loss"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:41729",
+    "kind": "tool_use:Edit",
+    "ab": "loss",
+    "ba": "loss"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:44526",
+    "kind": "tool_use:Edit",
+    "ab": "loss",
+    "ba": "loss"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:67030",
+    "kind": "tool_use:Edit",
+    "ab": null,
+    "ba": "loss"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:74013",
+    "kind": "tool_use:Edit",
+    "ab": null,
+    "ba": "win"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:75330",
+    "kind": "tool_use:Edit",
+    "ab": "loss",
+    "ba": "win"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:48230",
+    "kind": "tool_use:Read",
+    "ab": "loss",
+    "ba": "win"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:66970",
+    "kind": "tool_use:Read",
+    "ab": "win",
+    "ba": "win"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:72719",
+    "kind": "tool_use:Read",
+    "ab": "loss",
+    "ba": "loss"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:73980",
+    "kind": "tool_use:Read",
+    "ab": "win",
+    "ba": "win"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:73987",
+    "kind": "tool_use:Read",
+    "ab": "loss",
+    "ba": "loss"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:74199",
+    "kind": "tool_use:Read",
+    "ab": "loss",
+    "ba": "loss"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:74226",
+    "kind": "tool_use:Read",
+    "ab": "win",
+    "ba": "win"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:74997",
+    "kind": "tool_use:SendMessage",
+    "ab": null,
+    "ba": "loss"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:75025",
+    "kind": "tool_use:SendMessage",
+    "ab": "win",
+    "ba": "win"
+   },
+   {
+    "run_seq": "contrib-loop-20260926-231240:41704",
+    "kind": "tool_use:Write",
+    "ab": "loss",
+    "ba": "loss"
+   }
+  ]
+ }
+}

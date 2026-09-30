@@ -61,8 +61,12 @@
 
 ## Experiments
 > why: the headline data: acceptance and speedup across drafters, k, temperature and content kind, with the lossless claim checked by an independent judge.
-- [ ] **Ray sweep** — draftlab/sweep.py (Ray core, local cluster, num_cpus from flag): grid drafter ∈ {ngram, tiny, base-0.5b, lora, lora+dpo} × k ∈ {1,2,4,8} × temperature ∈ {0, 0.7} over 100 val prompts per kind with the JAX engine (T0 target to keep CPU cost sane) — measured accepted length and wall-clock tokens/s vs no drafter; resumable (skips cells already in results/sweep.parquet). Test: 2-cell sweep in Ray local mode. (id: sweep) (after: engine, distill, dpo)
-  why: measured (not just expected) speedups per configuration, the main table of the report.
+- [ ] **Sweep batch 1 — T=0 anchor cells** — `python -m draftlab.sweep --drafters base lora lora_dpo --ks 1 --temps 0.0 --num-cpus 16 --cpus-per-cell 16` (adds none T=0 baseline; sequential cells: 4-way parallel oversubscribes and a kill loses the whole cell; now resumes per prompt) into results/sweep.parquet, 100 val prompts/kind, n_gen 16. Check: base@T0 k=1 accept == 1.0; lora_dpo accept >= lora (CI-disjoint); each drafter's measured tpc within eval.alpha metric CI (tools/compare_sweep_alpha.py vs draftlab.eval.alpha, target 0.5b-instruct, n_blocks 100, ctx-tokens 0). (after: engine, distill, dpo)
+  why: anchors the main table and validates the known answers before the big k runs.
+- [ ] **Sweep batch 2 — T=0, k 1 ngram + k 2/4/8** — `python -m draftlab.sweep --drafters ngram tiny base lora lora_dpo --ks 1 2 4 8 --temps 0.0 --num-cpus 16 --cpus-per-cell 16` (ngram k=1 + 15 cells; resumable per prompt, skips done). Check: tpc(k) monotone in k per drafter; lora k=8 tpc within alpha-metric CI; ngram k=1 in metric CI; tok/s vs none per kind for the report table.
+  why: measured tpc curve across k — the speedup column of the main table.
+- [ ] **Sweep batch 3 — T=0.7 grid** — `python -m draftlab.sweep --drafters ngram tiny base lora lora_dpo --ks 1 2 4 8 --temps 0.7 --num-cpus 16 --cpus-per-cell 16` (21 cells incl none T=0.7; resumable per prompt). Check: sampled-temperature acceptance lower than T=0 for same k; table complete 42 cells. (id: sweep)
+  why: temperature row completes the main table for the report.
 - [ ] **LLM-as-judge lossless check** — draftlab/eval/judge.py with the `openai` SDK against $OLLAMA_BASE_URL: 50 test-split prompts, outputs from target-only vs speculative (best drafter) at T=0.7, plus drafter-alone outputs; blind pairwise judging in both orders (order-bias = disagreement rate reported), rubric in the prompt, JSON verdicts; cap 150 calls, responses cached in data/judge_cache/. results/judge.json: win/tie/loss with Wilson CIs. Test with a fake OpenAI server. (id: judge) (after: engine, lora)
   why: an independent end-to-end check that speculative outputs are as good as the target's while drafter-alone ones are not.
 

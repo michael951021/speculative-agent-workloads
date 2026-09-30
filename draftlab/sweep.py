@@ -1,8 +1,10 @@
 """Ray sweep: measured acceptance and wall-clock speed of drafters, JAX engine.
 
 Grid drafter x k x temperature over val prompts (per kind), target = 0.5B-instruct
-JAX. Cells are resumable: (drafter, k, temp) already in the output parquet is
-skipped. Rows are per-prompt; aggregate (accept_rate, tpc, tok/s) on read.
+JAX. Resumable at prompt granularity: workers append each finished prompt to a
+sidecar JSONL as it completes; the driver folds sidecars into the output parquet
+on every cell finish and on startup, so a kill loses at most one in-flight
+prompt. Rows are per-prompt; aggregate (accept_rate, tpc, tok/s) on read.
 """
 from __future__ import annotations
 
@@ -26,8 +28,11 @@ DRAFTERS = ["ngram", "tiny", "base", "lora", "lora_dpo"]
 LORA_BASE = MODELS / "qwen2.5-0.5b"  # lora/dpo adapters were built on base, not instruct
 ATTN_W = {"q_proj": "q_w", "k_proj": "k_w", "v_proj": "v_w", "o_proj": "o_w"}
 MLP_W = {"gate_proj": "gate_w", "up_proj": "up_w", "down_proj": "down_w"}
-RAW_COLS = ["drafter", "k", "temp", "kind", "run", "seq", "prompt_len", "n_steps",
+RAW_COLS = ["drafter", "k", "temp", "kind", "run", "seq", "i", "prompt_len", "n_steps",
             "n_draft", "n_acc", "n_emit", "wall_s", "n_gen", "max_tokens", "target"]
+# (run, seq) is NOT unique in the corpus (one run/seq can hold several blocks of
+# one kind), so rows are keyed by the global prompt index i.
+KEY_COLS = ["drafter", "k", "temp", "i"]
 
 
 class NullDrafter:
@@ -61,6 +66,8 @@ def load_prompts(split: str = "val", n_per_kind: int = 100, max_tokens: int = 12
         for run, seq, text in sorted(by_kind[kind])[:n_per_kind]:
             prompts.append({"kind": kind, "run": run, "seq": seq,
                             "ids": tok.encode(text, add_special_tokens=False)})
+    for i, p in enumerate(prompts):
+        p["i"] = i
     return prompts
 
 
@@ -98,6 +105,10 @@ def merge_adapter(params: dict, dcfg, adapter_dir: Path) -> dict:
     return params
 
 
+def _sidecar_path(out: Path, dname: str, k: int, temp: float) -> Path:
+    return out.with_name(f"{out.name}.part-{dname}-{k}-{temp:.1f}.jsonl")
+
+
 @ray.remote
 def run_cell(job: dict) -> list[dict]:
     """Run one (drafter, k, temp) cell: all prompts through SpecDecoder."""
@@ -120,25 +131,31 @@ def run_cell(job: dict) -> list[dict]:
         elif dname == "lora_dpo":
             dparams = merge_adapter(dparams, dcfg, CKPT / "dpo")
     rows = []
-    for p in job["prompts"]:
-        if dname == "none":
-            drafter = NullDrafter()
-        elif dname == "ngram":
-            drafter = S.NGramDrafter(tcfg.vocab_size)
-        else:
-            drafter = S.ModelDrafter(dcfg, dparams, max_len)
-        seed = job["seed"] + zlib.crc32(f"{p['run']}:{p['seq']}".encode())
-        dec = S.SpecDecoder(tcfg, tparams, drafter, max_len, k=job["k"],
-                            temperature=job["temp"], seed=seed)
-        t0 = time.perf_counter()
-        out, stats = dec.generate(p["ids"], job["n_gen"])
-        wall_s = time.perf_counter() - t0
-        rows.append({"drafter": dname, "k": job["k"], "temp": job["temp"], "kind": p["kind"],
-                     "run": p["run"], "seq": p["seq"], "prompt_len": len(p["ids"]),
-                     "n_steps": len(stats), "n_draft": sum(s.drafted for s in stats),
-                     "n_acc": sum(s.accepted for s in stats), "n_emit": len(out),
-                     "wall_s": wall_s, "n_gen": job["n_gen"], "max_tokens": job["max_tokens"],
-                     "target": Path(job["target_dir"]).name})
+    pf = _sidecar_path(Path(job["out"]), dname, job["k"], job["temp"]).open("a")
+    try:
+        for p in job["prompts"]:
+            if dname == "none":
+                drafter = NullDrafter()
+            elif dname == "ngram":
+                drafter = S.NGramDrafter(tcfg.vocab_size)
+            else:
+                drafter = S.ModelDrafter(dcfg, dparams, max_len)
+            seed = job["seed"] + zlib.crc32(f"{p['run']}:{p['seq']}".encode())
+            dec = S.SpecDecoder(tcfg, tparams, drafter, max_len, k=job["k"],
+                                temperature=job["temp"], seed=seed)
+            t0 = time.perf_counter()
+            out, stats = dec.generate(p["ids"], job["n_gen"])
+            wall_s = time.perf_counter() - t0
+            rows.append({"drafter": dname, "k": job["k"], "temp": job["temp"], "kind": p["kind"],
+                         "run": p["run"], "seq": p["seq"], "i": p["i"], "prompt_len": len(p["ids"]),
+                         "n_steps": len(stats), "n_draft": sum(s.drafted for s in stats),
+                         "n_acc": sum(s.accepted for s in stats), "n_emit": len(out),
+                         "wall_s": wall_s, "n_gen": job["n_gen"], "max_tokens": job["max_tokens"],
+                         "target": Path(job["target_dir"]).name})
+            pf.write(json.dumps(rows[-1]) + "\n")
+            pf.flush()
+    finally:
+        pf.close()
     return rows
 
 
@@ -150,6 +167,27 @@ def to_argv(a: dict) -> list[str]:
         else:
             out += ["--" + k.replace("_", "-"), str(v)]
     return out
+
+
+def _fold_sidecars(out: Path, old: pd.DataFrame | None) -> pd.DataFrame | None:
+    """Fold leftover sidecar rows (a killed run) into the parquet, then remove them."""
+    parts = sorted(out.parent.glob(out.name + ".part-*.jsonl"))
+    if not parts:
+        return old
+    rows = [json.loads(line) for part in parts
+            for line in part.read_text().splitlines() if line.strip()]
+    if not rows:
+        for part in parts:
+            part.unlink()
+        return old
+    old = (pd.DataFrame(rows, columns=RAW_COLS) if old is None else
+           pd.concat([old, pd.DataFrame(rows, columns=RAW_COLS)], ignore_index=True))
+    old = old.drop_duplicates(subset=KEY_COLS, keep="last").reset_index(drop=True)
+    old.to_parquet(out, index=False)
+    for part in parts:
+        part.unlink()
+    print(f"sweep: recovered {len(rows)} sidecar rows into {out}")
+    return old
 
 
 def main(argv: list[str] | None = None) -> dict:
@@ -182,37 +220,57 @@ def main(argv: list[str] | None = None) -> dict:
 
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
-    done: set[tuple[str, int, float]] = set()
     old = None
     if out.exists():
         old = pd.read_parquet(out)
-        done = set(zip(old["drafter"], old["k"], old["temp"], strict=True))
-    todo = [j for j in jobs if (j["drafter"], j["k"], j["temp"]) not in done]
+    old = _fold_sidecars(out, old)
+    # prompts already measured, per cell (resume granularity)
+    done: dict[tuple[str, int, float], set[int]] = {}
+    if old is not None:
+        for (d, k, t), g in old.groupby(["drafter", "k", "temp"], sort=False):
+            done[(d, int(k), float(t))] = set(g["i"].astype(int))
+    todo = []
+    for j in jobs:
+        have = done.get((j["drafter"], j["k"], j["temp"]), set())
+        if not have:
+            todo.append(j)
+        else:
+            pend = [p for p in prompts if p["i"] not in have]
+            if pend:  # partially done cell: rerun only the missing prompts
+                todo.append(dict(j, prompts=pend))
     if args.max_cells:
         todo = todo[: args.max_cells]
     if not todo:
         print(f"sweep: all {len(jobs)} cells already in {out}")
         return {"ran": []}
-    print(f"sweep: {len(todo)}/{len(jobs)} cells, {len(prompts)} prompts, "
-          f"n_gen={args.n_gen}, target={Path(args.target).name}")
+    n_prompts = sum(len(j.get("prompts", prompts)) for j in todo)
+    print(f"sweep: {len(todo)}/{len(jobs)} cells, {n_prompts} prompts, "
+          f"n_gen={args.n_gen}, target={Path(args.target).name}", flush=True)
     ray.init(num_cpus=args.num_cpus, ignore_reinit_error=True,
              runtime_env={"env_vars": {"OMP_NUM_THREADS": str(args.cpus_per_cell),
                                        "XLA_FLAGS": "--xla_cpu_multi_thread_eigen=true"}})
     try:
         refs = []
         for j in todo:
-            jj = dict(j, prompts=prompts, target_dir=str(args.target),
-                      n_gen=args.n_gen, max_len=max_len, max_tokens=args.max_tokens)
+            jj = dict(j, prompts=j.get("prompts", prompts), target_dir=str(args.target),
+                      n_gen=args.n_gen, max_len=max_len, max_tokens=args.max_tokens,
+                      out=str(out))
             refs.append((j, run_cell.options(num_cpus=args.cpus_per_cell).remote(jj)))
         new_rows: list[dict] = []
         for j, ref in refs:  # in order: print a line per finished cell
             new_rows.extend(ray.get(ref))
-            # incremental write: a kill loses at most the running cell, and
-            # resume (skips by (drafter, k, temp)) works across invocations
+            # incremental write: a kill loses at most the running cell's
+            # in-flight prompt (the rest is already in the sidecar), and
+            # resume (skips by (drafter, k, temp, run, seq)) works across runs
+            part = _sidecar_path(out, j["drafter"], j["k"], j["temp"])
+            if part.exists():
+                part.unlink()
             df = pd.DataFrame(new_rows, columns=RAW_COLS)
             if old is not None:
                 df = pd.concat([old, df], ignore_index=True)
+            df = df.drop_duplicates(subset=KEY_COLS, keep="last").reset_index(drop=True)
             df.to_parquet(out, index=False)
+            old = df
             print(f"  cell {j['drafter']:8s} k={j['k']} T={j['temp']}: done", flush=True)
     finally:
         ray.shutdown()

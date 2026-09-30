@@ -68,3 +68,8 @@
 - Goal: draftlab/kernels/verify.py: (1) fused verify: given target logits [k+1, V], draft logits [k, V], drafted tokens and uniforms → online-softmax both rows, accept test p/q ≥ u, first-reject index, and the normalised residual max(0, p−q) at that row (one launch, V tiled); (2) fused alpha: Σ min(softmax 
 - Approach: draftlab/kernels/verify.py with fused Triton verify (accept test, first-reject, normalised residual) and fused alpha kernels, torch references, 7 tests under TRITON_INTERPRET=1, bench.py (skips w/o CUDA), and alpha.py using the kernel on CUDA. wrote the failing test first, then two @triton.jit kernels (online-softmax with -inf-safe helpers, one launch each), validated against torch refs plus analytic anchors (uniform q, q=p, identical rows); full suite 77/77.
 - Blockers: none
+
+## gateway — Go gateway
+- Goal: gateway/ (Go module, stdlib net/http + prometheus/client_golang + slog): OpenAI-compatible reverse proxy for /v1/chat/completions and /v1/models; API keys stored as SHA-256 hashes in config.yaml, Bearer auth; per-key token-bucket rate limit (429 + Retry-After); routing by model name to backends (eng
+- Approach: Go gateway verified end-to-end: 8/8 httptest tests, live smoke (401/429+Retry-After/404/models merge, draft·accepted counters 24/14 exact), make check green; NOTES updated Re-verified the committed gateway from attempt 1 — go vet/test, a live fake-backend smoke exercising every Done-when item, and full make check
+- Blockers: none

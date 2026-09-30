@@ -116,3 +116,14 @@ anchor, tool_use:Edit 0.5632 highest > text 0.189 (tool_use ≥ text ✓). Known
 answers: CE == HF labels= loss <1e-3, top-1 val 42.4% (band 40–70%), uniform-q
 α exact, repeated-block ngram 63/64 + shuffled null collapse. All Done-when
 criteria met. Code/tests/results/NOTES audited again: no repo defect found.
+
+## Attempt 15 (2026-09-30)
+Tree unchanged since 71a102a. Fresh acceptance: 11/11 alpha tests on real 0.5B
+(25.5 s, exit 0, log alphafix-a15-tests.log); make check exit 0, 55 passed
+(124 s, log alphafix-a15-check.log). ngram.json (1.5B target) re-inspected:
+overall α 0.3341 in pre-run range, greedy_corpus 0.3335 = pre-fix anchor,
+tool_use:Edit 0.5632 highest > text 0.189 (tool_use ≥ text ✓). Known answers:
+CE == HF labels= loss <1e-3, top-1 val 42.4% (band 40–70%), uniform-q α exact,
+repeated-block ngram 63/64 + shuffled null collapse. All Done-when criteria
+met. Done-reports of attempts 3–14 never registered by the harness (no TASKLOG
+entry, line unchecked); no repo defect found — final RESULT block sent clean.

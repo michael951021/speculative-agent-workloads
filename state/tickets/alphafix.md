@@ -261,3 +261,22 @@ alphafix-a22-check.log); tiny.json re-inspected: alpha 0.010468, tpc@8 1.0105786
 == analytic (1−α⁹)/(1−α) to 5 decimals, n_blocks/n_tokens/target identical to
 ngram.json (400 / 29657 / qwen2.5-1.5b-instruct). All Done-when criteria met;
 no re-run of the 21-min full pass (deterministic, a20 log exit 0).
+
+## Attempt 23 (2026-09-30) — full fresh re-run
+Tree at f211744. Fresh acceptance: 11/11 alpha tests exit 0, 48.9 s (log
+alphafix-a23-tests.log); check_tiny_alpha.py PASS worst mean|d| 3.67e-7 (log
+alphafix-a23-crosscheck.log). Unlike a21/a22, re-ran the full 400-block pass this
+attempt (exit 0, log alphafix-a23-rerun2.log): per-scope alpha/greedy/
+greedy_corpus/tok-per-call/speedup in the summary table match the committed
+tiny.json at printed precision (overall 0.0105/0.1413/0.1349; per kind
+0.0042-0.0145). Determinism audit of alpha.py: only `c` uses
+time.perf_counter (all else seeded, seed 0), matching the single byte-12 diff
+(c line) seen in export.json vs tiny.json. tpc analytic worst |d| 7.6e-9.
+Per-kind vs ngram.json: ngram wins every kind (0.155-0.563 vs 0.0042-0.0145);
+tool_use:Edit highest both — ordering per CLAUDE.md anchors; tiny weakness
+explained by 43M drafter val KL 2.63 + 0.5B control alpha 0.7675 (a20 log),
+not the metric. Gotcha: default --out = draft-model basename ("export.json");
+a20 wrote results/alpha/tiny.json via rename — task's artifact file unchanged
+and now reproduced twice. Systemic host-side registration gap (alphafix +
+distill RESULT blocks unregistered vs boot→alpha registered): ticket
+`harnessreg` added to TODO.md Foundations.

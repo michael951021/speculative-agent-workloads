@@ -49,12 +49,14 @@
   (regression OK), tok/call@k8 1.50; tool_use:Edit 0.56 highest > tool_result 0.33 >
   code 0.26 > text 0.19.
 - Old alpha 0.0096 / "1.2% vs 27B" = off-by-one bug (fixed).
-- tiny.json re-run (a20), verified a21/a22 (11/11 tests; check_tiny_alpha.py
-  worst |d| 3.67e-7; tpc@8 == analytic (1−α⁹)/(1−α)): alpha 0.0105, tpc@8 1.01;
-  per-kind tiny 0.004-0.015 vs ngram 0.155-0.56 (ngram wins every kind); 0.5B
-  control 0.7675 → weak 43M drafter (val KL 2.63), not metric. Logs alphafix-a2*.
-- Registration gap host-side: 0 RESULT blocks ever registered; done lines stay
-  unchecked.
+- tiny.json re-run (a20), verified a21-a23 (11/11 tests; check_tiny_alpha.py
+  worst |d| 3.67e-7; tpc@8 == analytic (1−α⁹)/(1−α); a23 fresh full 400-block
+  re-run reproduces file): alpha 0.0105, tpc@8 1.01; per-kind tiny 0.004-0.015
+  vs ngram 0.155-0.56 (ngram wins every kind); 0.5B control 0.7675 → weak 43M
+  drafter (val KL 2.63), not metric. Logs alphafix-a2*.
+- Registration gap host-side: TASKLOG has 8 entries (boot→alpha) but none for
+  alphafix/distill despite clean RESULT blocks; ticket `harnessreg` added
+  (Foundations) for host diagnosis.
 
 ## Distilled tiny drafter (JAX) (id: distill, 2026-09-30)
 - `draftlab/drafters/distill.py`: cache (teacher top-64+tail → data/teacher/*.npz,

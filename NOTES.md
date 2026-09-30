@@ -41,5 +41,8 @@
 
 ## Kernels (id: triton)
 - `kernels/verify.py`: fused_verify (1 launch: online-softmax [k+1,V] target + [k,V] draft rows; accept p>u·q = spec.py u·q<p, 0/0 rejects → first reject fr + normalised residual max(0,p−q)@fr, q=0 for bonus); fused_alpha (per-row Σmin(softmax p,softmax q)); torch refs.
-- Tests 7/7 (TRITON_INTERPRET=1, V=1000, atol 1e-5; analytic: q uniform → Σmin(p,1/V), q=p → α=1, identical rows → all accepted); bench.py: kernel vs torch at V=151936 (skips CPU); alpha._alpha_sum: kernel on CUDA only (numpy fallback).
-- Gotchas: TRITON_INTERPRET read lazily by triton knobs; _online_upd/_norm avoid −inf−(−inf) NaN (interpret np.where eager); scalar `if` in _online_upd GPU-untested.
+- Tests 7/7 (TRITON_INTERPRET=1, analytic q uniform→Σmin(p,1/V), q=p→α=1); bench.py skips CPU; alpha._alpha_sum: kernel on CUDA only. Gotchas: TRITON_INTERPRET read lazily; scalar `if` in _online_upd GPU-untested.
+
+## Gateway (id: gateway)
+- `gateway/` Go 1.26 stdlib+client_golang+yaml: Bearer auth (sha256 in config.yaml), token-bucket 429+Retry-After, model→backend routing, retries on connect err, breaker (5 fails→open→half-open probe), SSE tee+flush, usage→metrics (requests{key,model,status}, ttft/latency, tok/s, draft/accepted counters, backend_up, breaker_state), /v1/models merge, /healthz, /ui.
+- `cd gateway && go vet && go test ./...` 8/8 PASS (fake usage 12/7→counters 24/14 exact). Live smoke vs python fake: 401/429/stream order/tok/s≈98 ✅ (.agent-evidence/gateway-*.log).

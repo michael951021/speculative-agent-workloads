@@ -1,0 +1,28 @@
+# Gateway configuration. API keys are stored as hex sha256 of the raw key.
+#   echo -n "sk-..." | sha256sum
+listen: ":8200"
+ui_dir: "../web/dist"
+retries: 1                  # retries on transport (connect) errors
+health_check_interval: 5s
+breaker:
+  failures: 5               # consecutive failures before the breaker opens
+  half_open_after: 2s
+
+backends:
+  - name: engine
+    url: "http://127.0.0.1:8100"   # draftlab engine (python -m draftlab.serve)
+    models:
+      - "qwen0.5b"
+      - "qwen0.5b+ngram-k4"
+      - "qwen1.5b"
+      - "qwen1.5b+lora-k8"
+  # - name: vllm
+  #   url: "http://127.0.0.1:8000"
+  #   models:
+  #     - "Qwen/Qwen2.5-7B-Instruct"
+
+keys:
+  - name: dev
+    sha256: "3ae7e24f3d8c3c9e92f4b814f23f1feb99c2376b455da81f563d0da6ccc709f9" # sk-draftlab-dev
+    rate: 10            # sustained requests/sec
+    burst: 20

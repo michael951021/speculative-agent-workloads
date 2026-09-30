@@ -49,16 +49,17 @@
   (regression OK), tok/call@k8 1.50; tool_use:Edit 0.56 highest > tool_result 0.33 >
   code 0.26 > text 0.19.
 - Old alpha 0.0096 / "1.2% vs 27B" = off-by-one bug (fixed).
-- a20: re-ran stale tiny.json, fixed metric (`--drafter hf --draft-model
-  ckpt/tiny/export --out results/alpha/tiny.json`, 400 val, 1.5B, same 29657 tok as
-  ngram): alpha 0.0105, greedy 0.1413, greedy_corpus 0.1349, tpc@8 1.01 (no speedup);
-  per-kind tiny 0.004-0.015 vs ngram 0.19-0.56 (ngram wins every kind). Verified:
-  scripts/check_tiny_alpha.py (hand alpha, pure transformers, 4 real blocks incl. 2
-  with ctx) worst |d| 3.7e-7; 0.5B control drafter same pipeline → alpha 0.7675
-  (code 0.90) = Leviathan anchor → low tiny = weak drafter (val KL 2.63), not metric.
-  Logs alphafix-a20-{tests,check,run,control}.
-- Registration gap systemic/host-side: 0 RESULT blocks ever registered project-wide;
-  line split per exception; remaining line "Re-run stale tiny.json" (id: alphafix).
+- a20/a21: re-ran stale tiny.json, fixed metric (`--drafter hf --draft-model
+  ckpt/tiny/export --out results/alpha/tiny.json`, 400 val, 1.5B, 29657 tok = ngram):
+  alpha 0.0105, greedy 0.1413, tpc@8 1.01 (no speedup, = (1−α⁹)/(1−α)); per-kind
+  tiny 0.004-0.015 vs ngram 0.155-0.56 (ngram wins every kind). Verified:
+  scripts/check_tiny_alpha.py (hand alpha, pure transformers) worst |d| 3.7e-7
+  (fresh at a21, exit 0); 0.5B control same pipeline alpha 0.7675 → low tiny = weak
+  43M drafter (val KL 2.63), not metric. a21 clean tree: 11/11 alpha tests exit 0
+  (23.3s); full re-run skipped (deterministic, a20 run log exit 0, 1264s). Logs
+  alphafix-a20-{tests,check,run,control}, alphafix-a21-{tests,check}.
+- Registration gap is host-side: 0 RESULT blocks ever registered project-wide, so
+  done lines stay unchecked (incl. this, id: alphafix).
 
 ## Distilled tiny drafter (JAX) (id: distill, 2026-09-30)
 - `draftlab/drafters/distill.py`: cache (teacher top-64+tail → data/teacher/*.npz,

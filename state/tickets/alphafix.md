@@ -240,3 +240,15 @@ apples-to-apples with ngram.json (same target, same blocks).
 Not re-run: jax path on same weights (would only cross-check the safetensors
 loader; the old jax file used a different target, so no clean comparison).
 Done-when 1-3 met; range gate failed but bug ruled out by the two measurements.
+
+## Attempt 21 (2026-09-30) — line "Re-run stale tiny.json" (id: alphafix)
+Tree at 512d8b0 (a20's work committed: tiny.json overwritten, fixed metric).
+Fresh acceptance on clean tree: 11/11 alpha tests on real 0.5B (23.3s, exit 0,
+log alphafix-a21-tests.log); scripts/check_tiny_alpha.py PASS worst mean|d|
+3.67e-7 (exit 0, log alphafix-a21-check.log). tiny.json re-inspected: alpha
+0.0105, 29657 tok = ngram.json's; per-kind tiny 0.004-0.015 vs ngram 0.155-0.56,
+ngram wins every kind; tpc@8 1.0106 = analytic (1−α⁹)/(1−α) for α=0.0105.
+Full 400-block re-run not repeated: deterministic (bootstrap seed 0), a20 run log
+exit 0/1264s with matching output, 0.5B control α=0.7675 (a20-control log) rules
+out metric bug. All Done-when criteria met; line left unchecked by harness-side
+registration gap.

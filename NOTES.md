@@ -53,13 +53,13 @@
   .agent-evidence/serve-*.log.
 
 ## Alpha metric (id: alpha, done 2026-09-29)
-- `python -m draftlab.eval.alpha` (drafter ngram|jax|hf; `dists(ctx, ids) -> (q, valid)`
-  adapters; ngram = fresh NGramMatcher per call — its dict is stateful). Per-position
-  alpha = Σmin(p,q) + greedy (argmax q == argmax p) + greedy_corpus (argmax q == actual),
-  teacher-forced, 0.5B target; ctx = same-run earlier selected blocks within --ctx-tokens
-  (1024); run bootstrap; c measured (draft/target ratio).
-- ngram default (400 val blocks, 3 runs, 29657 tok, 631 s): alpha 0.0096,
-  greedy 0.0118, greedy_corpus 0.3335 ≈ baseline 0.3286 (same per-kind order, tool_use
-  0.50 highest); tok/call @k8 = 1.0097, speedup 1.0055 (c = 0.0005).
-- Finding: 0.5B target's argmax matches the 27B corpus at ~1.2% of positions — accept is
-  bottlenecked by target agreement, not drafter coverage (trained drafters are the fix).
+- `python -m draftlab.eval.alpha` (ngram|jax|hf adapters `dists(ctx, ids)->(q, valid)`;
+  ngram fresh NGramMatcher per call — stateful dict). Teacher-forced vs 0.5B target:
+  alpha=Σmin(p,q) + greedy + greedy_corpus; ctx = same-run earlier blocks ≤1024 tok;
+  run bootstrap; c measured → results/alpha/<drafter>.json
+- ngram (400 val blocks, 3 runs, 631 s): alpha 0.0096, greedy 0.0118, greedy_corpus
+  0.3335 ≈ baseline 0.3286; tok/call @k8 = 1.0097, speedup 1.0055 (c = 0.0005).
+- Finding: 0.5B argmax matches 27B corpus ~1.2% — acceptance bottlenecked by target
+  agreement, not drafter coverage (trained drafters are the fix).
+- Attempt 2 (2026-09-29): prior work committed (fda7335); re-verified test_alpha 6/6 +
+  results JSON; ticked TODO checkbox.

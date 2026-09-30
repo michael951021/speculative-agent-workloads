@@ -41,7 +41,7 @@
   `python -m draftlab.serve --model K --alias A --port P` (default 0.5b-instruct, :8100).
   Gotcha: `apply_chat_template(tokenize=False)` else BatchEncoding; tiny → ToyTokenizer.
 
-## Alpha metric (id: alpha, alphafix 2026-09-30)
+## Alpha metric (id: alpha, alphafix 2026-09-30, attempt-2 verified)
 - `python -m draftlab.eval.alpha` (ngram|jax|hf adapters `dists(ctx, ids)->(q, valid)`);
   default target 1.5b-instruct; row i predicts token i+1 -> slice
   [len(ctx)-1 : len(ctx)+n-1]; empty ctx -> pos 0 invalid.
@@ -51,8 +51,9 @@
 - ngram (400 val blocks, 1.5B): alpha 0.3341, greedy 0.3681, greedy_corpus 0.3335
   (= old run -> regression OK), cov 0.763, tok/call@k8 1.50, speedup 1.50 (c 0.0003);
   tool_use:Edit 0.56 highest > tool_result 0.33 > code 0.26 > text 0.19.
-- Old alpha 0.0096 / "1.2% vs 27B" = off-by-one slice bug; tiny.json used it -> stale,
-  re-run under alphafix.
+- Old alpha 0.0096 / "1.2% vs 27B" = off-by-one bug (fixed); tiny.json stale -> re-run under alphafix.
+- Attempt 2 (2026-09-30): re-verified 7a84891 — 11 alpha tests pass (real 0.5B),
+  make check exit 0. Log .agent-evidence/alphafix-check-attempt2.log.
 
 ## Distilled tiny drafter (JAX) (id: distill, 2026-09-30)
 - `draftlab/drafters/distill.py`: cache (teacher top-64+tail → data/teacher/*.npz,

@@ -89,3 +89,10 @@ highest > text 0.19 (tool_use ≥ text ✓), tokens/call @k8 1.502, speedup 1.49
 Known answers: CE == HF labels= loss <1e-3, top-1 val 42.4% (band 40–70%),
 uniform-q α exact, repeated-block ngram 63/64 + shuffled null collapse.
 All Done-when criteria met.
+
+## Attempt 11 (2026-09-30)
+Tree unchanged. Fresh acceptance: 11/11 alpha tests on real 0.5B (23.3 s, exit 0,
+log alphafix-a11-tests.log); make check exit 0, 55 passed (118 s, log
+alphafix-a11-check.log). ngram.json (1.5B target) re-inspected: overall α 0.3341,
+greedy_corpus 0.3335 = pre-fix anchor, tool_use:Edit 0.5632 highest > text 0.189.
+All Done-when criteria met.

@@ -72,3 +72,10 @@ Tree unchanged since 7a84891. Fresh acceptance: 11/11 alpha tests on real 0.5B
 (23.8 s, log alphafix-a6-tests.log, exit 0); ngram.json re-inspected (1.5B target,
 overall α 0.3341 in pre-run range, greedy_corpus 0.3335 = pre-fix anchor,
 tool_use:Edit 0.5632 highest); NOTES correction in place. All Done-when met.
+
+## Attempt 9 (2026-09-30)
+Tree unchanged. Fresh acceptance: 11/11 alpha tests on real 0.5B (23.4 s, exit 0,
+log alphafix-a9-tests.log); make check exit 0, 55 passed (119 s, log
+alphafix-a9-makecheck.log). ngram.json (1.5B target) in pre-run range: overall
+α 0.3341, greedy_corpus 0.3335 = pre-fix anchor, tool_use:Edit 0.5632 highest.
+All Done-when criteria met.

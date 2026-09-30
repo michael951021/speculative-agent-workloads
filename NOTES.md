@@ -55,6 +55,8 @@
   were agent self-checks; even bare-block runs skipped → total gap, not matching).
   Stop hook `.claude/hooks/register_result.py`: at stop parse last RESULT block; done:
   TODO line (text/id) + TASKLOG entry + commit, idempotent. Tests: 6, real transcripts.
+  a2: 6/6 + ruff green, hook wired in .claude/settings.json; end-to-end stop audit lands
+  in .agent-evidence/harnessreg-stops.log (verify next run).
 
 ## Distilled tiny drafter (JAX) (id: distill, 2026-09-30)
 - `draftlab/drafters/distill.py`: cache (teacher top-64+tail → data/teacher/*.npz) +

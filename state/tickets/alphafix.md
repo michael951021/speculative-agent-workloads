@@ -59,3 +59,10 @@ Tree unchanged since 7a84891/c8b4bf9. Re-ran acceptance: 11/11 alpha tests pass 
 Same re-verification (code unchanged since 7a84891): 11/11 alpha tests pass on real
 0.5B (24 s), make check exit 0 (55 passed, 120 s). Logs .agent-evidence/alphafix-a4-
 {tests,makecheck}.log. ngram.json already committed at 7a84891 (α=0.3341, 1.5B).
+
+## Attempt 5 (2026-09-30)
+Prior "done" claims never registered (no TASKLOG entry). Re-verified fresh this
+session: 11/11 alpha tests on real 0.5B (24.5 s, log alphafix-a5-tests.log), make
+check exit 0 (55 passed, 120 s, log alphafix-a5-makecheck.log); ngram.json numbers
+spot-checked against pre-run range (α 0.3341, greedy_corpus 0.3335, tool_use:Edit
+highest 0.563). All Done-when criteria met.

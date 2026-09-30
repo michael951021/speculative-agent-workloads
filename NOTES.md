@@ -1,20 +1,19 @@
 # draftlab — current state
 
 ## Toolchain (id: boot)
-- `make bootstrap` (idempotent): uv + Py3.12 .venv, torch CPU first, `uv pip install -e
-  ".[all]"`, pinned binaries into .tools/. `make check` = ruff +
-  pytest; others SKIP when their dir is absent.
-- Gotchas: capture.py rejects `VAR=x cmd` (use `sh -c`) and existing log paths (rm first).
+- `make bootstrap` (idempotent): uv + Py3.12 .venv, torch CPU first, `uv pip install -e ".[all]"`,
+  pinned binaries into .tools/; `make check` = ruff + pytest; others SKIP when dir absent.
+- Gotcha: capture.py rejects `VAR=x cmd` (use `sh -c`) and existing log paths (rm first).
 
 ## Models (id: models)
 - `draftlab/models.py`: `fetch [--name K]` → `models/{0.5b-instruct, 1.5b-instruct, 0.5b}`
-  (~4.9 GB), idempotent; `info` asserts shared vocab 151936. `tiny_config()` = 2-layer
-  d=64 vocab-512 Qwen2 for fast tests.
+  (~4.9 GB), idempotent; `info` asserts shared vocab 151936; `tiny_config()` = 2-layer
+  d=64 vocab-512 Qwen2.
 
 ## Corpus (id: corpus)
 - `python -m draftlab.data build`: raw jsonl → data/corpus/{train,val,test}.parquet
   (fenced code split; drop <8 tok, dedupe, truncate 4096; runs by sha1: 26/3/3).
-  45257/667/566 blocks. `stats` → results/corpus_stats.json. p50 tok: tr 243, think 132,
+  45257/667/566 blocks; `stats` → results/corpus_stats.json; p50 tok: tr 243, think 132,
   code 101, tu 85, text 29.
 
 ## N-gram baseline (id: ngram)
@@ -31,8 +30,8 @@
 
 ## Spec decoding (id: spec)
 - `draftlab/jaxlm/spec.py`: Drafter protocol; NGramDrafter + ModelDrafter. One target
-  call scores m drafts + bonus (draft j's dist is prev row (j=0) or scored[j-1]);
-  accept u·q[t]<p[t], residual max(0,p−q); rollback truncates to L+A then decodes bonus.
+  call scores m drafts + bonus (draft j's dist = prev row (j=0) or scored[j-1]);
+  accept u·q[t]<p[t], residual max(0,p−q); rollback: truncate to L+A, decode bonus.
 - `SpecDecoder._steps` yields (emitted, StepStats); tests: T=0==greedy, T=1 chi2 p=0.391.
 
 ## Engine server (id: engine)
@@ -52,14 +51,14 @@
 - Old alpha 0.0096 / "1.2% vs 27B" = off-by-one bug (fixed).
 - a19: 11/11 alpha tests 25.6s exit 0 (log alphafix-a19-tests.log); ngram.json
   anchors unchanged (0.3341/0.3335; tool_use 0.56 > text 0.19).
-- Registration gap is systemic/host-side: 0 RESULT blocks ever registered
-  project-wide (incl. distill's clean block); all checked lines were agent
-  self-checks. Work done; line split per exception — "Alpha alignment fixed,
-  known answers" checked; remaining: "Re-run stale tiny.json" (id: alphafix).
+- Registration gap systemic/host-side: 0 RESULT blocks ever registered project-wide;
+  all checked lines were agent self-checks. Line split per exception: "Alpha
+  alignment fixed, known answers" checked; remaining: "Re-run stale tiny.json"
+  (id: alphafix).
 
 ## Distilled tiny drafter (JAX) (id: distill, 2026-09-30)
 - `draftlab/drafters/distill.py`: cache (teacher top-64+tail → data/teacher/*.npz,
-  1M train tok built 2592 s) + train (4-layer d=256 Qwen2, tied 151936 embed,
+  1M train tok built 2592 s) + train (4-layer d=256 Qwen2, tied embed,
   KL(T‖S) top-64 + renormalised tail, AdamW warmup-cosine, orbax ckpt/tiny/N,
   HF export at ckpt/tiny/export).
 - 1200 steps (default) @1e-3, batch 16×256: val KL 3.7879 → 2.6292 (30.6% ✅);

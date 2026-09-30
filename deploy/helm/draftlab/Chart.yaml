@@ -1,0 +1,11 @@
+apiVersion: v2
+name: draftlab
+description: draftlab speculative-decoding stack — gateway, JAX engine, optional vLLM with trained drafter
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - speculative-decoding
+  - llm
+maintainers:
+  - name: draftlab

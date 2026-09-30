@@ -40,24 +40,27 @@
 - kernels/verify.py: fused_verify (online softmax, accept p>u·q, residual max(0,p−q)@first-reject), fused_alpha; tests 7/7 (TRITON_INTERPRET=1); alpha._alpha_sum kernel on CUDA only.
 
 ## Gateway (id: gateway)
-- gateway/ Go 1.26: Bearer auth, 429+Retry-After, backend routing, breaker, SSE tee, /metrics (ttft, tok/s, draft/accepted{model}, 429, breaker_state), /v1/models, /healthz, /ui.
-- `cd gateway && go vet && go test ./...` 8/8 (fake usage 12/7→24/14 exact); live smoke ✅.
+- gateway/ Go 1.26: Bearer auth, 429, backend routing, breaker, SSE tee, /metrics (ttft, tok/s, draft/accepted{model}), /v1/models, /healthz, /ui; `go test ./...` 8/8; live smoke ✅.
 
 ## Observability (id: obs)
-- deploy/prometheus: prometheus.yml + rules.yml (4 recordings, LowDraftAcceptance <0.4/10m, HighTTFTp95 >2s/5m) + rules_test.yml pinned; promtool SUCCESS.
-- Gotcha: promtool windows LEFT-CLOSED [T−5m,T] (left-gap extrapolates: ts=4m → factor 1.25/300); recording tests need `__name__`.
-- deploy/grafana/draftlab.json: 8 panels (acceptance, TTFT p50/p95, rate, draft/accepted, tok/s, 429, breaker). make check exit 0.
+- deploy/prometheus: prometheus.yml + rules.yml (4 recordings, LowDraftAcceptance, HighTTFTp95) + rules_test.yml; promtool SUCCESS. Gotcha: windows LEFT-CLOSED (left-gap extrapolates ts=4m → 1.25/300); recording tests need `__name__`.
+- deploy/grafana/draftlab.json: 8 panels. make check exit 0.
 
 ## Deploy docker (id: docker)
-- deploy/docker/: gateway (golang:1.26.8-alpine → distroless nonroot, :8200), engine (python:3.12-slim, `.[jax,serve]`, :8100, models mounted /app/models), vllm (vllm-openai:v0.11.2; entrypoint adds --speculative-config from $DRAFTER_PATH if adapter_config.json present). Context = repo root; .dockerignore at root. hadolint 3/3 exit 0 (.agent-evidence/docker-hadolint.log).
-- Gotcha: hadolint inline `# hadolint ignore=DLxxxx` must be the only text on its line (trailing note breaks it); DL3002 doesn't fire on third-party bases; DL3006 ignored in .hadolint.yaml.
+- deploy/docker/: gateway (distroless nonroot :8200), engine (slim, `.[jax,serve]`, :8100, models /app/models), vllm (vllm-openai:v0.11.2; entrypoint adds --speculative-config from $DRAFTER_PATH if adapter_config.json). Context=repo root. hadolint 3/3 exit 0.
+- Gotcha: hadolint inline `# hadolint ignore=DLxxxx` must be only text on its line; DL3006 ignored in .hadolint.yaml.
 
 ## Ray sweep (id: sweep)
 - `python -m draftlab.sweep` (Ray local, per-cell incremental parquet, resumable by (drafter,k,temp)) → results/sweep.parquet; target 0.5b-instruct, 488 val prompts (100/kind ≤128 tok), n_gen 16.
 - Known: base@T0 k=1 accept exactly 1.0 (2-cell Ray test); k≥2 expect ≥0.99 (GEMM tiling ~1e-4).
 - Cost: 6.4 tok/s @16 thr → 42 cells ≈ 20 CPU-h → batches: B1 base/lora/dpo k=1 T=0 + none; then ngram/tiny k=1 ×{0,0.7}; then k=8.
 
+## Helm (id: helm)
+- deploy/helm/draftlab: gateway (Deployment/Service/HPA external metric `draftlab_accepted_tokens_per_second` via prometheus-adapter, Secret config w/ sha256 keys), engine (CPU, PVC/hostPath models, /v1/models probe), optional vLLM (values-gpu.yaml: gpu:1, tolerations, drafter PVC → --speculative-config, /health probe), ServiceMonitors, Grafana ConfigMap (copy of deploy/grafana/draftlab.json, sync checked), NetworkPolicies (default-deny+allow), PDB.
+- check.sh: `helm lint deploy/helm/draftlab` + `helm template` cpu AND gpu | kubeconform -strict, ServiceMonitor schema vendored crd-schemas/servicemonitor-monitoring-v1.json (prom-op v0.76.2).
+- Gotcha: kubeconform -schema-location template vars lowercase ResourceKind + KindSuffix `-monitoring-v1` (v0.6.7); all-digit sha256 must be quoted in values.yaml or YAML parses it as int; `include|toYaml` on a string breaks it (use plain nindent).
+
 ## Judge (id: judge)
 - `python -m draftlab.eval.judge`: gen {target, spec(k=4, lora_dpo), drafter_alone} T=0.7 (49 prompts, n_gen 16) → blind pairwise vs qwen-agent 27B ($OLLAMA_BASE_URL), cache data/judge_cache/, cap 150 → results/judge.json. Tests 7/7.
-- Result (finding, not fix): spec_vs_target n=81: win 0.444/loss 0.543, CIs overlap (binom p=0.434) — no significant loss; T=0.7 gives 0/46 exact matches so judge breaks near-ties ~50/50 = lossless signature (chi-square T=0.7 p>0.01). spec_vs_drafter n=24: gap 25pp ✓, underpowered (cap).
-- Corpus gotcha: test.parquet block (contrib-loop-20260926-231240, 77976) appears 8× — code-split sub-blocks keep parent (run,seq) → 4 prompt entries share one output key (9 silent gen skips); no verdict contamination (all its jobs invalid/capped).
+- Result (finding, not fix): spec_vs_target n=81: win 0.444/loss 0.543, CIs overlap (binom p=0.434) — no significant loss; T=0.7 exact matches 0/46, judge breaks near-ties ~50/50 = lossless signature. spec_vs_drafter gap 25pp ✓, underpowered (cap 150, cache data/judge_cache/).
+- Corpus gotcha: test.parquet block contrib-loop-20260926-231240 appears 8× (code-split sub-blocks share (run,seq)) → 4 prompts share one output key (9 silent skips); no verdict contamination.

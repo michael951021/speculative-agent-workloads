@@ -38,6 +38,10 @@
 - deploy/docker/: gateway (distroless nonroot :8200), engine (slim `.[jax,serve]` :8100), vllm (vllm-openai:v0.11.2; entrypoint adds --speculative-config from $DRAFTER_PATH). hadolint 3/3. Gotcha: inline `# hadolint ignore=DLxxxx` must be only text on its line.
 
 ## Ray sweep (id: sweep)
+- `python -m draftlab.sweep` (Ray local, resumable by (drafter,k,temp)) → results/sweep.parquet; target 0.5b-instruct, 488 val prompts (100/kind ≤128 tok), n_gen 16. 2-cell test ✅ (base@T0 k=1 n_acc==n_draft = known answer (a)).
+- k≥2 accept expect ≥0.99 (GEMM tiling ~1e-4). ModelDrafter bugs fixed earlier (regression-tested).
+- Cost (measured 09-30): XLA ignores OMP_NUM_THREADS; 1 proc 6.4 tok/s; 4 parallel ≈ 3.7 tok/s: none≈140, lora/dpo≈150, base≈175 min. TODO batches 1-3 resumable; b1 = base/lora/lora_dpo k=1 T=0 + none.
+- Known (b): tools/compare_sweep_alpha.py vs `eval.alpha --target 0.5b-instruct --blocks 100 --ctx-tokens 0` (k=1 T=0 acc vs `greedy_ci95`).
 - `python -m draftlab.sweep` (Ray local, resumable by (drafter,k,temp)) → results/sweep.parquet; 488 val prompts (100/kind ≤128 tok), n_gen 16.
 - Known: base@T0 k=1 accept exactly 1.0; k≥2 expect ≥0.99. Cost: 6.4 tok/s @16 thr → 42 cells ≈ 20 CPU-h.
 

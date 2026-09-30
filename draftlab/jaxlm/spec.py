@@ -158,8 +158,8 @@ class SpecDecoder:
         self.temperature = temperature
         self.rng = jax.random.PRNGKey(seed)
 
-    def generate(self, prompt: list[int], n_tokens: int) -> tuple[list[int], list[StepStats]]:
-        """Sample `n_tokens` tokens after `prompt`. Returns (tokens, per-step stats)."""
+    def _steps(self, prompt: list[int], n_tokens: int):
+        """Core loop; yields (emitted_tokens, StepStats) per target-call step."""
         cfg, params, drafter = self.cfg, self.params, self.drafter
         T0 = self.temperature == 0.0
         rng = self.rng
@@ -229,8 +229,24 @@ class SpecDecoder:
             ctx.extend(emitted)
             out.extend(emitted)
             dt_ms = (time.perf_counter() - t0) * 1e3
-            stats.append(StepStats(m, A, [x < A for x in range(m)], dt_ms))
+            st = StepStats(m, A, [x < A for x in range(m)], dt_ms)
+            stats.append(st)
+            yield emitted, st
         self.rng = rng
         self.last_ctx = ctx  # prompt + generated
         self.last_cache = cache
+
+    def generate(self, prompt: list[int], n_tokens: int) -> tuple[list[int], list[StepStats]]:
+        """Sample `n_tokens` tokens after `prompt`. Returns (tokens, per-step stats)."""
+        out: list[int] = []
+        stats: list[StepStats] = []
+        for emitted, st in self._steps(prompt, n_tokens):
+            out.extend(emitted)
+            stats.append(st)
         return out, stats
+
+    def generate_stream(self, prompt: list[int], n_tokens: int):
+        """Like generate, but yields (token, step_stats) as each token is emitted."""
+        for emitted, st in self._steps(prompt, n_tokens):
+            for tok in emitted:
+                yield tok, st

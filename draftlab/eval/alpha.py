@@ -46,12 +46,29 @@ def alpha_and_greedy(
 ) -> tuple[np.ndarray, np.ndarray]:
     """Per-position alpha and greedy match. p, q: (T, V) distributions; valid: (T,)
     bool marking positions where the drafter actually proposed (None = all)."""
-    a = np.minimum(p, q).sum(axis=-1)
+    a = _alpha_sum(p, q)
     g = p.argmax(axis=-1) == q.argmax(axis=-1)
     if valid is not None:
         a = np.where(valid, a, 0.0)
         g = g & valid
     return a, g
+
+
+def _alpha_sum(p: np.ndarray, q: np.ndarray) -> np.ndarray:
+    """Per-row sum min(p, q). Fused Triton kernel on CUDA (log -> fused_alpha);
+    numpy (float64) otherwise / on failure."""
+    try:
+        import torch
+
+        if torch.cuda.is_available() and p.shape[0] > 0:
+            from draftlab.kernels import verify as _vk
+
+            lp = torch.log(torch.as_tensor(p, device="cuda", dtype=torch.float32)).contiguous()
+            lq = torch.log(torch.as_tensor(q, device="cuda", dtype=torch.float32)).contiguous()
+            return _vk.fused_alpha(lp, lq).to("cpu", torch.float64).numpy()
+    except Exception:
+        pass
+    return np.minimum(p, q).sum(axis=-1)
 
 
 def expected_tokens_per_call(alpha: float | np.ndarray, k: int) -> float | np.ndarray:

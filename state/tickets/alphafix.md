@@ -54,3 +54,8 @@ repeated-block ngram 63/64 + shuffled null). Full run 1184 s: alpha 0.3341, gree
 Tree unchanged since 7a84891/c8b4bf9. Re-ran acceptance: 11/11 alpha tests pass on real
 0.5B (0 skipped, 24 s), make check exit 0 (55 passed, 119 s). Logs
 .agent-evidence/alphafix-{check,makecheck}-attempt3.log. Done.
+
+## Attempt 4 (2026-09-30)
+Same re-verification (code unchanged since 7a84891): 11/11 alpha tests pass on real
+0.5B (24 s), make check exit 0 (55 passed, 120 s). Logs .agent-evidence/alphafix-a4-
+{tests,makecheck}.log. ngram.json already committed at 7a84891 (α=0.3341, 1.5B).

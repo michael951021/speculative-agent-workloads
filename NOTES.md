@@ -50,6 +50,10 @@
   `tie_word_embeddings=False` (HF default), so JAX had a random separate lm_head while the
   torch probe tied it to embed.
 
-## Next
-- Speculative sampling (id: spec): verify loop over `jaxlm.step` logits + ngram Drafter
-  (both done). Then greedy acceptance per kind → speedup with draft cost ratio.
+## Spec decoding (id: spec, done 2026-09-29)
+- `draftlab/jaxlm/spec.py`: Drafter protocol (propose/rollback); NGramDrafter + ModelDrafter.
+  One target call scores m drafts + bonus (row r = position L+r+1; target dist of draft j is
+  prev row (j=0) or scored[j-1], bonus is scored[m-1]); accept u·q[t]<p[t], residual
+  max(0,p−q); T=0=argmax. Rollback: truncate len to L+A, then decode the bonus.
+- Tests (7): T=0 identical to target greedy; T=1 vocab-16, 20k tokens chi2 p=0.391 > 0.01;
+  rollback cache == fresh prefill. make check (28); evidence .agent-evidence/spec-chi2.log.

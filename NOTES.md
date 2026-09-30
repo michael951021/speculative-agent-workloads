@@ -51,8 +51,8 @@
   (= old run -> regression OK), tok/call@k8 1.50;
   tool_use:Edit 0.56 highest > tool_result 0.33 > code 0.26 > text 0.19.
 - Old alpha 0.0096 / "1.2% vs 27B" = off-by-one bug (fixed); tiny.json stale (pre-alphafix).
-- Re-verified 7a84891 (attempts 2-6, 2026-09-30): 11 alpha tests pass (real 0.5B),
-  make check exit 0. Latest logs .agent-evidence/alphafix-a6-*.log.
+- Re-verified 7a84891 (attempts 2-7, 2026-09-30): 11 alpha tests pass (real 0.5B),
+  make check exit 0. Latest logs .agent-evidence/alphafix-a7-*.log.
 
 ## Distilled tiny drafter (JAX) (id: distill, 2026-09-30)
 - `draftlab/drafters/distill.py`: cache (teacher top-64+tail → data/teacher/*.npz,

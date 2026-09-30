@@ -62,6 +62,20 @@ def test_lora_init_is_identity():
     assert b_norms and all(v == 0.0 for v in b_norms)
 
 
+def test_step_loss_matches_hf_labels_loss():
+    """Known answer: on a fully-valid chunk, step_loss must equal the transformers
+    `model(ids, labels=ids).loss` (HF shifts internally) — the alignment contract."""
+    from draftlab.drafters.lora import step_loss
+
+    base = _tiny_model()
+    ids = torch.randint(0, 512, (1, 64))
+    base.eval()
+    with torch.no_grad():
+        hf = base(input_ids=ids, labels=ids).loss
+        ours = step_loss(base, ids[0], n_valid=64)
+    assert (hf - ours).abs().item() < 1e-5, f"{hf} vs {ours}"
+
+
 def _run_train(args: list[str], timeout: int = 600) -> subprocess.CompletedProcess:
     return subprocess.run(
         [sys.executable, "-m", "torch.distributed.run", *args]

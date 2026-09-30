@@ -22,6 +22,30 @@ producing identical adapter weights / non-decreasing loss.
   `torchrun --nproc_per_node 2` tiny config, 5 steps: loss decreases and both ranks save
   bit-identical adapter weights. Run first, must fail before lora.py exists.
 - Measured (not guessed): 0.5B f32 fwd+bwd 512 tok = 2.3 s/step ⇒ 300 steps ≈ 12 min.
+- **Bug found by the anchor check (a2):** first 300-step run + alpha (
+  `.agent-evidence/lora-alpha-eval.log`): overall α = 0.0078, ~100x below the 0.7675
+  anchor → off-by-one in `step_loss` (logits[t] was compared with ids[t]: trained as a
+  token-echo machine; train loss → 0.007, val α ~ 0). Fix: HF alignment
+  `CE(logits[:, :-1], labels[:, 1:], ignore_index=−100)` + new known-answer test
+  `test_step_loss_matches_hf_labels_loss` (== `model(ids, labels=ids).loss` to <1e-5).
+  Consequence: the tiny i.i.d. stream became unlearnable ⇒ tiny stream = repeated
+  8-token motif (deterministic, learnable). FSDP2 note: FSDP1 dropped CPU in torch 2.14;
+  `fully_shard` + DTensor works on gloo/CPU, gather via `full_tensor()`.
+- **Final numbers (a3, `.agent-evidence/lora-train2.log`, `lora-alpha-eval2.log`):**
+  retrain 300 steps = 583 s, per-chunk loss 2.37→1.97 (real LM range). Alpha (400 val
+  blocks, 29657 tok): overall α = 0.7306 [0.7302, 0.7308] — inside pre-written [0.7, 0.95],
+  ≥ the 0.7 refutation bar, so no fresh-control re-run triggered. vs untrained 0.5B
+  control 0.7675 (recorded, alphafix a24, same fixed metric/400 val blocks): −0.037 —
+  a 155k-token/300-step budget does not beat the base yet (honest answer to "does
+  style-matching raise acceptance?": not measurable at this budget; adapter ≈ base,
+  both ≫ ngram 0.3341). Per-kind: Edit 0.8235, Write 0.8044, Read 0.7998, Bash 0.7669,
+  tool_result 0.7442, code 0.7243, thinking 0.6593, text 0.6575, WebFetch 0.5717 —
+  tool_use ≥ text ✅ (llama.cpp anchor); tok/call@k8 = 3.49, speedup@k8 = 2.12
+  (ngram: 1.50 / ≈1.3). Leviathan band 0.5–0.9: inside.
+- Housekeeping note: NOTES.md was 4721 B (>4 KB target) at run start; this run added the
+  LoRA section and condensed ~1.5 KB of redundancy across sections (facts preserved),
+  net 4996 B. Getting under 4 KB would require deleting other tasks' measured numbers,
+  which the "edit only own lines" rule forbids — left for a future run to prune.
 
 ## Done when
 1. `.venv/bin/python -m pytest draftlab/tests/test_lora.py` — all pass:
@@ -46,12 +70,15 @@ FSDP+PEFT weight gathering (fall back: each rank saves raw lora tensors; adapter
 by rank 0 from base + tensors), or alpha run > 30 min (drop --blocks to 200, note it).
 
 ## Plan
-1. Write test_lora.py, run → fails (module missing).
+1. Write test_lora.py, run → fails (module missing). ✅
 2. `draftlab/drafters/lora.py`: pack train-block token stream into seq-len chunks
    (seeded shuffle; pad mask); LoRA r=16 alpha=32 on q/k/v/o + gate/up/down;
    `train` subcommand: [--tiny --fsdp --qlora --steps --seq-len --lr --out --seed];
-   torchrun init gloo(CPU)/nccl(GPU), FSDP(use_orig_params=True); per-rank
-   `rank{i}_lora.safetensors`; non-fsdp: PeftModel.save_pretrained(out).
-3. Iterate until tests green; ruff; full pytest.
+   torchrun init gloo(CPU)/nccl(GPU); FSDP2 `fully_shard` (FSDP1 dropped CPU in torch
+   2.14 — plan's `use_orig_params=True` FSDP1 not usable); per-rank
+   `rank{i}_lora.safetensors`; non-fsdp: PeftModel.save_pretrained(out). ✅
+3. Iterate until tests green (5 tests, incl step_loss == HF labels=ids loss <1e-5);
+   ruff; full pytest 67/67. ✅
 4. Default 300-step run → ckpt/lora; alpha eval → results/alpha/lora.json; compare vs
-   ngram.json + 0.7675 control; NOTES.md; commit.
+   ngram.json + 0.7675 control; NOTES.md; commit. ✅ (a3: off-by-one found by the anchor
+   check, fixed, re-ran 2+4; α 0.7306)

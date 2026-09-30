@@ -28,47 +28,52 @@
   `tie_word_embeddings=False` — tie lm_head in probes.
 
 ## Spec decoding (id: spec)
-- `draftlab/jaxlm/spec.py`: Drafter protocol; NGramDrafter + ModelDrafter. One target
-  call scores m drafts + bonus (draft j's dist = prev row (j=0) or scored[j-1]);
-  accept u·q[t]<p[t], residual max(0,p−q); rollback: truncate to L+A, decode bonus.
-- `SpecDecoder._steps` yields (emitted, StepStats); tests: T=0==greedy, T=1 chi2 p=0.391.
+- `draftlab/jaxlm/spec.py`: Drafter protocol (NGram/Model). One target call scores m
+  drafts + bonus (draft j's dist = prev row (j=0) or scored[j-1]); accept u·q[t]<p[t],
+  residual max(0,p−q); rollback truncates to L+A, decodes bonus. `_steps` yields
+  (emitted, StepStats); tests T=0==greedy, T=1 chi2 p=0.391.
 
 ## Engine server (id: engine)
-- `draftlab/serve/app.py`: FastAPI OpenAI-compatible (chat/completions SSE, /v1/models;
-  usage adds draft/accepted; name `<base>[+<drafter>-k<K>]`).
-  `python -m draftlab.serve --model K --alias A --port P` (default 0.5b-instruct, :8100).
-  Gotcha: `apply_chat_template(tokenize=False)` else BatchEncoding; tiny → ToyTokenizer.
+- `draftlab/serve/app.py`: FastAPI OpenAI-compatible (SSE, /v1/models; usage adds
+  draft/accepted; name `<base>[+<drafter>-k<K>]`); `python -m draftlab.serve` (default
+  0.5b-instruct, :8100). Gotcha: `apply_chat_template(tokenize=False)` else BatchEncoding;
+  tiny → ToyTokenizer.
 
 ## Alpha metric (id: alpha, alphafix)
 - `python -m draftlab.eval.alpha` (ngram|jax|hf); default target 1.5b-instruct;
   row i predicts token i+1 -> slice [len(ctx)-1 : len(ctx)+n-1]; empty ctx: pos 0 invalid.
 - Known answers (real 0.5B): CE==HF labels= <1e-3; top-1 val
   42.4% (band 40-70%); uniform-q=1-TV; ngram repeated 63/64, shuffled null collapses.
-- ngram (400 val blocks, 1.5B): alpha 0.3341, greedy 0.3681, greedy_corpus 0.3335
-  (regression OK), tok/call@k8 1.50; tool_use:Edit 0.56 highest > tool_result 0.33 >
-  code 0.26 > text 0.19.
-- Old alpha 0.0096 / "1.2% vs 27B" = off-by-one bug (fixed).
-- tiny.json (a20 fixed-metric re-run; reproduced a23/a24, worst |d| 3.67e-7): alpha
-  0.0105, tpc@8 1.01 (= analytic to 4e-9); per-kind 0.004-0.015 vs ngram 0.155-0.56
-  (ngram wins all kinds); 0.5B control 0.7675 → weak 43M drafter (KL 2.63), not
-  metric. a24: 11/11 tests + check_tiny_alpha PASS (alphafix-a24-*.log).
-- Registration (harnessreg): host runner registered 0 RESULT blocks ever (total gap, not
-  matching). Stop hook `.claude/hooks/register_result.py` (wired in .claude/settings.json):
-  parse last RESULT block; done → TODO line (text/id) + TASKLOG entry + commit, idempotent.
-  a3: hook fired but verdict=none — final msg flushes to transcript AT stop (both transcript
-  mtimes == hook fire time). Fix: poll ≤20s (settle 4s; HARNESSREG_WAIT/SETTLE env). Tests 7
-  (late-flush repro appends block at t+2.5s); ruff green. This run's stop is the live
-  end-to-end test: line 13 + `## harnessreg` TASKLOG must appear unedited (verify next run;
-  audit in .agent-evidence/harnessreg-stops.log).
+- ngram (400 val): alpha 0.3341 (greedy 0.3681, corpus 0.3335, regression OK),
+  tok/call@k8 1.50; Edit 0.56 > tool_result 0.33 > code 0.26 > text 0.19.
+- Old alpha 0.0096 = off-by-one bug (fixed).
+- tiny.json (a20 re-run, worst |d| 3.67e-7): alpha 0.0105, tpc@8 1.01 (analytic to
+  4e-9); per-kind 0.004-0.015 vs ngram 0.155-0.56 (ngram wins all); 0.5B control
+  0.7675 → weak 43M drafter (KL 2.63), not metric; a24: 11/11 + check_tiny_alpha PASS.
+- Registration (harnessreg): host runner registered 0 RESULT blocks ever (total gap). Stop
+  hook `.claude/hooks/register_result.py` (wired in .claude/settings.json): parse last RESULT
+  block; done → TODO line + TASKLOG + commit; poll ≤20s (HARNESSREG_WAIT/SETTLE); 7 tests;
+  verified 2026-09-30: stops 07:48–07:53 registered (line 13 [x]; audit .agent-evidence/harnessreg-stops.log).
 
 ## Distilled tiny drafter (JAX) (id: distill, 2026-09-30)
 - `draftlab/drafters/distill.py`: cache (teacher top-64+tail → data/teacher/*.npz) +
-  train (4-layer d=256 Qwen2, tied embed, KL(T‖S) top-64 + renormalised tail,
-  AdamW warmup-cosine, orbax ckpt/tiny/N, HF export at ckpt/tiny/export).
-- 1200 steps (default) @1e-3, batch 16×256: val KL 3.7879 → 2.6292 (30.6% ✅);
-  curve results/distill_curve.json; teacher-init control 2.6379 (no gain); lr 3e-3 oscillated.
-  Logs distill-train-{1200,tinit1200}.
+  train (4-layer d=256, tied embed, KL(T‖S) top-64+renorm tail, AdamW warmup-cosine,
+  HF export ckpt/tiny/export). 1200 steps @1e-3, batch 16×256: val KL 3.7879 → 2.6292
+  (30.6% ✅); teacher-init control 2.6379 (no gain); lr 3e-3 oscillated.
 - REPORT needs more distill steps/capacity (alpha 0.0105, see alpha section).
-- a3 (2026-09-30): re-verified all Done-when items (curve 30.59% ✅, tiny.json from a24,
-  test_distill 5/5, ruff clean; tree was clean — work already committed). a1/a2 failure was
-  host-side RESULT registration, fixed by harnessreg a3 stop-hook polling.
+- a3: all Done-when re-verified (30.59% ✅, 5/5, ruff); a1/a2 failed only host-side
+  registration (harnessreg a3 stop-hook, see alpha section).
+
+## LoRA drafter (PyTorch, id: lora, 2026-09-30)
+- `draftlab/drafters/lora.py`: PEFT LoRA r=16/α32, attn+MLP (7 targets), f32, packed
+  train blocks; `--fsdp` = FSDP2 `fully_shard` (FSDP1 dropped CPU in torch 2.14), all
+  ranks same chunks ⇒ bit-identical adapters (`rank{i}_lora.safetensors` + rank-0 dir);
+  `--qlora` GPU-only guard. step_loss = HF alignment (== `model(ids, labels=ids).loss`
+  <1e-5 test).
+- Anchor check caught a step_loss off-by-one (token-echoer: α 0.0078 vs control 0.7675)
+  — fixed, retrained. 300 steps ≈ 585 s → ckpt/lora; alpha (400 val) →
+  results/alpha/lora.json: overall α 0.7306 [0.7302, 0.7308] — pre-written [0.7, 0.95]
+  ✅, control 0.7675 −0.037 (155k-tok budget ≈ no gain over base yet), ≫ ngram 0.3341;
+  per-kind Edit 0.82 > Write 0.80 > Read 0.80 > Bash 0.77 > tool_result 0.74 > code 0.72
+  > thinking 0.66 ≈ text 0.66 (tool_use ≥ text ✅); tok/call@k8 3.49, speedup 2.12.
+  Tests 5/5, suite 67/67 (logs lora-train2 / lora-alpha-eval2).

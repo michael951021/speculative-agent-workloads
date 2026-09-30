@@ -83,12 +83,13 @@ def build_base(model: str | None, tiny: bool, qlora: bool, seed: int) -> torch.n
 
 def packed_chunks(model: str | None, tiny: bool, seq_len: int, n_tokens: int,
                   seed: int) -> Iterator[tuple[torch.Tensor, int]]:
-    """Yield (chunk (seq_len,), n_valid). Tiny: seeded stream over a 64-token
-    alphabet (mechanism test, no corpus). Real: shuffled train blocks packed."""
+    """Yield (chunk (seq_len,), n_valid). Tiny: a repeated 8-token motif
+    (deterministic, so next-token prediction is learnable — mechanism test,
+    no corpus). Real: shuffled train blocks packed."""
     if tiny:
-        import numpy as np
-
-        stream = np.random.default_rng(seed).integers(0, 64, n_tokens + seq_len).tolist()
+        motif = [11, 17, 23, 29, 31, 37, 41, 47]
+        reps = (n_tokens + seq_len) // len(motif) + 1
+        stream = (motif * reps)[: n_tokens + seq_len]
     else:
         import pyarrow.parquet as pq
         from transformers import AutoTokenizer
@@ -106,12 +107,16 @@ def packed_chunks(model: str | None, tiny: bool, seq_len: int, n_tokens: int,
 
 
 def step_loss(model: torch.nn.Module, chunk: torch.Tensor, n_valid: int) -> torch.Tensor:
+    """Next-token CE with HF alignment: logits row t predicts ids[t+1]
+    (== model(ids, labels=ids).loss semantics), padded tail ignored."""
     ids = chunk.unsqueeze(0)
     labels = ids.clone()
     labels[0, n_valid:] = -100
     logits = model(input_ids=ids).logits
     return F.cross_entropy(
-        logits.reshape(-1, logits.shape[-1]), labels.reshape(-1), ignore_index=-100
+        logits[:, :-1].reshape(-1, logits.shape[-1]),
+        labels[:, 1:].reshape(-1),
+        ignore_index=-100,
     )
 
 

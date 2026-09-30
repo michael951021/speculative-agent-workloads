@@ -106,3 +106,13 @@ text 0.189 (tool_use ≥ text ✓). All Done-when criteria met. Note: attempts 3
 each reported done but the TODO line stayed unchecked (no TASKLOG entry
 registered) — harness-side, no repo defect found on re-audit of code/tests/
 results/NOTES this attempt.
+
+## Attempt 14 (2026-09-30)
+Tree unchanged since 93e5b0e. Fresh acceptance: 11/11 alpha tests on real 0.5B
+(25.4 s, exit 0, log alphafix-a14-tests.log); make check exit 0 (131 s, log
+alphafix-a14-check.log). ngram.json (1.5B target, 400 val blocks, CIs per kind)
+re-inspected: overall α 0.3341 in pre-run range, greedy_corpus 0.3335 = pre-fix
+anchor, tool_use:Edit 0.5632 highest > text 0.189 (tool_use ≥ text ✓). Known
+answers: CE == HF labels= loss <1e-3, top-1 val 42.4% (band 40–70%), uniform-q
+α exact, repeated-block ngram 63/64 + shuffled null collapse. All Done-when
+criteria met. Code/tests/results/NOTES audited again: no repo defect found.

@@ -49,12 +49,16 @@
   (regression OK), tok/call@k8 1.50; tool_use:Edit 0.56 highest > tool_result 0.33 >
   code 0.26 > text 0.19.
 - Old alpha 0.0096 / "1.2% vs 27B" = off-by-one bug (fixed).
-- a19: 11/11 alpha tests 25.6s exit 0 (log alphafix-a19-tests.log); ngram.json
-  anchors unchanged (0.3341/0.3335; tool_use 0.56 > text 0.19).
+- a20: re-ran stale tiny.json, fixed metric (`--drafter hf --draft-model
+  ckpt/tiny/export --out results/alpha/tiny.json`, 400 val, 1.5B, same 29657 tok as
+  ngram): alpha 0.0105, greedy 0.1413, greedy_corpus 0.1349, tpc@8 1.01 (no speedup);
+  per-kind tiny 0.004-0.015 vs ngram 0.19-0.56 (ngram wins every kind). Verified:
+  scripts/check_tiny_alpha.py (hand alpha, pure transformers, 4 real blocks incl. 2
+  with ctx) worst |d| 3.7e-7; 0.5B control drafter same pipeline → alpha 0.7675
+  (code 0.90) = Leviathan anchor → low tiny = weak drafter (val KL 2.63), not metric.
+  Logs alphafix-a20-{tests,check,run,control}.
 - Registration gap systemic/host-side: 0 RESULT blocks ever registered project-wide;
-  all checked lines were agent self-checks. Line split per exception: "Alpha
-  alignment fixed, known answers" checked; remaining: "Re-run stale tiny.json"
-  (id: alphafix).
+  line split per exception; remaining line "Re-run stale tiny.json" (id: alphafix).
 
 ## Distilled tiny drafter (JAX) (id: distill, 2026-09-30)
 - `draftlab/drafters/distill.py`: cache (teacher top-64+tail → data/teacher/*.npz,
@@ -64,5 +68,6 @@
 - 1200 steps (default) @1e-3, batch 16×256: val KL 3.7879 → 2.6292 (30.6% ✅);
   curve results/distill_curve.json; teacher-init control 2.6379 (no gain); 800 steps
   29.6%; lr 3e-3 oscillated. Logs distill-train-{1200,tinit1200}.
-- results/alpha/tiny.json (alpha 0.0142) pre-alphafix/buggy metric -> stale; re-run
-  is now a TODO line (id: alphafix). Student ~ uniform (H(q) 11.79~ln V); weak approx.
+- tiny.json re-run (a20, fixed metric, 1.5B target): alpha 0.0105 — student still a
+  weak approx of the target (ngram wins every kind); REPORT needs more distill
+  steps/capacity. Old 0.0142 file (0.5b target, jax, pre-fix slice) replaced.

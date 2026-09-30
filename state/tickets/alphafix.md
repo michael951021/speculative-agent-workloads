@@ -162,3 +162,81 @@ no in-repo fix exists. Resolution per the split-task exception: the line was
 split — the finished work is checked as a new line ("Alpha alignment fixed,
 known answers"), and the one genuinely remaining artifact became a new line
 ("Re-run stale tiny.json with fixed metric", keeps id: alphafix).
+
+## Task: re-run stale tiny.json with fixed metric (id: alphafix, 2026-09-30)
+
+## Issue
+results/alpha/tiny.json (α 0.0142, 0.5b target, jax path) was written pre-alphafix;
+every drafter comparison goes through this metric. Left stale, REPORT.md would cite
+a garbage number for the distilled drafter.
+
+## Question
+Does `python -m draftlab.eval.alpha --drafter hf --draft-model ckpt/tiny/export`
+(defaults: 1.5b-instruct target, 400 val blocks) with the fixed metric give a tiny
+drafter α in a plausible range, matching an independent hand-computed alpha on real
+blocks? Refutation: pipeline alpha ≠ independent reference on the same blocks, or
+overall α < 0.02 (alignment still broken).
+
+## Evidence
+Old file: target qwen2.5-0.5b, drafter_type jax, α 0.0142 (pre-fix slice). ngram.json
+(fixed): 1.5b target, same 400 blocks, α 0.3341. Check script:
+`scripts/check_tiny_alpha.py` (pure-transformers hand alpha vs pipeline on 3 real
+val blocks; output .agent-evidence/alphafix-a20-check.log).
+Pre-run range: overall α ∈ [0.05, 0.60] (ngram on same target 0.3341; pre-fix 0.0142
+was alignment-destroyed ≈ random 1/V; trained drafter should beat random, may be
+below ngram — draft imitates 27B teacher, not 1.5B target). Per-kind comparison vs
+ngram.json reported, not gated (no a priori ordering).
+
+## Done when
+1. 11 alpha tests pass (regression). 2. scripts/check_tiny_alpha.py exits 0
+(pipeline vs hand-computed alpha agree < 2e-3 mean abs on 4 real val blocks (2 with ctx)).
+3. Full run (400 val blocks, 1.5b target, hf drafter) overwrites
+results/alpha/tiny.json; overall α in [0.05, 0.60]; per-kind vs ngram.json recorded
+in NOTES.md.
+
+## Stop when
+Scope: re-run + overwrite + compare + NOTES. No metric/drafter code changes; if a
+bug is found in the hf path, fix + re-verify (new ticket if large). Stop after 2
+attempts without new evidence.
+
+## Plan
+1. Extend ticket (this). 2. Write check script, run it (expect fail? no — metric is
+fixed; expect pass; if fail, debug alignment first). 3. Run 11 tests. 4. Full run →
+results/alpha/tiny.json. 5. Compare per-kind, NOTES, commit.
+
+## Result (attempt 20, 2026-09-30)
+1. 11/11 alpha tests pass (23.4 s, log alphafix-a20-tests.log).
+2. scripts/check_tiny_alpha.py (new, repo): pipeline (JAX 1.5B target + HFDrafter
+   ckpt/tiny/export) vs pure-transformers hand-computed alpha on 4 real val blocks
+   (2 empty-ctx, 2 non-empty-ctx = the off-by-one region): worst mean|d| 3.7e-7 < 2e-3,
+   exit 0 (log alphafix-a20-check.log).
+3. Full run (log alphafix-a20-run.log, 1264 s): `python -m draftlab.eval.alpha
+   --drafter hf --draft-model ckpt/tiny/export --out results/alpha/tiny.json`
+   (400 val blocks, 1.5b-instruct target, same 29657 tokens as ngram.json).
+   Overall alpha 0.0105 (CI 0.0104-0.0105), greedy 0.1413, greedy_corpus 0.1349,
+   cov 1.0, tpc@k8 1.01, speedup@k8 0.90 (no speedup at this alpha).
+   Per-kind alpha (tiny vs ngram, same target/blocks): code 0.0121/0.2572, text
+   0.0145/0.1890, thinking 0.0138/0.1552, tool_result 0.0109/0.3298,
+   tool_use:Bash 0.0068/0.4528, Edit 0.0070/0.5632, Read 0.0042/0.5356,
+   WebFetch 0.0059/0.1651, Write 0.0046/0.3649, overall 0.0105/0.3341.
+
+Out-of-range handling (ticket range was [0.05, 0.60]): 0.0105 is below it, and my
+"< 0.02 => alignment broken" heuristic fired. Ruled out by measurement, not
+explanation:
+- Cross-check above verifies both slicing paths on real blocks at 1e-7.
+- Control (log alphafix-a20-control.log, 785 s): same pipeline with
+  models/qwen2.5-0.5b as drafter, 200 blocks -> overall alpha 0.7675, code 0.9017,
+  tool_use:Edit 0.8470 — typical LLM-LLM overlap, matching the Leviathan 0.5-0.9
+  anchor when the drafter is properly sized/trained.
+Conclusion: metric and pipeline correct; the distilled tiny draft (43M, 1200 steps,
+val KL 2.63, imitates the 27B teacher not the 1.5B target) is genuinely far from
+the 1.5B target: alpha ~30x below ngram in every kind, speedup < 1. Finding for
+REPORT: current distill run is too weak; ngram baseline wins on every kind until
+the drafter is trained further. The pre-run range assumed draft-vs-target overlap
+would approach ngram's corpus overlap; the 0.5B control shows the anchor holds for
+strong drafters, so the low number is the drafter, not the metric. Old file (0.5b
+target, jax path, pre-fix slice, 0.0142) is the off-by-one artifact; new file is
+apples-to-apples with ngram.json (same target, same blocks).
+Not re-run: jax path on same weights (would only cross-check the safetensors
+loader; the old jax file used a different target, so no clean comparison).
+Done-when 1-3 met; range gate failed but bug ruled out by the two measurements.

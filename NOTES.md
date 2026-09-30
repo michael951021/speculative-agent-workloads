@@ -48,9 +48,10 @@
   (regression OK), tok/call@k8 1.50; tool_use:Edit 0.56 highest > tool_result 0.33 >
   code 0.26 > text 0.19.
 - Old alpha 0.0096 / "1.2% vs 27B" = off-by-one bug (fixed).
-- tiny.json (a20; a23 fresh 400-block re-run reproduces, worst |d| 3.67e-7, tpc@8
-  analytic): alpha 0.0105, tpc@8 1.01; per-kind 0.004-0.015 vs ngram 0.155-0.56
-  (ngram wins all kinds); 0.5B control 0.7675 → weak 43M drafter (KL 2.63), not metric.
+- tiny.json (a20 fixed-metric re-run; reproduced a23/a24, worst |d| 3.67e-7): alpha
+  0.0105, tpc@8 1.01 (= analytic to 4e-9); per-kind 0.004-0.015 vs ngram 0.155-0.56
+  (ngram wins all kinds); 0.5B control 0.7675 → weak 43M drafter (KL 2.63), not
+  metric. a24: 11/11 tests + check_tiny_alpha PASS (alphafix-a24-*.log).
 - Registration (harnessreg): host runner registered 0 RESULT blocks ever (total gap, not
   matching). Stop hook `.claude/hooks/register_result.py` (wired in .claude/settings.json):
   parse last RESULT block; done → TODO line (text/id) + TASKLOG entry + commit, idempotent.

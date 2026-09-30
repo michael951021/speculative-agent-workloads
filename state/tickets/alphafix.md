@@ -280,3 +280,16 @@ a20 wrote results/alpha/tiny.json via rename — task's artifact file unchanged
 and now reproduced twice. Systemic host-side registration gap (alphafix +
 distill RESULT blocks unregistered vs boot→alpha registered): ticket
 `harnessreg` added to TODO.md Foundations.
+
+## Attempt 24 (2026-09-30)
+Tree at 4862bd8 (alpha code unchanged since 512d8b0). Fresh acceptance: 11/11 alpha
+tests exit 0, 23.4 s (log alphafix-a24-tests.log); check_tiny_alpha.py exit 0, worst
+mean|d| 3.67e-7 (log alphafix-a24-check.log). tiny.json vs ngram.json (same 1.5B
+target, 400 blocks, 29657 tok): ngram beats tiny in every kind (0.155-0.563 vs
+0.0042-0.0145); overall α 0.0105; tpc@8 1.0105786 == analytic (1−α⁹)/(1−α) to
+3.8e-9 (JSON rounding; probe tolerance 1e-9 was the only "failure", a probe artifact).
+Full 400-block pass not repeated: a23's fresh re-run (log alphafix-a23-rerun2.log,
+exit 0) already reproduced the committed file at printed precision; only c is
+time-derived. Metric bug ruled out by 0.5B control α=0.7675 (a20). Prior attempts'
+done-reports were never registered: host-side gap, now fixed by the polling stop hook
+(harnessreg a3, cf96577) — this run's stop is the live end-to-end test.

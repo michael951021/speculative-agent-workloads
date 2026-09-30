@@ -236,6 +236,8 @@ def load_blocks(
 
 def _context(ctx_blocks: list[dict], ids_of, budget: int) -> list[int]:
     """Token ids of the most recent preceding blocks that fit in `budget`."""
+    if budget <= 0:
+        return []
     ctx: list[int] = []
     for b in reversed(ctx_blocks):
         ids = ids_of(b["text"])

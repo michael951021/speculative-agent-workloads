@@ -1,6 +1,6 @@
 """Known-answer check (b): sweep-measured T=0 acceptance vs alpha-metric CIs.
 
-Usage: python tools/compare_sweep_alpha.py
+Usage: python tools/compare_sweep_alpha.py [--drafters base lora lora_dpo]
 Reads results/sweep.parquet (k=1, T=0 rows) and results/alpha_sweep_<drafter>.json
 (written by draftlab.eval.alpha, target 0.5b-instruct, ctx-tokens 0). At k=1, T=0
 the measured accept rate is the empirical mean of (argmax q == argmax p), i.e.
@@ -10,6 +10,7 @@ Prints per-kind detail; exits 1 if any overall comparison is outside its CI.
 
 from __future__ import annotations
 
+import argparse
 import json
 import sys
 from pathlib import Path
@@ -21,6 +22,9 @@ DRAFTERS = ["ngram", "base", "lora", "lora_dpo"]
 
 
 def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--drafters", nargs="+", default=DRAFTERS, choices=DRAFTERS)
+    args = ap.parse_args()
     df = pd.read_parquet(ROOT / "results" / "sweep.parquet")
     sub = df[(df["k"] == 1) & (df["temp"] == 0.0)]
     ok = True
@@ -28,7 +32,7 @@ def main() -> int:
         f"{'drafter':10s} {'meas acc':>9s} {'metric greedy':>13s} {'greedy ci95':>22s} "
         f"{'meas tpc':>9s} {'tpc ci95':>22s}  verdict"
     )
-    for d in DRAFTERS:
+    for d in args.drafters:
         s = sub[sub["drafter"] == d]
         if s.empty:
             print(f"{d:10s}  MISSING in sweep.parquet")

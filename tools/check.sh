@@ -79,6 +79,15 @@ else
   skip "hadolint" deploy/docker
 fi
 
+if command -v shellcheck >/dev/null 2>&1 && ls deploy/kind/*.sh >/dev/null 2>&1; then
+  section "shell: shellcheck"
+  while IFS= read -r f; do
+    check "shellcheck $f" shellcheck "$f"
+  done < <(find deploy -type f -name '*.sh')
+else
+  skip "shellcheck" shellcheck
+fi
+
 if [ -d deploy/prometheus ] || [ -d deploy/grafana ]; then
   section "promtool"
   if [ -d deploy/prometheus ]; then

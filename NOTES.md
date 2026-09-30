@@ -50,6 +50,10 @@
 - check.sh: helm lint + `helm template` cpu AND gpu | kubeconform -strict; ServiceMonitor schema vendored (prom-op v0.76.2).
 - Gotcha: kubeconform -schema-location vars lowercase + KindSuffix `-monitoring-v1`; all-digit sha256 must be quoted in values.yaml.
 
+## kind e2e (id: kind)
+- deploy/kind/e2e.sh (HOST ONLY, no Docker in sandbox): build 2 images → kind create/load → `docker cp` model into node (engine hostPath /models) → helm cpu profile (1 replica, HPA/ServMon/NP off, random Bearer key) → port-forward → curl /v1/chat/completions 200 → /metrics `draftlab_accepted_tokens_total`>0 (ngram k=5 default + repeat-phrase prompt ⇒ acceptance ~1). README: deploy/kind/README.md.
+- shellcheck v0.10.0 added: pinned tools/versions.txt + bootstrap install + check.sh section (lints deploy/**/*.sh only; tools/*.sh predate it and are NOT in the gate). make check exit 0. Not executed in sandbox (rule 2) — Kevin runs on host.
+
 ## Terraform GKE (id: tf)
 - deploy/terraform root (thin pass-through vars) → module ./gke: VPC + regional subnet (secondary_ip_range pods/services), GKE Standard (workload_pool WI, private nodes+global access, BA ENFORCE, REGULAR channel, initial_node_count 0), node pool g2-standard-12 + nvidia-l4×1 autoscale 0-2 + NO_SCHEDULE taint, Artifact Registry docker repo (most_recent_versions keep 10), WI GCP SA + artifactregistry.reader. Outputs incl. workload_identity_sa_email + push base.
 - init -backend=false + validate + tflint exit 0 (google v5.45.2). Gotchas: v5 renames identity_namespace→workload_pool, secondary_range→secondary_ip_range, monitoring enabled_components→enable_components, cleanup keep_tag_revision_policy→most_recent_versions; binary_authorization.enabled deprecated → evaluation_mode PROJECT_SINGLETON_POLICY_ENFORCE; TF 1.x does NOT load subdir .tf into root (must be a module); real schema: `terraform providers schema -json`.

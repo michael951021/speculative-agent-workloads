@@ -86,6 +86,11 @@ else
   dl "https://github.com/hadolint/hadolint/releases/download/${v}/hadolint-Linux-${ha}" "$tmp/hadolint"
   install "$tmp/hadolint" "$BIN/hadolint"
 
+  v=$(get_version shellcheck)
+  dl "https://github.com/koalaman/shellcheck/releases/download/${v}/shellcheck-${v}.linux.${ha}.tar.xz" "$tmp/sc.tgz"
+  tar xJf "$tmp/sc.tgz" -C "$tmp"
+  install "$tmp/shellcheck-${v}/shellcheck" "$BIN/shellcheck"
+
   v=$(get_version promtool)
   dl "https://github.com/prometheus/prometheus/releases/download/v${v}/prometheus-${v}.linux-${ARCH}.tar.gz" "$tmp/prom.tgz"
   tar xzf "$tmp/prom.tgz" -C "$tmp" "prometheus-${v}.linux-${ARCH}/promtool"

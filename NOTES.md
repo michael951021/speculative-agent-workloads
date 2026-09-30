@@ -52,7 +52,7 @@
   tool_use:Edit 0.56 highest > tool_result 0.33 > code 0.26 > text 0.19.
 - Old alpha 0.0096 / "1.2% vs 27B" = off-by-one bug (fixed); tiny.json stale (pre-alphafix).
 - Re-verified 7a84891 (attempts 2-4, 2026-09-30): 11 alpha tests pass (real 0.5B),
-  make check exit 0 (55 passed). Logs .agent-evidence/alphafix-*attempt*.log.
+  make check exit 0 (55 passed). Logs .agent-evidence/alphafix-*.log.
 
 ## Distilled tiny drafter (JAX) (id: distill, 2026-09-30)
 - `draftlab/drafters/distill.py`: cache (teacher top-64+tail → data/teacher/*.npz,

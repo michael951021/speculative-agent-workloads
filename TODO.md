@@ -78,7 +78,7 @@
   why: Kubernetes-native deployment of the whole stack, the most-requested missing skill in the postings.
 - [x] **Terraform GKE** — deploy/terraform/gke: VPC + subnet, GKE Standard cluster, L4 GPU node pool (autoscale 0-2, taint), Artifact Registry repo, Workload Identity service account; variables and outputs documented. `terraform init -backend=false && terraform validate` + tflint in make check. Never plan/apply. (id: tf) (after: boot)
   why: cloud infrastructure as code for the GPU pool the chart targets.
-- [ ] **kind end-to-end script** — deploy/kind/e2e.sh (host only, needs docker): build images, kind cluster, load images, helm install cpu profile with tiny models, port-forward, curl the gateway with a key, check /metrics shows accepted tokens; shellcheck clean. Document in README; do not run it in the sandbox. (id: kind) (after: helm)
+- [x] **kind end-to-end script** — deploy/kind/e2e.sh (host only, needs docker): build images, kind cluster, load images, helm install cpu profile with tiny models, port-forward, curl the gateway with a key, check /metrics shows accepted tokens; shellcheck clean. Document in README; do not run it in the sandbox. (id: kind) (after: helm)
   why: a one-command demo Kevin can run on the host (or once the microVM sandbox allows Docker).
 
 ## Explorer

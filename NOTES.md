@@ -51,15 +51,12 @@
 - Old alpha 0.0096 / "1.2% vs 27B" = off-by-one bug (fixed).
 - a20/a21: re-ran stale tiny.json, fixed metric (`--drafter hf --draft-model
   ckpt/tiny/export --out results/alpha/tiny.json`, 400 val, 1.5B, 29657 tok = ngram):
-  alpha 0.0105, greedy 0.1413, tpc@8 1.01 (no speedup, = (1−α⁹)/(1−α)); per-kind
-  tiny 0.004-0.015 vs ngram 0.155-0.56 (ngram wins every kind). Verified:
-  scripts/check_tiny_alpha.py (hand alpha, pure transformers) worst |d| 3.7e-7
-  (fresh at a21, exit 0); 0.5B control same pipeline alpha 0.7675 → low tiny = weak
-  43M drafter (val KL 2.63), not metric. a21 clean tree: 11/11 alpha tests exit 0
-  (23.3s); full re-run skipped (deterministic, a20 run log exit 0, 1264s). Logs
-  alphafix-a20-{tests,check,run,control}, alphafix-a21-{tests,check}.
-- Registration gap is host-side: 0 RESULT blocks ever registered project-wide, so
-  done lines stay unchecked (incl. this, id: alphafix).
+  alpha 0.0105, tpc@8 1.01 (no speedup); per-kind tiny 0.004-0.015 vs ngram
+  0.155-0.56 (ngram wins every kind). check_tiny_alpha.py worst |d| 3.7e-7 (fresh
+  a21); 0.5B control same pipeline 0.7675 → weak 43M drafter (val KL 2.63), not
+  metric. a21 clean tree: 11/11 alpha tests exit 0. Logs alphafix-a20-*, -a21-*.
+- Registration gap host-side: 0 RESULT blocks ever registered; done lines stay
+  unchecked (incl. id: alphafix).
 
 ## Distilled tiny drafter (JAX) (id: distill, 2026-09-30)
 - `draftlab/drafters/distill.py`: cache (teacher top-64+tail → data/teacher/*.npz,
@@ -69,6 +66,5 @@
 - 1200 steps (default) @1e-3, batch 16×256: val KL 3.7879 → 2.6292 (30.6% ✅);
   curve results/distill_curve.json; teacher-init control 2.6379 (no gain); 800 steps
   29.6%; lr 3e-3 oscillated. Logs distill-train-{1200,tinit1200}.
-- tiny.json re-run (a20, fixed metric, 1.5B target): alpha 0.0105 — student still a
-  weak approx of the target (ngram wins every kind); REPORT needs more distill
-  steps/capacity. Old 0.0142 file (0.5b target, jax, pre-fix slice) replaced.
+- tiny.json (fixed metric): alpha 0.0105 — weak approx of target (ngram wins every
+  kind); REPORT needs more distill steps/capacity. Old 0.0142 (pre-fix) replaced.

@@ -69,3 +69,6 @@
   curve results/distill_curve.json; teacher-init control 2.6379 (no gain); lr 3e-3 oscillated.
   Logs distill-train-{1200,tinit1200}.
 - REPORT needs more distill steps/capacity (alpha 0.0105, see alpha section).
+- a3 (2026-09-30): re-verified all Done-when items (curve 30.59% ✅, tiny.json from a24,
+  test_distill 5/5, ruff clean; tree was clean — work already committed). a1/a2 failure was
+  host-side RESULT registration, fixed by harnessreg a3 stop-hook polling.

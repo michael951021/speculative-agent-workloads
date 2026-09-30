@@ -23,6 +23,9 @@ def test_alpha_hand_3vocab():
     # identical distributions -> alpha 1, greedy match
     a2, g2 = alpha_and_greedy(p, p)
     assert a2[0] == pytest.approx(1.0) and g2[0]
+    # uniform q -> alpha = sum_x min(p(x), 1/V) = 1/3 + 0.3 + 0.2 (hand-computed)
+    a3, _ = alpha_and_greedy(p, np.full_like(p, 1.0 / 3))
+    assert a3[0] == pytest.approx(1.0 / 3 + 0.3 + 0.2)
 
 
 def test_valid_mask_zeroes_unproposed_positions():
@@ -84,6 +87,14 @@ def test_identical_models_alpha_one():
     p, _ = t.dists([], ids)
     q, valid = d.dists([], ids)
     a, g = alpha_and_greedy(p, q, valid)
-    assert (valid).all()
-    assert a.min() >= 1.0 - 1e-6, f"identical models must score alpha 1, got min {a.min()}"
-    assert g.all()
+    # empty ctx: no row predicts ids[0] -> position 0 invalid on both sides
+    assert not valid[0] and valid[1:].all()
+    assert a[1:].min() >= 1.0 - 1e-6, f"identical models must score alpha 1, got min {a[1:].min()}"
+    assert g[1:].all()
+    # non-empty ctx: every position scored, still alpha 1
+    ctx = list(range(2, 9))
+    p2, _ = t.dists(ctx, ids)
+    q2, valid2 = d.dists(ctx, ids)
+    a2, g2 = alpha_and_greedy(p2, q2, valid2)
+    assert valid2.all()
+    assert a2.min() >= 1.0 - 1e-6 and g2.all()

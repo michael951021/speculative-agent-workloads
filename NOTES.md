@@ -41,14 +41,18 @@
   `python -m draftlab.serve --model K --alias A --port P` (default 0.5b-instruct, :8100).
   Gotcha: `apply_chat_template(tokenize=False)` else BatchEncoding; tiny → ToyTokenizer.
 
-## Alpha metric (id: alpha)
-- `python -m draftlab.eval.alpha` (ngram|jax|hf adapters `dists(ctx, ids)->(q, valid)`).
-  Teacher-forced vs 0.5B target: alpha=Σmin(p,q) + greedy + greedy_corpus;
-  ctx = same-run earlier blocks ≤1024 tok; bootstrap CI; c measured → results/alpha/<drafter>.json
-- ngram (400 val blocks): alpha 0.0096, greedy 0.0118, greedy_corpus 0.3335 ≈ baseline
-  0.3286; tok/call@k8 = 1.01, speedup 1.005 (c = 0.0005).
-- Finding: 0.5B argmax matches 27B corpus ~1.2% — bottleneck is target agreement, not
-  drafter coverage (trained drafters are the fix).
+## Alpha metric (id: alpha, alphafix 2026-09-30)
+- `python -m draftlab.eval.alpha` (ngram|jax|hf adapters `dists(ctx, ids)->(q, valid)`);
+  default target 1.5b-instruct; row i predicts token i+1 -> slice
+  [len(ctx)-1 : len(ctx)+n-1]; empty ctx -> pos 0 invalid.
+- Known-answer tests test_alpha_known.py (real 0.5B): per-position CE == HF labels= loss
+  <1e-3; top-1 val 42.4% (1929 tok, band 40-70%); uniform-q alpha = 1 - TV; ngram
+  repeated block 63/64, shuffled null collapses.
+- ngram (400 val blocks, 1.5B): alpha 0.3341, greedy 0.3681, greedy_corpus 0.3335
+  (= old run -> regression OK), cov 0.763, tok/call@k8 1.50, speedup 1.50 (c 0.0003);
+  tool_use:Edit 0.56 highest > tool_result 0.33 > code 0.26 > text 0.19.
+- Old alpha 0.0096 / "1.2% vs 27B" = off-by-one slice bug; tiny.json used it -> stale,
+  re-run under alphafix.
 
 ## Distilled tiny drafter (JAX) (id: distill, 2026-09-30)
 - `draftlab/drafters/distill.py`: cache (teacher top-64+tail → data/teacher/*.npz,
@@ -58,8 +62,6 @@
 - 1200 steps (default) @1e-3, batch 16×256: val KL 3.7879 → 2.6292 (30.6% ✅);
   curve results/distill_curve.json. Teacher-init control (--teacher-init): 2.6379, no gain.
   800 steps 29.6%; lr 3e-3 oscillated. Logs .agent-evidence/distill-train-{1200,tinit1200}.log.
-- alpha (results/alpha/tiny.json, 400 val blocks w/ ctx): overall α=0.0142,
-  greedy=0.1465 (ngram: 0.0096/0.0118). Student ≈ uniform (H(q)=11.79≈ln V, peak
-  3.8e-4 vs teacher 0.36) — weak approx (2.63 nats ≈ 3.8 bits); self-check α=1.0000 →
-  metric correct; gap is real (0.5B↔27B mismatch + approx error). Pre-run range 0.4–0.9
-  mis-anchored on Leviathan (strong-approx drafters).
+- results/alpha/tiny.json (alpha 0.0142) computed pre-alphafix with the buggy metric
+  -> stale, needs re-run. Student ~ uniform (H(q) 11.79~ln V) weak approx (2.63 nats);
+  pre-run range 0.4-0.9 mis-anchored on Leviathan.

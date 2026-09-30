@@ -6,10 +6,12 @@ At every position of a block, with context = the run's recent preceding blocks
     greedy = [argmax q == argmax p]          (real spec-accept for the target)
     greedy_corpus = [argmax q == actual token]  (what results/ngram.json measures)
 "Batched" = one teacher-forced forward per model per block (all positions at once),
-top-k-free. Blocks are selected round-robin across runs; per-kind aggregation uses
-bootstrap CIs over runs (units = runs, so no run leaks). Expected tokens per target
-call for k drafts: (1 - a^(k+1))/(1 - a); speedup divides by 1 + k*c, c = measured
-draft/target forward cost ratio.
+top-k-free. Alignment: logits row i predicts token i+1, so ids[j] is scored by row
+len(ctx)+j-1; with empty ctx there is no row for ids[0] and position 0 is invalid
+(valid[0] = False; no fabricated BOS). Blocks are selected round-robin across runs;
+per-kind aggregation uses bootstrap CIs over runs (units = runs, so no run leaks).
+Expected tokens per target call for k drafts: (1 - a^(k+1))/(1 - a); speedup divides
+by 1 + k*c, c = measured draft/target forward cost ratio.
 
 CLI: python -m draftlab.eval.alpha [--drafter ngram|jax|hf] [--draft-model PATH]
      [--blocks 400] [--max-tokens 256] [--ctx-tokens 1024] [--split val]
@@ -28,7 +30,7 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[2]
 CORPUS_DIR = ROOT / "data" / "corpus"
-TARGET_DIR = ROOT / "models" / "qwen2.5-0.5b"
+TARGET_DIR = ROOT / "models" / "qwen2.5-1.5b-instruct"  # target T (TODO.md model roles)
 RESULTS_DIR = ROOT / "results" / "alpha"
 
 K_VALUES = tuple(range(1, 9))
@@ -117,8 +119,18 @@ class JaxModel:
             full = full + [0] * (self.max_len - len(full))
         logits, _ = self.M.prefill(self.cfg, self.params, full, self.max_len)
         n = len(ids)
-        rows = np.asarray(logits)[len(ctx) : len(ctx) + n]  # slice before softmax
-        return _softmax(rows), np.ones(n, dtype=bool)
+        # Row i predicts token i+1: ids[j] is scored by row len(ctx)+j-1 (slice
+        # before softmax/transfer). Empty ctx: no row predicts ids[0] -> dummy
+        # row 0, position 0 invalid (we do not fabricate a BOS).
+        L = np.asarray(logits)
+        valid = np.ones(n, dtype=bool)
+        if ctx:
+            rows = L[len(ctx) - 1 : len(ctx) + n - 1]
+        else:
+            valid[0] = False
+            rows = L[: n - 1]
+            rows = np.vstack([L[:1], rows]) if n > 1 else L[:1]
+        return _softmax(rows), valid
 
 
 class HFDrafter:
@@ -145,8 +157,17 @@ class HFDrafter:
     def dists(self, ctx: list[int], ids: list[int]) -> tuple[np.ndarray, np.ndarray]:
         n = len(ids)
         with self.torch.no_grad():
-            logits = self.model(input_ids=self.torch.tensor([ctx + ids])).logits[0, -n:]
-        return _softmax(logits.float().numpy()), np.ones(n, dtype=bool)
+            logits = self.model(input_ids=self.torch.tensor([ctx + ids])).logits[0]
+        # Same alignment as JaxModel: ids[j] is scored by row len(ctx)+j-1;
+        # empty ctx -> dummy row 0, position 0 invalid.
+        valid = np.ones(n, dtype=bool)
+        if ctx:
+            rows = logits[len(ctx) - 1 : len(ctx) + n - 1]
+        else:
+            valid[0] = False
+            rows = logits[: n - 1]
+            rows = self.torch.cat([logits[:1], rows]) if n > 1 else logits[:1]
+        return _softmax(rows.float().numpy()), valid
 
 
 def load_blocks(

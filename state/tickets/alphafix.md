@@ -96,3 +96,13 @@ log alphafix-a11-tests.log); make check exit 0, 55 passed (118 s, log
 alphafix-a11-check.log). ngram.json (1.5B target) re-inspected: overall α 0.3341,
 greedy_corpus 0.3335 = pre-fix anchor, tool_use:Edit 0.5632 highest > text 0.189.
 All Done-when criteria met.
+
+## Attempt 12 (2026-09-30)
+Tree unchanged. Fresh acceptance: 11/11 alpha tests on real 0.5B (23.5 s, exit 0,
+log alphafix-a12-tests.log); make check exit 0, 55 passed (124 s, log
+alphafix-a12-check.log). ngram.json re-inspected: overall α 0.3341 in pre-run
+range, greedy_corpus 0.3335 = pre-fix anchor, tool_use:Edit 0.5632 highest >
+text 0.189 (tool_use ≥ text ✓). All Done-when criteria met. Note: attempts 3–11
+each reported done but the TODO line stayed unchecked (no TASKLOG entry
+registered) — harness-side, no repo defect found on re-audit of code/tests/
+results/NOTES this attempt.

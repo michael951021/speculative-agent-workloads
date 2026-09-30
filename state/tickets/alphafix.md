@@ -49,3 +49,8 @@ Fixed both slices + default target 1.5b-instruct. All 4 known answers pass on re
 repeated-block ngram 63/64 + shuffled null). Full run 1184 s: alpha 0.3341, greedy
 0.3681, greedy_corpus 0.3335 (identical to pre-fix run -> regression OK), tok/call@k8
 1.50. Pre-run range 0.10-0.40 hit. make check green (55 passed).
+
+## Attempt 3 (2026-09-30)
+Tree unchanged since 7a84891/c8b4bf9. Re-ran acceptance: 11/11 alpha tests pass on real
+0.5B (0 skipped, 24 s), make check exit 0 (55 passed, 119 s). Logs
+.agent-evidence/alphafix-{check,makecheck}-attempt3.log. Done.

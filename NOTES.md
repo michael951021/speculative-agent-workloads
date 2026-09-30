@@ -2,7 +2,7 @@
 
 ## Toolchain (id: boot)
 - `make bootstrap` (idempotent): uv + Py3.12 .venv, torch CPU first, `uv pip install -e
-  ".[all]"`, pinned binaries into .tools/ (go at .tools/go/bin). `make check` = ruff +
+  ".[all]"`, pinned binaries into .tools/. `make check` = ruff +
   pytest; others SKIP when their dir is absent.
 - Gotchas: capture.py rejects `VAR=x cmd` (use `sh -c`) and existing log paths (rm first).
 
@@ -14,8 +14,8 @@
 ## Corpus (id: corpus)
 - `python -m draftlab.data build`: raw jsonl → data/corpus/{train,val,test}.parquet
   (fenced code split; drop <8 tok, dedupe, truncate 4096; runs by sha1: 26/3/3).
-  45257/667/566 blocks. `stats` → results/corpus_stats.json. p50 tok: tool_result 243,
-  thinking 132, code 101, tool_use 85, text 29.
+  45257/667/566 blocks. `stats` → results/corpus_stats.json. p50 tok: tr 243, think 132,
+  code 101, tu 85, text 29.
 
 ## N-gram baseline (id: ngram)
 - `draftlab/drafters/ngram.py`: NGramMatcher.proposals — prompt lookup n=1..4, first
@@ -26,8 +26,8 @@
 ## JAX model (id: jaxmodel)
 - `draftlab/jaxlm/model.py`: pure-pytree Qwen2; `load_safetensors` upcasts bf16→f32;
   padded KV cache; one jitted step does prefill + multi-token decode.
-- Parity 0.5B f32 vs transformers: prefill diff 1.3e-4, argmax + greedy 32 identical
-  (torch gen: `eos_token_id=-1`). tiny_config: `tie_word_embeddings=False` — tie lm_head in probes.
+- Parity 0.5B f32 vs transformers: prefill diff 1.3e-4, argmax + greedy 32 identical.
+  tiny_config: `tie_word_embeddings=False` — tie lm_head in probes.
 
 ## Spec decoding (id: spec)
 - `draftlab/jaxlm/spec.py`: Drafter protocol; NGramDrafter + ModelDrafter. One target
@@ -41,19 +41,18 @@
   `python -m draftlab.serve --model K --alias A --port P` (default 0.5b-instruct, :8100).
   Gotcha: `apply_chat_template(tokenize=False)` else BatchEncoding; tiny → ToyTokenizer.
 
-## Alpha metric (id: alpha, alphafix 2026-09-30, attempt-2 verified)
-- `python -m draftlab.eval.alpha` (ngram|jax|hf adapters `dists(ctx, ids)->(q, valid)`);
+## Alpha metric (id: alpha, alphafix 2026-09-30, verified)
+- `python -m draftlab.eval.alpha` (ngram|jax|hf; `dists(ctx, ids)->(q, valid)`);
   default target 1.5b-instruct; row i predicts token i+1 -> slice
-  [len(ctx)-1 : len(ctx)+n-1]; empty ctx -> pos 0 invalid.
-- Known-answer tests test_alpha_known.py (real 0.5B): per-position CE == HF labels= loss
-  <1e-3; top-1 val 42.4% (1929 tok, band 40-70%); uniform-q alpha = 1 - TV; ngram
-  repeated block 63/64, shuffled null collapses.
+  [len(ctx)-1 : len(ctx)+n-1]; empty ctx: pos 0 invalid.
+- Known answers test_alpha_known.py (real 0.5B): CE == HF labels= loss <1e-3; top-1 val
+  42.4% (1929 tok, band 40-70%); uniform-q = 1-TV; ngram repeated 63/64, shuffled null collapses.
 - ngram (400 val blocks, 1.5B): alpha 0.3341, greedy 0.3681, greedy_corpus 0.3335
-  (= old run -> regression OK), cov 0.763, tok/call@k8 1.50, speedup 1.50 (c 0.0003);
+  (= old run -> regression OK), tok/call@k8 1.50;
   tool_use:Edit 0.56 highest > tool_result 0.33 > code 0.26 > text 0.19.
-- Old alpha 0.0096 / "1.2% vs 27B" = off-by-one bug (fixed); tiny.json stale -> re-run under alphafix.
-- Attempt 2 (2026-09-30): re-verified 7a84891 — 11 alpha tests pass (real 0.5B),
-  make check exit 0. Log .agent-evidence/alphafix-check-attempt2.log.
+- Old alpha 0.0096 / "1.2% vs 27B" = off-by-one bug (fixed); tiny.json stale (pre-alphafix).
+- Re-verified 7a84891 (attempts 2+3, 2026-09-30): 11 alpha tests pass (real 0.5B),
+  make check exit 0 (55 passed). Logs .agent-evidence/alphafix-*.log.
 
 ## Distilled tiny drafter (JAX) (id: distill, 2026-09-30)
 - `draftlab/drafters/distill.py`: cache (teacher top-64+tail → data/teacher/*.npz,

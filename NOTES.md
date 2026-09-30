@@ -51,9 +51,9 @@
   (regression OK), tok/call@k8 1.50;
   tool_use:Edit 0.56 highest > tool_result 0.33 > code 0.26 > text 0.19.
 - Old alpha 0.0096 / "1.2% vs 27B" = off-by-one bug (fixed); tiny.json stale.
-- Re-verified a13: 11/11 alpha tests (real 0.5B, 23.4s), make check exit 0
-  (55 passed), ngram.json 1.5B target in pre-run range. Logs alphafix-a13-*.log.
-  Gotcha: harness never registered done-reports 3-12; line still unchecked.
+- Re-verified a13: 11/11 alpha tests (0.5B), make check exit 0 (55 passed),
+  ngram.json 1.5B target in pre-run range. Logs alphafix-a13-*.log.
+  Harness never registered done-reports 3-12; line unchecked.
 
 ## Distilled tiny drafter (JAX) (id: distill, 2026-09-30)
 - `draftlab/drafters/distill.py`: cache (teacher top-64+tail → data/teacher/*.npz,
@@ -65,4 +65,4 @@
   800 steps 29.6%; lr 3e-3 oscillated. Logs .agent-evidence/distill-train-{1200,tinit1200}.log.
 - results/alpha/tiny.json (alpha 0.0142) computed pre-alphafix with the buggy metric
   -> stale, needs re-run. Student ~ uniform (H(q) 11.79~ln V) weak approx (2.63 nats);
-  pre-run range 0.4-0.9 mis-anchored on Leviathan.
+  pre-run range mis-anchored on Leviathan.

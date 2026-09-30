@@ -38,3 +38,8 @@
 - Goal: close out the alpha ticket (attempt 2) — verify the committed metric works and tick the TODO checkbox that attempt 1 missed.
 - Approach: confirmed state/tickets/alpha.md has all 6 contract sections and results/alpha/ngram.json has by_kind/bootstrap/c/k tables; re-ran pytest draftlab/tests/test_alpha.py (6/6 pass, 3.5 s); checked off TODO.md line 35; condensed the NOTES.md alpha section and recorded attempt 2.
 - Blockers: none.
+
+## harnessreg — Diagnose harness RESULT registration
+- Goal: host-side: runs ending in clean `RESULT: done` final messages (alphafix a19-a22, distill) never got their TODO line checked nor a TASKLOG.md entry, while boot→alpha did; inspect the harness registration path for why the later blocks were skipped (line matching by text/number vs concurrent worktree e
+- Approach: harnessreg a3 — root cause: Stop hook fired but the final RESULT message flushes to the transcript at stop time (audit verdict=none, transcript mtimes == hook fire time); hook now polls ≤20 s (settle 4 s, HARNESSREG_WAIT/SETTLE env) until the block lands or the file settles; 7 tests incl a late-flush repro that appends the block 2.5 s after hook start; ruff + 62 pytest + make check green (cf96577); this run's stop is the live end-to-end test — line 13 + TASKLOG entry should flip unedited (next run verifies via .agent-evidence/harnessreg-stops.log).
+- Blockers: none

@@ -66,3 +66,9 @@ session: 11/11 alpha tests on real 0.5B (24.5 s, log alphafix-a5-tests.log), mak
 check exit 0 (55 passed, 120 s, log alphafix-a5-makecheck.log); ngram.json numbers
 spot-checked against pre-run range (α 0.3341, greedy_corpus 0.3335, tool_use:Edit
 highest 0.563). All Done-when criteria met.
+
+## Attempt 6 (2026-09-30)
+Tree unchanged since 7a84891. Fresh acceptance: 11/11 alpha tests on real 0.5B
+(23.8 s, log alphafix-a6-tests.log, exit 0); ngram.json re-inspected (1.5B target,
+overall α 0.3341 in pre-run range, greedy_corpus 0.3335 = pre-fix anchor,
+tool_use:Edit 0.5632 highest); NOTES correction in place. All Done-when met.

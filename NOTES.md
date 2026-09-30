@@ -49,14 +49,13 @@
 - ngram (400 val blocks, 1.5B): alpha 0.3341, greedy 0.3681, greedy_corpus 0.3335
   (regression OK), tok/call@k8 1.50; tool_use:Edit 0.56 highest > tool_result 0.33 >
   code 0.26 > text 0.19.
-- Old alpha 0.0096 / "1.2% vs 27B" = off-by-one bug (fixed); tiny.json stale.
+- Old alpha 0.0096 / "1.2% vs 27B" = off-by-one bug (fixed).
 - a19: 11/11 alpha tests 25.6s exit 0 (log alphafix-a19-tests.log); ngram.json
   anchors unchanged (0.3341/0.3335; tool_use 0.56 > text 0.19).
-- Registration gap is systemic/host-side: 0 RESULT blocks ever registered in this
-  project (incl. distill's clean block, transcript db45b037); all 8 checked lines
-  were agent self-checks. Work complete; line split per exception — checked
-  "Alpha alignment fixed, known answers" + new unchecked "Re-run stale tiny.json
-  with fixed metric" (id: alphafix).
+- Registration gap is systemic/host-side: 0 RESULT blocks ever registered
+  project-wide (incl. distill's clean block); all checked lines were agent
+  self-checks. Work done; line split per exception — "Alpha alignment fixed,
+  known answers" checked; remaining: "Re-run stale tiny.json" (id: alphafix).
 
 ## Distilled tiny drafter (JAX) (id: distill, 2026-09-30)
 - `draftlab/drafters/distill.py`: cache (teacher top-64+tail → data/teacher/*.npz,
@@ -64,8 +63,7 @@
   KL(T‖S) top-64 + renormalised tail, AdamW warmup-cosine, orbax ckpt/tiny/N,
   HF export at ckpt/tiny/export).
 - 1200 steps (default) @1e-3, batch 16×256: val KL 3.7879 → 2.6292 (30.6% ✅);
-  curve results/distill_curve.json. Teacher-init control (--teacher-init): 2.6379, no gain.
-  800 steps 29.6%; lr 3e-3 oscillated. Logs .agent-evidence/distill-train-{1200,tinit1200}.log.
-- results/alpha/tiny.json (alpha 0.0142) computed pre-alphafix with the buggy metric
-  -> stale, needs re-run. Student ~ uniform (H(q) 11.79~ln V) weak approx (2.63 nats);
-  pre-run range mis-anchored on Leviathan.
+  curve results/distill_curve.json; teacher-init control 2.6379 (no gain); 800 steps
+  29.6%; lr 3e-3 oscillated. Logs distill-train-{1200,tinit1200}.
+- results/alpha/tiny.json (alpha 0.0142) pre-alphafix/buggy metric -> stale; re-run
+  is now a TODO line (id: alphafix). Student ~ uniform (H(q) 11.79~ln V); weak approx.

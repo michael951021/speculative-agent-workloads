@@ -41,17 +41,17 @@
   `python -m draftlab.serve --model K --alias A --port P` (default 0.5b-instruct, :8100).
   Gotcha: `apply_chat_template(tokenize=False)` else BatchEncoding; tiny → ToyTokenizer.
 
-## Alpha metric (id: alpha, alphafix 2026-09-30, verified)
+## Alpha metric (id: alpha, alphafix, verified)
 - `python -m draftlab.eval.alpha` (ngram|jax|hf; `dists(ctx, ids)->(q, valid)`);
   default target 1.5b-instruct; row i predicts token i+1 -> slice
   [len(ctx)-1 : len(ctx)+n-1]; empty ctx: pos 0 invalid.
 - Known answers test_alpha_known.py (real 0.5B): CE == HF labels= loss <1e-3; top-1 val
-  42.4% (1929 tok, band 40-70%); uniform-q = 1-TV; ngram repeated 63/64, shuffled null collapses.
+  42.4% (band 40-70%); uniform-q = 1-TV; ngram repeated 63/64, shuffled null collapses.
 - ngram (400 val blocks, 1.5B): alpha 0.3341, greedy 0.3681, greedy_corpus 0.3335
-  (= old run -> regression OK), tok/call@k8 1.50;
+  (regression OK), tok/call@k8 1.50;
   tool_use:Edit 0.56 highest > tool_result 0.33 > code 0.26 > text 0.19.
 - Old alpha 0.0096 / "1.2% vs 27B" = off-by-one bug (fixed); tiny.json stale.
-- Re-verified a2-12: 11 alpha tests (real 0.5B) pass, make check exit 0;
+- Re-verified a2-12 11 alpha tests (real 0.5B) pass, make check exit 0;
   logs .agent-evidence/alphafix-a12-*.log. Done-reports 3-11 never registered
   (harness); a12 re-audit of code/tests/results clean.
 

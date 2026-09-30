@@ -99,19 +99,22 @@ class ModelDrafter:
         self._undo: tuple[dict, int] | None = None
 
     def propose(self, ctx: list[int], k: int) -> tuple[list[int], list[np.ndarray]]:
-        if len(ctx) > self._last:
-            _, self.cache = M.decode(self.dcfg, self.dparams, self.cache, ctx[self._last :])
-            self._last = len(ctx)
+        # ctx grows by >=1 committed token between proposes (first call: prompt),
+        # so extending the cache to len(ctx) gives the dist over the FIRST draft
+        # token on its last row; each draft then decodes the previous one.
+        if len(ctx) <= self._last:
+            raise RuntimeError("propose called without new committed tokens")
+        lg, self.cache = M.decode(self.dcfg, self.dparams, self.cache, ctx[self._last :])
+        self._last = len(ctx)
         self._undo = (self.cache, self._last, k)
         toks: list[int] = []
         probs: list[np.ndarray] = []
-        nxt = ctx[-1]
         for _ in range(k):
-            lg, self.cache = M.decode(self.dcfg, self.dparams, self.cache, [nxt])
             p = np.asarray(jax.nn.softmax(lg[-1]), np.float32)
-            toks.append(int(np.argmax(p)))
+            t = int(np.argmax(p))
+            toks.append(t)
             probs.append(p)
-            nxt = toks[-1]
+            lg, self.cache = M.decode(self.dcfg, self.dparams, self.cache, [t])
         return toks, probs
 
     def rollback(self, n_kept: int) -> None:
@@ -119,7 +122,8 @@ class ModelDrafter:
             return
         cache, last, m = self._undo
         self._undo = None
-        if n_kept == m:  # all drafts committed; the bonus extends at next propose
+        if n_kept == m:  # all drafts committed; the cache already holds them
+            self._last = last + m  # only the bonus is new; extend from after the drafts
             return
         self.cache, self._last = cache, last
 

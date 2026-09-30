@@ -126,3 +126,48 @@ def test_model_drafter_protocol():
     assert _greedy(cfg, params, prompt, 12) == SpecDecoder(
         cfg, params, ModelDrafter(dcfg, dparams, 84), max_len=84, k=3, temperature=0.0, seed=8
     ).generate(prompt, 12)[0]
+
+
+def test_model_drafter_full_accept_steps_keep_cache_in_sync():
+    """Regression: drafter==target at T=0 full-accepts every step (A==m).
+    rollback(m) must advance _last by m — otherwise the next propose re-decodes
+    already-cached draft tokens and the drafter context diverges from the
+    target's, so strict n_acc == n_draft fails."""
+    cfg, params = _tiny16(5)
+    prompt = _rand_prompt(jax.random.PRNGKey(11), 24, cfg.vocab_size)
+    dec = SpecDecoder(cfg, params, ModelDrafter(cfg, params, 84), max_len=84,
+                      k=1, temperature=0.0, seed=9)
+    out, st = dec.generate(prompt, 20)
+    assert out == _greedy(cfg, params, prompt, 20)
+    assert all(s.drafted == 1 and s.accepted == 1 for s in st)  # strict, no rejections
+    # The drafter ends one token behind the final bonus: its cache must equal a
+    # fresh prefill of that prefix (a desynced rollback re-decodes already
+    # cached drafts and the KV diverges from the first duplicated slot on).
+    full = prompt + out
+    n = len(full) - 1
+    d = dec.drafter
+    assert int(d.cache["len"]) == n and d._last == n
+    _, ref = M.prefill(d.dcfg, d.dparams, full[:n], 84)
+    for key in ("k", "v"):
+        diff = float(abs(np.asarray(d.cache[key])[:, :, :n] - np.asarray(ref[key])[:, :, :n]).max())
+        assert diff < 1e-5, f"drafter {key} cache diverged from fresh prefill: {diff:.2e}"
+    # ...and its next first draft still equals a fresh forward over the full ctx.
+    toks, _ = d.propose(full, 1)
+    lg, _ = M.step(cfg, params, M.empty_cache(cfg, 84),
+                   jax.numpy.asarray(full, jax.numpy.int32))
+    assert toks[0] == int(np.argmax(np.asarray(lg[-1])))
+
+
+def test_model_drafter_first_proposal_position():
+    """Known answer: draft j's dist is the forward over ctx+drafts[:j] (no
+    duplicated last token); first draft == argmax of the forward over ctx."""
+    cfg, params = _tiny16(4)
+    prompt = _rand_prompt(jax.random.PRNGKey(7), 10, cfg.vocab_size)
+    d = ModelDrafter(cfg, params, 64)
+    toks, probs = d.propose(prompt, 3)
+    lg, _ = M.step(cfg, params, M.empty_cache(cfg, 64), jax.numpy.asarray(prompt, jax.numpy.int32))
+    assert toks[0] == int(np.argmax(np.asarray(lg[-1])))
+    # second draft conditions on ctx + toks[0]
+    lg2, _ = M.step(cfg, params, M.empty_cache(cfg, 64),
+                    jax.numpy.asarray(prompt + [toks[0]], jax.numpy.int32))
+    assert toks[1] == int(np.argmax(np.asarray(lg2[-1])))

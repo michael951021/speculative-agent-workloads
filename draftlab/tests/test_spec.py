@@ -77,6 +77,32 @@ def test_lossless_chi_square():
     assert pval > 0.01, f"chi2={chi2:.1f}, p={pval:.4g} (distribution shifted)"
 
 
+def test_temperature_scaling_chi_square():
+    """T=0.7: first-token distribution == softmax(logits/0.7), chi2 p > 0.01,
+    and distinguishable from the unscaled softmax (so the test fails if the
+    temperature is ignored)."""
+    from scipy.special import logsumexp
+
+    cfg, params = _tiny16(1)
+    prompt = [i % 7 for i in range(32)]
+    lg, _ = M.prefill(cfg, params, prompt, len(prompt) + 8)
+    lg = np.asarray(lg[-1], np.float64)
+    pT = np.exp(lg / 0.7 - logsumexp(lg / 0.7))
+    p1 = np.exp(lg - logsumexp(lg))
+    assert float(np.abs(pT - p1).sum()) > 0.05, "guard: T=0.7 must change the distribution"
+    N = 8000
+    obs = np.zeros(cfg.vocab_size, np.int64)
+    for i in range(N):
+        dec = SpecDecoder(cfg, params, NGramDrafter(cfg.vocab_size, max_n=4),
+                          max_len=len(prompt) + 8, k=2, temperature=0.7, seed=i)
+        out, _ = dec.generate(prompt, 1)
+        obs[out[0]] += 1
+    exp = N * pT
+    chi2 = float(((obs - exp) ** 2 / exp).sum())
+    pval = float(stats.chi2.sf(chi2, df=cfg.vocab_size - 1))
+    assert pval > 0.01, f"chi2={chi2:.1f}, p={pval:.4g} (not sampling softmax(lg/0.7))"
+
+
 @pytest.mark.parametrize("kind", ["ngram", "model"])
 def test_rollback_cache_equals_fresh_prefill(kind):
     cfg, params = _tiny16(2)

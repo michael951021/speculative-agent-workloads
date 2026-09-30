@@ -78,3 +78,12 @@
 - Goal: deploy/prometheus/{prometheus.yml,rules.yml} (recording rules: acceptance rate = accepted/draft by model; alerts: acceptance < 0.4 for 10m, p95 TTFT > 2s), deploy/grafana/draftlab.json dashboard (TTFT p50/p95, tok/s, acceptance by model, 429s, breaker state)
 - Approach: Prometheus rules (acceptance/TTFT recordings + 2 alerts) with hand-computed-value unit tests, and a Grafana dashboard with TTFT p50/p95, tok/s, acceptance by model, 429s, breaker state; promtool wired into make check. Prior attempt had committed rules/tests but the dashboard lacked tok/s/429/breaker panels; added the 3 missing panels, re-ran promtool test rules, gateway go test, and full make check (exit 0).
 - Blockers: Prior run ended without emitting the RESULT registration line, leaving the ticket unchecked despite committed work.
+## LLM-as-judge lossless check
+- Goal: LLM-as-judge lossless check
+- Approach: wrote the check against the ticket's fake-server known answers first, ran the real pipeline (49 test prompts, T=0.7, k=4 lora_dpo), then forensically reconciled the out-of-range result and the log/output mismatches (duplicate run:seq block, cap starved by invalid-JSON retries) before recording the finding.
+- Blockers: none (out-of-range judge result was expected-to-be-possible and resolved as a documented finding per the ticket).
+
+## docker — Dockerfiles
+- Goal: deploy/docker/: gateway (multi-stage, distroless static, non-root), engine (python:3.12-slim, CPU), vllm (vllm/vllm-openai base + drafter adapter mount); .dockerignore; hadolint clean in make check
+- Approach: added deploy/docker Dockerfiles (gateway distroless nonroot, engine slim CPU, vllm openai base + drafter mount), .dockerignore, .hadolint.yaml; hadolint 3/3 clean in make check matched entrypoints/ports to gateway/main.go and draftlab.serve source, pinned bases (v0.11.2 verified on hub), iterated hadolint until 0 findings
+- Blockers: none

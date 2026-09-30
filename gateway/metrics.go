@@ -11,8 +11,8 @@ type Metrics struct {
 	TTFT            *prometheus.HistogramVec
 	Latency         *prometheus.HistogramVec
 	OutputTokPerSec prometheus.Gauge
-	DraftTokens     prometheus.Counter
-	AcceptedTokens  prometheus.Counter
+	DraftTokens     *prometheus.CounterVec // model
+	AcceptedTokens  *prometheus.CounterVec // model
 	BackendUp       *prometheus.GaugeVec   // backend
 	BreakerState    *prometheus.GaugeVec   // backend: 0 closed, 1 open, 2 half-open
 	RateLimited     *prometheus.CounterVec // key
@@ -39,14 +39,14 @@ func NewMetrics() *Metrics {
 			Namespace: "draftlab", Name: "output_tokens_per_second",
 			Help: "Completion tokens / second for the last completed request.",
 		}),
-		DraftTokens: prometheus.NewCounter(prometheus.CounterOpts{
+		DraftTokens: prometheus.NewCounterVec(prometheus.CounterOpts{
 			Namespace: "draftlab", Name: "draft_tokens_total",
 			Help: "Draft tokens proposed, from backend usage.",
-		}),
-		AcceptedTokens: prometheus.NewCounter(prometheus.CounterOpts{
+		}, []string{"model"}),
+		AcceptedTokens: prometheus.NewCounterVec(prometheus.CounterOpts{
 			Namespace: "draftlab", Name: "accepted_tokens_total",
 			Help: "Draft tokens accepted, from backend usage.",
-		}),
+		}, []string{"model"}),
 		BackendUp: prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Namespace: "draftlab", Name: "backend_up",
 			Help: "Backend health: 1 up, 0 down.",

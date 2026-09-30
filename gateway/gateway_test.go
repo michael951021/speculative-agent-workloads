@@ -250,8 +250,8 @@ func TestMetricsCounted(t *testing.T) {
 	txt := string(metrics)
 	want := []string{
 		`draftlab_requests_total{key="dev",model="m1",status="200"} 2`,
-		`draftlab_draft_tokens_total 24`,
-		`draftlab_accepted_tokens_total 14`,
+		`draftlab_draft_tokens_total{model="m1"} 24`,
+		`draftlab_accepted_tokens_total{model="m1"} 14`,
 		`draftlab_ttft_seconds_count{model="m1"} 1`,
 		`draftlab_breaker_state{backend="b1"} 0`,
 	}

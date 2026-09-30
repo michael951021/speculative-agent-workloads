@@ -75,10 +75,9 @@ fi
 if [ -d deploy/prometheus ] || [ -d deploy/grafana ]; then
   section "promtool"
   if [ -d deploy/prometheus ]; then
-    while IFS= read -r f; do promtool check config "$f" || fail=1; done \
-      < <(find deploy/prometheus -name '*.yml' -o -name '*.yaml')
-    while IFS= read -r f; do promtool check rules "$f" || fail=1; done \
-      < <(find deploy/prometheus -name '*.rules')
+    check prom-config promtool check config deploy/prometheus/prometheus.yml
+    check prom-rules promtool check rules deploy/prometheus/rules.yml
+    check prom-test promtool test rules deploy/prometheus/rules_test.yml
   fi
   if [ -d deploy/grafana ] && ls deploy/grafana/*.json >/dev/null 2>&1; then
     # grafana dashboards: promtool can't validate them; json-parse instead

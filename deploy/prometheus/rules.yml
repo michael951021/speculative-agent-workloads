@@ -1,0 +1,39 @@
+# draftlab gateway recording rules + alerts.
+# Known answers (hand-computed, pinned by rules_test.yml; see state/tickets/obs.md):
+#   acceptance 30/60 per min -> ratio 50/100 = exactly 0.5
+#   ttft 15 obs/min (5 <= 2.5s, 10 in (2.5,5]s) -> p95 = 2.5 + 2.5*9.25/10 = 4.8125, p50 = 3.125
+groups:
+  - name: draftlab.recordings
+    interval: 1m
+    rules:
+      - record: draftlab:acceptance_ratio5m
+        expr: >-
+          sum by (model) (rate(draftlab_accepted_tokens_total[5m]))
+          / sum by (model) (rate(draftlab_draft_tokens_total[5m]))
+      - record: draftlab:ttft_p50_seconds5m
+        expr: histogram_quantile(0.5, sum by (model, le) (rate(draftlab_ttft_seconds_bucket[5m])))
+      - record: draftlab:ttft_p95_seconds5m
+        expr: histogram_quantile(0.95, sum by (model, le) (rate(draftlab_ttft_seconds_bucket[5m])))
+      - record: draftlab:requests_rate5m
+        expr: sum by (model, status) (rate(draftlab_requests_total[5m]))
+
+  - name: draftlab.alerts
+    interval: 1m
+    rules:
+      - alert: LowDraftAcceptance
+        # sustained: for=10m so a 5-minute dip (window still mixed) does not page
+        expr: draftlab:acceptance_ratio5m < 0.4
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Draft acceptance below 40% on {{ $labels.model }}"
+          description: "Acceptance ratio {{ $value }} < 0.4 for 10m on model {{ $labels.model }}."
+      - alert: HighTTFTp95
+        expr: draftlab:ttft_p95_seconds5m > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "TTFT p95 above 2s on {{ $labels.model }}"
+          description: "TTFT p95 {{ $value }}s > 2s for 5m on model {{ $labels.model }}."

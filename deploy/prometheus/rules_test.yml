@@ -1,0 +1,159 @@
+# promtool test rules — known answers hand-computed before the run (state/tickets/obs.md).
+# Samples land on the minute grid (t=0m,1m,...); rate(...[5m]) at ts=T reads [T-5m, T],
+# i.e. 6 samples when aligned. Unaligned left gaps extrapolate: at ts=4m the window is
+# [t=0..4] with a 60s gap on the left -> factor (240+60)/240/300 = 1.25/300.
+# healthy: 60 draft + 30 accepted tok/min, 30 ttft/min all <= 1s ->
+#   ratio 150/300 = exactly 0.5; ttft rate c = 150/300 = 0.5/s;
+#   p50 = 1.0*(0.5*c)/c = 0.5; p95 = 1.0*(0.95*c)/c = exactly 0.95 (exact in float64)
+# low-acceptance: accepted 30/min to t=3 (120), partial step 126 (t=4), flat 126 (t=5),
+#   then +2/min; draft 60/min from t=0 (starts at 60 so dZero = dStart, no clamp).
+#   ts=4m [t=0..4]: 96*1.25/300 / (240*1.25/300) = 96/240 = exactly 0.4 -> NOT < 0.4
+#   ts=5m [t=0..5]: 96/300 = 0.32 < 0.4 -> violation onset
+#   ts=10m [t=5..10]: 10/300 = 1/30 = 0.03333333333333333
+#   for:10m -> pending 5-15m, firing at 15m
+# slow-ttft: 15 ttft/min: 5 <= 2.5s, 10 in (2.5,5]s ->
+#   p95 = 2.5 + 2.5*(0.95*15 - 5)/10 = 2.5 + 2.5*9.25/10 = 4.8125; p50 = 3.125
+#   p95 > 2 from ts=1m; for:5m -> firing at 6m
+rule_files:
+  - rules.yml
+evaluation_interval: 1m
+group_eval_order:
+  - draftlab.recordings
+  - draftlab.alerts
+
+tests:
+  - name: healthy-no-alerts
+    interval: 1m
+    input_series:
+      - series: 'draftlab_draft_tokens_total{model="m1"}'
+        values: "0+60x30"
+      - series: 'draftlab_accepted_tokens_total{model="m1"}'
+        values: "0+30x30"
+      - series: 'draftlab_ttft_seconds_bucket{model="m1",le="1"}'
+        values: "0+30x30"
+      - series: 'draftlab_ttft_seconds_bucket{model="m1",le="+Inf"}'
+        values: "0+30x30"
+    promql_expr_test:
+      - expr: draftlab:acceptance_ratio5m
+        eval_time: 10m
+        exp_samples:
+          - labels: '{__name__="draftlab:acceptance_ratio5m", model="m1"}'
+            value: 0.5
+      - expr: draftlab:ttft_p50_seconds5m
+        eval_time: 10m
+        exp_samples:
+          - labels: '{__name__="draftlab:ttft_p50_seconds5m", model="m1"}'
+            value: 0.5
+      - expr: draftlab:ttft_p95_seconds5m
+        eval_time: 10m
+        exp_samples:
+          - labels: '{__name__="draftlab:ttft_p95_seconds5m", model="m1"}'
+            value: 0.95
+    alert_rule_test:
+      - alertname: LowDraftAcceptance
+        eval_time: 12m
+        exp_alerts: []
+      - alertname: HighTTFTp95
+        eval_time: 12m
+        exp_alerts: []
+
+  - name: low-acceptance
+    interval: 1m
+    input_series:
+      # grammar: V+IxN = N+1 values from V by I at 1m spacing; segments concat
+      - series: 'draftlab_draft_tokens_total{model="m1"}'
+        values: "60+60x15"
+      # t=0..3: 30,60,90,120 · t=4: 126 (partial step) · t=5: 126 (flat) · t=6..15: 128..146
+      - series: 'draftlab_accepted_tokens_total{model="m1"}'
+        values: "30+30x3 126 126 128+2x9"
+      - series: 'draftlab_ttft_seconds_bucket{model="m1",le="1"}'
+        values: "30+30x15"
+      - series: 'draftlab_ttft_seconds_bucket{model="m1",le="+Inf"}'
+        values: "30+30x15"
+    promql_expr_test:
+      - expr: draftlab:acceptance_ratio5m
+        eval_time: 4m
+        exp_samples:
+          - labels: '{__name__="draftlab:acceptance_ratio5m", model="m1"}'
+            value: 0.4
+      - expr: draftlab:acceptance_ratio5m
+        eval_time: 5m
+        exp_samples:
+          - labels: '{__name__="draftlab:acceptance_ratio5m", model="m1"}'
+            value: 0.32
+      - expr: draftlab:acceptance_ratio5m
+        eval_time: 10m
+        exp_samples:
+          - labels: '{__name__="draftlab:acceptance_ratio5m", model="m1"}'
+            value: 0.03333333333333333
+    alert_rule_test:
+      # 0.4 is not < 0.4: no violation yet at 4m
+      - alertname: LowDraftAcceptance
+        eval_time: 4m
+        exp_alerts: []
+      # violation starts at 5m: pending (for:10m not elapsed), not firing
+      - alertname: LowDraftAcceptance
+        eval_time: 5m
+        exp_alerts: []
+      - alertname: LowDraftAcceptance
+        eval_time: 10m
+        exp_alerts: []
+      - alertname: LowDraftAcceptance
+        eval_time: 15m
+        exp_alerts:
+          - exp_labels:
+              model: m1
+              severity: warning
+            exp_annotations:
+              summary: "Draft acceptance below 40% on m1"
+              description: "Acceptance ratio 0.03333333333333333 < 0.4 for 10m on model m1."
+      - alertname: HighTTFTp95
+        eval_time: 15m
+        exp_alerts: []
+
+  - name: slow-ttft
+    interval: 1m
+    input_series:
+      - series: 'draftlab_draft_tokens_total{model="m1"}'
+        values: "0+60x20"
+      - series: 'draftlab_accepted_tokens_total{model="m1"}'
+        values: "0+30x20"
+      - series: 'draftlab_ttft_seconds_bucket{model="m1",le="2.5"}'
+        values: "0+5x20"
+      - series: 'draftlab_ttft_seconds_bucket{model="m1",le="5"}'
+        values: "0+15x20"
+      - series: 'draftlab_ttft_seconds_bucket{model="m1",le="+Inf"}'
+        values: "0+15x20"
+    promql_expr_test:
+      - expr: draftlab:acceptance_ratio5m
+        eval_time: 10m
+        exp_samples:
+          - labels: '{__name__="draftlab:acceptance_ratio5m", model="m1"}'
+            value: 0.5
+      - expr: draftlab:ttft_p50_seconds5m
+        eval_time: 10m
+        exp_samples:
+          - labels: '{__name__="draftlab:ttft_p50_seconds5m", model="m1"}'
+            value: 3.125
+      - expr: draftlab:ttft_p95_seconds5m
+        eval_time: 10m
+        exp_samples:
+          - labels: '{__name__="draftlab:ttft_p95_seconds5m", model="m1"}'
+            value: 4.8125
+    alert_rule_test:
+      # violating since ts=1m (p95 4.8125 > 2); for:5m not elapsed at 5m
+      - alertname: HighTTFTp95
+        eval_time: 5m
+        exp_alerts: []
+      - alertname: HighTTFTp95
+        eval_time: 6m
+        exp_alerts:
+          - exp_labels:
+              model: m1
+              severity: warning
+            exp_annotations:
+              summary: "TTFT p95 above 2s on m1"
+              description: "TTFT p95 4.8125s > 2s for 5m on model m1."
+      - alertname: LowDraftAcceptance
+        eval_time: 10m
+        exp_alerts: []

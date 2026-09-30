@@ -235,8 +235,8 @@ func (g *Gateway) recordUsage(w http.ResponseWriter, resp *http.Response, model 
 	if u == nil {
 		return
 	}
-	g.metrics.DraftTokens.Add(float64(u.DraftTokens))
-	g.metrics.AcceptedTokens.Add(float64(u.AcceptedTokens))
+	g.metrics.DraftTokens.WithLabelValues(model).Add(float64(u.DraftTokens))
+	g.metrics.AcceptedTokens.WithLabelValues(model).Add(float64(u.AcceptedTokens))
 	secs := time.Since(start).Seconds()
 	if secs > 0 {
 		g.metrics.OutputTokPerSec.Set(float64(u.CompletionTokens) / secs)

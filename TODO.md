@@ -90,7 +90,7 @@
 
 ## Results
 > why: the goal is answered only when the numbers are written down, with the GPU-scale run and an honest account of what did not work.
-- [ ] **GPU run script** — scripts/gpu_run.sh (host, after `./agent stop` frees the GPUs): alpha eval at T = Qwen2.5-7B-Instruct with the Triton kernel; vLLM serving with --speculative-config for ngram and the LoRA drafter, a throughput/latency benchmark through the gateway at concurrency 1/4/16; results/gpu/*.json. In the sandbox only `--dry-run` (prints the plan, checks files exist). (id: gpu) (after: triton, helm, lora)
+- [x] **GPU run script** — scripts/gpu_run.sh (host, after `./agent stop` frees the GPUs): alpha eval at T = Qwen2.5-7B-Instruct with the Triton kernel; vLLM serving with --speculative-config for ngram and the LoRA drafter, a throughput/latency benchmark through the gateway at concurrency 1/4/16; results/gpu/*.json. In the sandbox only `--dry-run` (prints the plan, checks files exist). (id: gpu) (after: triton, helm, lora)
   why: the numbers at a realistic target size, which CPU runs can only approximate.
 - [ ] **REPORT and README** — REPORT.md: question, corpus, method, headline table (drafter × kind α, measured speedups), figures (matplotlib PNGs in results/fig/), judge result, what failed and why, GPU results if present. README.md: architecture diagram (mermaid), quickstart, and a skills map table (skill → files: JAX, PyTorch/FSDP, LoRA/QLoRA, DPO, Triton, Ray, Go, Prometheus/Grafana, Kubernetes/Helm, Terraform/GKE, React/TS, LLM-as-judge, OpenAI API). (id: report) (after: judge, web, kind, tf)
   why: the portfolio artifact: findings first, then how to reproduce and what each part demonstrates.

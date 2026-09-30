@@ -252,3 +252,12 @@ Full 400-block re-run not repeated: deterministic (bootstrap seed 0), a20 run lo
 exit 0/1264s with matching output, 0.5B control α=0.7675 (a20-control log) rules
 out metric bug. All Done-when criteria met; line left unchecked by harness-side
 registration gap.
+
+## Attempt 22 (2026-09-30)
+Tree at b8ed02b (a20's tiny.json commit 512d8b0 intact). Fresh acceptance: 11/11
+alpha tests exit 0, 23.4 s (log alphafix-a22-tests.log);
+scripts/check_tiny_alpha.py PASS worst mean|d| 3.67e-7, exit 0 (log
+alphafix-a22-check.log); tiny.json re-inspected: alpha 0.010468, tpc@8 1.0105786
+== analytic (1−α⁹)/(1−α) to 5 decimals, n_blocks/n_tokens/target identical to
+ngram.json (400 / 29657 / qwen2.5-1.5b-instruct). All Done-when criteria met;
+no re-run of the 21-min full pass (deterministic, a20 log exit 0).

@@ -43,18 +43,16 @@
 ## Alpha metric (id: alpha, alphafix)
 - `python -m draftlab.eval.alpha` (ngram|jax|hf); default target 1.5b-instruct;
   row i predicts token i+1 -> slice [len(ctx)-1 : len(ctx)+n-1]; empty ctx: pos 0 invalid.
-- Known answers (real 0.5B, test_alpha_known.py): CE==HF labels= <1e-3; top-1 val
+- Known answers (real 0.5B): CE==HF labels= <1e-3; top-1 val
   42.4% (band 40-70%); uniform-q=1-TV; ngram repeated 63/64, shuffled null collapses.
 - ngram (400 val blocks, 1.5B): alpha 0.3341, greedy 0.3681, greedy_corpus 0.3335
   (regression OK), tok/call@k8 1.50; tool_use:Edit 0.56 highest > tool_result 0.33 >
   code 0.26 > text 0.19.
 - Old alpha 0.0096 / "1.2% vs 27B" = off-by-one bug (fixed).
-- a20/a21: re-ran stale tiny.json, fixed metric (`--drafter hf --draft-model
-  ckpt/tiny/export --out results/alpha/tiny.json`, 400 val, 1.5B, 29657 tok = ngram):
-  alpha 0.0105, tpc@8 1.01 (no speedup); per-kind tiny 0.004-0.015 vs ngram
-  0.155-0.56 (ngram wins every kind). check_tiny_alpha.py worst |d| 3.7e-7 (fresh
-  a21); 0.5B control same pipeline 0.7675 → weak 43M drafter (val KL 2.63), not
-  metric. a21 clean tree: 11/11 alpha tests exit 0. Logs alphafix-a20-*, -a21-*.
+- tiny.json re-run (a20), verified a21/a22 (11/11 tests; check_tiny_alpha.py
+  worst |d| 3.67e-7; tpc@8 == analytic (1−α⁹)/(1−α)): alpha 0.0105, tpc@8 1.01;
+  per-kind tiny 0.004-0.015 vs ngram 0.155-0.56 (ngram wins every kind); 0.5B
+  control 0.7675 → weak 43M drafter (val KL 2.63), not metric. Logs alphafix-a2*.
 - Registration gap host-side: 0 RESULT blocks ever registered; done lines stay
   unchecked.
 

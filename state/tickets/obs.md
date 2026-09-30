@@ -43,5 +43,5 @@ Stop/split after two attempts if promtool test-rule semantics (state timeline) f
 2. Gateway: add `model` label to draft/accepted counters + update test.
 3. Write prometheus.yml (scrape 127.0.0.1:8200, rule_files), rules.yml (recordings + 2 alerts),
    rules_test.yml; iterate until promtool test passes.
-4. Grafana dashboard JSON (5 panels, datasource template var).
+4. Grafana dashboard JSON (8 panels incl. tok/s, 429 rate, breaker state; datasource+model vars).
 5. Update check.sh prometheus section; run make check; NOTES.md; commit.

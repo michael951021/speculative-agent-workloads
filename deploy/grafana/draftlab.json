@@ -126,6 +126,62 @@
       "fieldConfig": {
         "defaults": { "unit": "reqps" }
       }
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Output tok/s (last completed request)",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 24 },
+      "targets": [
+        { "expr": "draftlab_output_tokens_per_second" }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "cps" }
+      }
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Rate-limited (429) rate (5m)",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 24 },
+      "targets": [
+        {
+          "expr": "sum by (key) (rate(draftlab_rate_limited_total[5m]))",
+          "legendFormat": "{{key}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "reqps" }
+      }
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Circuit breaker state (0 closed, 1 open, 2 half-open)",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 24 },
+      "targets": [
+        {
+          "expr": "draftlab_breaker_state",
+          "legendFormat": "{{backend}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "max": 2,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 1 }
+            ]
+          }
+        }
+      }
     }
   ]
 }

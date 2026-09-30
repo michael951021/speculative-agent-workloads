@@ -42,7 +42,6 @@
 - k≥2 accept expect ≥0.99 (GEMM tiling ~1e-4). ModelDrafter bugs fixed earlier (regression-tested).
 - Cost (measured 09-30): XLA ignores OMP_NUM_THREADS; 1 proc 6.4 tok/s; 4 parallel ≈ 3.7 tok/s: none≈140, lora/dpo≈150, base≈175 min. TODO batches 1-3 resumable; b1 = base/lora/lora_dpo k=1 T=0 + none.
 - Known (b): tools/compare_sweep_alpha.py vs `eval.alpha --target 0.5b-instruct --blocks 100 --ctx-tokens 0` (k=1 T=0 acc vs `greedy_ci95`).
-- `python -m draftlab.sweep` (Ray local, resumable by (drafter,k,temp)) → results/sweep.parquet; 488 val prompts (100/kind ≤128 tok), n_gen 16.
 - Known: base@T0 k=1 accept exactly 1.0; k≥2 expect ≥0.99. Cost: 6.4 tok/s @16 thr → 42 cells ≈ 20 CPU-h.
 
 ## Helm (id: helm)
@@ -57,6 +56,10 @@
 ## Terraform GKE (id: tf)
 - deploy/terraform root (thin pass-through vars) → module ./gke: VPC + regional subnet (secondary_ip_range pods/services), GKE Standard (workload_pool WI, private nodes+global access, BA ENFORCE, REGULAR channel, initial_node_count 0), node pool g2-standard-12 + nvidia-l4×1 autoscale 0-2 + NO_SCHEDULE taint, Artifact Registry docker repo (most_recent_versions keep 10), WI GCP SA + artifactregistry.reader. Outputs incl. workload_identity_sa_email + push base.
 - init -backend=false + validate + tflint exit 0 (google v5.45.2). Gotchas: v5 renames identity_namespace→workload_pool, secondary_range→secondary_ip_range, monitoring enabled_components→enable_components, cleanup keep_tag_revision_policy→most_recent_versions; binary_authorization.enabled deprecated → evaluation_mode PROJECT_SINGLETON_POLICY_ENFORCE; TF 1.x does NOT load subdir .tf into root (must be a module); real schema: `terraform providers schema -json`.
+
+## GPU run (id: gpu)
+- scripts/gpu_run.sh (HOST, after `./agent stop`; sandbox: `--dry-run` exit 0 verified): (1) `eval.alpha` ngram + hf-lora at T=7B-instruct (fused_alpha on CUDA) → results/gpu/alpha_*_7b.json; (2) vllm serve baseline/ngram/LoRA arms + gateway (:8200) → `tools/bench_gateway.py` c=1/4/16 → bench_<arm>_c*.json; (3) summary.json + checks (baseline null: 0 drafts; spec arms accept_rate 0.05–0.95).
+- Bench tool probed vs mock SSE server (ok=4, usage tokens, ttft/latency, /metrics delta parse). Expected anchors pre-run: ngram α 0.2–0.4, lora α 0.5–0.9, speedup ~1.4–1.75× (llama.cpp #10466 k=4). ruff clean, pytest 89 passed.
 
 ## Judge (id: judge)
 - `python -m draftlab.eval.judge`: gen {target, spec(k=4, lora_dpo), drafter_alone} T=0.7 (49 prompts, n_gen 16) → blind pairwise vs qwen-agent 27B ($OLLAMA_BASE_URL), cache data/judge_cache/, cap 150 → results/judge.json. Tests 7/7.

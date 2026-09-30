@@ -41,8 +41,9 @@ class NullDrafter:
 
 
 def load_prompts(split: str = "val", n_per_kind: int = 100, max_tokens: int = 128,
-                 target_dir: str | Path = MODELS / "qwen2.5-0.5b-instruct") -> list[dict]:
-    """First n_per_kind val blocks (by run, seq) per kind, n_tokens <= max_tokens."""
+                 target_dir: str | Path = MODELS / "qwen2.5-0.5b-instruct",
+                 include_text: bool = False) -> list[dict]:
+    """First n_per_kind blocks (by run, seq) per kind, n_tokens <= max_tokens."""
     import pyarrow.parquet as pq
     from transformers import AutoTokenizer
 
@@ -59,8 +60,11 @@ def load_prompts(split: str = "val", n_per_kind: int = 100, max_tokens: int = 12
     prompts: list[dict] = []
     for kind in sorted(by_kind):
         for run, seq, text in sorted(by_kind[kind])[:n_per_kind]:
-            prompts.append({"kind": kind, "run": run, "seq": seq,
-                            "ids": tok.encode(text, add_special_tokens=False)})
+            d = {"kind": kind, "run": run, "seq": seq,
+                 "ids": tok.encode(text, add_special_tokens=False)}
+            if include_text:
+                d["text"] = text
+            prompts.append(d)
     return prompts
 
 

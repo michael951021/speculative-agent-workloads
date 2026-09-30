@@ -142,7 +142,13 @@ class StepStats:
 
 
 class SpecDecoder:
-    """Speculative sampling over one jitted target model."""
+    """Speculative sampling over one jitted target model.
+
+    temperature > 0 scales the TARGET sampling distribution (softmax(lg/T));
+    draft probs stay unscaled. Accept/reject + residual max(0, p - q) is
+    lossless for any draft q, so output still follows exactly the target's
+    T-scaled distribution.
+    """
 
     def __init__(
         self,
@@ -166,6 +172,7 @@ class SpecDecoder:
         """Core loop; yields (emitted_tokens, StepStats) per target-call step."""
         cfg, params, drafter = self.cfg, self.params, self.drafter
         T0 = self.temperature == 0.0
+        T = self.temperature if not T0 else 1.0
         rng = self.rng
         ctx = list(prompt)
         pre_lg, cache = M.prefill(cfg, params, ctx, self.max_len)
@@ -186,7 +193,7 @@ class SpecDecoder:
                 if T0:
                     tok = int(np.argmax(np.asarray(prev_lg)))
                 else:
-                    tok = _categorical(step_rng, jax.nn.softmax(prev_lg))
+                    tok = _categorical(step_rng, jax.nn.softmax(prev_lg / T))
                 lg, cache = M.decode(cfg, params, cache, [tok])
                 prev_lg = lg[-1]
                 emitted, A = [tok], 0
@@ -202,7 +209,7 @@ class SpecDecoder:
                         A += 1
                     bonus = int(np.argmax(np.asarray(Pd[A] if A < m else scored[m - 1])))
                 else:
-                    P = [np.asarray(jax.nn.softmax(row), np.float32) for row in Pd]
+                    P = [np.asarray(jax.nn.softmax(row / T), np.float32) for row in Pd]
                     A = 0
                     for i, q in enumerate(dprobs):
                         u = float(jax.random.uniform(step_rng))
@@ -212,7 +219,7 @@ class SpecDecoder:
                         else:
                             break
                     if A == m:
-                        bonus = _categorical(step_rng, jax.nn.softmax(scored[m - 1]))
+                        bonus = _categorical(step_rng, jax.nn.softmax(scored[m - 1] / T))
                     else:
                         resid = np.maximum(0.0, P[A] - dprobs[A])
                         bonus = _categorical(step_rng, resid / resid.sum())

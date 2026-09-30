@@ -51,9 +51,9 @@
   (regression OK), tok/call@k8 1.50;
   tool_use:Edit 0.56 highest > tool_result 0.33 > code 0.26 > text 0.19.
 - Old alpha 0.0096 / "1.2% vs 27B" = off-by-one bug (fixed); tiny.json stale.
-- Re-verified a2-12 11 alpha tests (real 0.5B) pass, make check exit 0;
-  logs .agent-evidence/alphafix-a12-*.log. Done-reports 3-11 never registered
-  (harness); a12 re-audit of code/tests/results clean.
+- Re-verified a13: 11/11 alpha tests (real 0.5B, 23.4s), make check exit 0
+  (55 passed), ngram.json 1.5B target in pre-run range. Logs alphafix-a13-*.log.
+  Gotcha: harness never registered done-reports 3-12; line still unchecked.
 
 ## Distilled tiny drafter (JAX) (id: distill, 2026-09-30)
 - `draftlab/drafters/distill.py`: cache (teacher top-64+tail → data/teacher/*.npz,

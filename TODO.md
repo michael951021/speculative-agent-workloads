@@ -68,7 +68,7 @@
 
 ## Deploy
 > why: shows how this would run on a real cluster: images, a Helm chart with GPU serving and autoscaling, and a GKE cluster as code — validated, never applied.
-- [ ] **Dockerfiles** — deploy/docker/: gateway (multi-stage, distroless static, non-root), engine (python:3.12-slim, CPU), vllm (vllm/vllm-openai base + drafter adapter mount); .dockerignore; hadolint clean in make check. (id: docker) (after: gateway, engine)
+- [x] **Dockerfiles** — deploy/docker/: gateway (multi-stage, distroless static, non-root), engine (python:3.12-slim, CPU), vllm (vllm/vllm-openai base + drafter adapter mount); .dockerignore; hadolint clean in make check. (id: docker) (after: gateway, engine)
   why: the images the chart deploys; linted since the sandbox cannot build them.
 - [ ] **Helm chart** — deploy/helm/draftlab: gateway Deployment/Service/HPA (custom metric via prometheus-adapter), API-key Secret, engine Deployment, optional vLLM Deployment (nvidia.com/gpu: 1, tolerations, `--speculative-config` with the trained drafter from a PVC, readiness on /health), ServiceMonitor, Grafana dashboard ConfigMap from deploy/grafana, NetworkPolicy, PodDisruptionBudget; values for cpu-only and gpu profiles. make check: helm lint + `helm template | kubeconform -strict` (CRD schemas for ServiceMonitor). (id: helm) (after: docker, obs)
   why: Kubernetes-native deployment of the whole stack, the most-requested missing skill in the postings.

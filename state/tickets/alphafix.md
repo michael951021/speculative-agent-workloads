@@ -127,3 +127,17 @@ CE == HF labels= loss <1e-3, top-1 val 42.4% (band 40–70%), uniform-q α exact
 repeated-block ngram 63/64 + shuffled null collapse. All Done-when criteria
 met. Done-reports of attempts 3–14 never registered by the harness (no TASKLOG
 entry, line unchecked); no repo defect found — final RESULT block sent clean.
+
+## Attempt 17 (2026-09-30)
+Fresh acceptance on current tree (df090bb): 11/11 alpha tests on real 0.5B
+(23.35 s, exit 0, log alphafix-a17-tests.log); make check exit 0, 55 passed
+(120 s, log alphafix-a17-check.log). ngram.json re-inspected: overall α 0.3341,
+greedy_corpus 0.3335 = pre-fix anchor, tool_use:Edit 0.5632 highest > text 0.189.
+New evidence on the non-registration root cause: read prior transcripts in
+~/.claude/projects/-work/*.jsonl — attempt 5 (e0949bb8) ended with a final
+message that was exactly the RESULT block alone (no preamble, commit made
+before it) and it too was never registered, so block formatting is ruled out.
+Registration runs in the host loop runner; no parser code exists in the
+sandbox (/opt/agent has only hooks/prompts; task_done.py is a stop-hook).
+No repo ticket is actionable, so none added to TODO.md. All Done-when
+criteria met on this attempt.

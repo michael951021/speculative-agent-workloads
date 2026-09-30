@@ -51,9 +51,11 @@
   (regression OK), tok/call@k8 1.50;
   tool_use:Edit 0.56 highest > tool_result 0.33 > code 0.26 > text 0.19.
 - Old alpha 0.0096 / "1.2% vs 27B" = off-by-one bug (fixed); tiny.json stale.
-- Re-verified a16: 11/11 alpha tests (23.4s), make check exit 0, 55 passed
-  (120s), logs alphafix-a16-*.log. Harness never registered done-reports
-  3-15; line unchecked (harness gap; no repo defect re-audited).
+- Re-verified a17: 11/11 alpha tests (23.4s), make check exit 0, 55 passed
+  (120s), logs alphafix-a17-*.log. Non-registration root cause: attempt 5's
+  final message was the RESULT block exactly (no preamble/postamble) and was
+  also never registered → block format ruled out; registration is host-side
+  loop-runner, no parser in sandbox (/opt/agent = hooks+prompts only).
 
 ## Distilled tiny drafter (JAX) (id: distill, 2026-09-30)
 - `draftlab/drafters/distill.py`: cache (teacher top-64+tail → data/teacher/*.npz,

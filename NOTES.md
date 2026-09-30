@@ -45,4 +45,4 @@
 
 ## Gateway (id: gateway)
 - `gateway/` Go 1.26 stdlib+client_golang+yaml: Bearer auth (sha256 in config.yaml), token-bucket 429+Retry-After, model→backend routing, retries on connect err, breaker (5 fails→open→half-open probe), SSE tee+flush, usage→metrics (requests{key,model,status}, ttft/latency, tok/s, draft/accepted counters, backend_up, breaker_state), /v1/models merge, /healthz, /ui.
-- `cd gateway && go vet && go test ./...` 8/8 PASS (fake usage 12/7→counters 24/14 exact). Live smoke vs python fake: 401/429/stream order/tok/s≈98 ✅ (.agent-evidence/gateway-*.log).
+- `cd gateway && go vet && go test ./...` 8/8 PASS (fake usage 12/7→counters 24/14 exact). Live smoke vs python fake: 401/429/stream order/tok/s≈98 ✅. Attempt 2 (2026-09-30) re-verified: 8/8 + live 401/200/429+Retry-After/404/models/draft 24·accepted 14 exact (gateway-*.log).

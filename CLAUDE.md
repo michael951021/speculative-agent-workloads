@@ -42,3 +42,19 @@ an LLM-as-judge check, deploy configs (Helm, Terraform, Grafana) and a React exp
   (1 − α^(k+1)) / (1 − α) (Leviathan et al. 2023). Speedup also needs the draft/target cost ratio c.
 - **kind**: thinking | text | code (fenced blocks inside text) | tool_use:<ToolName> | tool_result.
 - Splits are by run (hash of run id), never by block, so no run leaks between train and test.
+
+## Known answers (every metric ticket checks against these; see prompts: "Numbers are claims")
+- **Alignment:** logits row i predicts token i+1. Any per-position metric must reproduce
+  `transformers` `model(ids, labels=ids).loss` (HF shifts internally) within 1e-3 on the same block.
+- **Target sanity:** Qwen2.5-0.5B top-1 next-token accuracy on corpus val blocks ≈ 40–70% (57.5% measured on
+  372 tokens, 2026-09-30). Under 20% means an alignment bug, not a weak model.
+- **Model size order:** Qwen2 wikitext fp16 PPL 0.5B 15.1 · 1.5B 10.4 · 7B 7.9 (Qwen2 GGUF card). A bigger
+  target must show lower loss on the corpus.
+- **Alpha anchors:** Leviathan 2023 Table 3: drafters ~100x smaller give α 0.5–0.9, even a bigram α ≈ 0.2.
+  llama.cpp (discussion #10466) Qwen2.5-0.5B→7B, k=4: 1.41x general text, 1.75x code. Expect tool_use ≥ text.
+- **Analytic cases:** q = p → α = 1; q uniform → α = Σ min(p, 1/V) exactly; q = λp + (1−λ)u → α ≥ λ.
+- **Planted effect / null control:** a block repeated verbatim → ngram acceptance on the copy ≈ 1; tokens shuffled
+  within a block → ngram acceptance collapses. A drafter trained on agent traffic must gain more on agent text
+  than on wikitext (otherwise it learned nothing agent-specific).
+- **Engine vs metric:** SpecDecoder's measured accepted/drafted on real prompts must fall inside the alpha
+  metric's predicted tokens-per-call CI for the same pair and k.

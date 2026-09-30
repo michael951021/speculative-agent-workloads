@@ -2,8 +2,8 @@
 
 ## Toolchain (id: boot)
 - `make bootstrap` (idempotent): uv + Py3.12 .venv, torch CPU first, `uv pip install -e ".[all]"`,
-  pinned binaries into .tools/; `make check` = ruff + pytest; others SKIP when dir absent.
-- Gotcha: capture.py rejects `VAR=x cmd` (use `sh -c`) and existing log paths (rm first).
+  pinned .tools/ binaries; `make check` = ruff + pytest; others SKIP when dir absent.
+- Gotcha: capture.py rejects `VAR=x cmd` prefixes and existing log paths.
 
 ## Models (id: models)
 - `draftlab/models.py`: `fetch [--name K]` → `models/{0.5b-instruct, 1.5b-instruct, 0.5b}`
@@ -13,8 +13,7 @@
 ## Corpus (id: corpus)
 - `python -m draftlab.data build`: raw jsonl → data/corpus/{train,val,test}.parquet
   (fenced code split; drop <8 tok, dedupe, truncate 4096; runs by sha1: 26/3/3).
-  45257/667/566 blocks; `stats` → results/corpus_stats.json; p50 tok: tr 243, think 132,
-  code 101, tu 85, text 29.
+  45257/667/566 blocks; `stats` → results/corpus_stats.json.
 
 ## N-gram baseline (id: ngram)
 - `draftlab/drafters/ngram.py`: NGramMatcher.proposals — prompt lookup n=1..4, first
@@ -25,8 +24,8 @@
 ## JAX model (id: jaxmodel)
 - `draftlab/jaxlm/model.py`: pure-pytree Qwen2; `load_safetensors` upcasts bf16→f32;
   padded KV cache; one jitted step does prefill + multi-token decode.
-- Parity 0.5B f32 vs transformers: prefill diff 1.3e-4, argmax + greedy 32 identical.
-  tiny_config: `tie_word_embeddings=False` — tie lm_head in probes.
+- Parity 0.5B f32 vs transformers: prefill diff 1.3e-4, 32 greedy identical. tiny_config
+  `tie_word_embeddings=False` — tie lm_head in probes.
 
 ## Spec decoding (id: spec)
 - `draftlab/jaxlm/spec.py`: Drafter protocol; NGramDrafter + ModelDrafter. One target
@@ -49,22 +48,19 @@
   (regression OK), tok/call@k8 1.50; tool_use:Edit 0.56 highest > tool_result 0.33 >
   code 0.26 > text 0.19.
 - Old alpha 0.0096 / "1.2% vs 27B" = off-by-one bug (fixed).
-- tiny.json re-run (a20), verified a21-a23 (11/11 tests; check_tiny_alpha.py
-  worst |d| 3.67e-7; tpc@8 == analytic (1−α⁹)/(1−α); a23 fresh full 400-block
-  re-run reproduces file): alpha 0.0105, tpc@8 1.01; per-kind tiny 0.004-0.015
-  vs ngram 0.155-0.56 (ngram wins every kind); 0.5B control 0.7675 → weak 43M
-  drafter (val KL 2.63), not metric. Logs alphafix-a2*.
-- Registration gap host-side: TASKLOG has 8 entries (boot→alpha) but none for
-  alphafix/distill despite clean RESULT blocks; ticket `harnessreg` added
-  (Foundations) for host diagnosis.
+- tiny.json (a20; a23 fresh 400-block re-run reproduces, worst |d| 3.67e-7, tpc@8
+  analytic): alpha 0.0105, tpc@8 1.01; per-kind 0.004-0.015 vs ngram 0.155-0.56
+  (ngram wins all kinds); 0.5B control 0.7675 → weak 43M drafter (KL 2.63), not metric.
+- Registration (harnessreg): host runner registered 0 RESULT blocks ever (prior checks
+  were agent self-checks; even bare-block runs skipped → total gap, not matching).
+  Stop hook `.claude/hooks/register_result.py`: at stop parse last RESULT block; done:
+  TODO line (text/id) + TASKLOG entry + commit, idempotent. Tests: 6, real transcripts.
 
 ## Distilled tiny drafter (JAX) (id: distill, 2026-09-30)
-- `draftlab/drafters/distill.py`: cache (teacher top-64+tail → data/teacher/*.npz,
-  1M train tok built 2592 s) + train (4-layer d=256 Qwen2, tied embed,
-  KL(T‖S) top-64 + renormalised tail, AdamW warmup-cosine, orbax ckpt/tiny/N,
-  HF export at ckpt/tiny/export).
+- `draftlab/drafters/distill.py`: cache (teacher top-64+tail → data/teacher/*.npz) +
+  train (4-layer d=256 Qwen2, tied embed, KL(T‖S) top-64 + renormalised tail,
+  AdamW warmup-cosine, orbax ckpt/tiny/N, HF export at ckpt/tiny/export).
 - 1200 steps (default) @1e-3, batch 16×256: val KL 3.7879 → 2.6292 (30.6% ✅);
-  curve results/distill_curve.json; teacher-init control 2.6379 (no gain); 800 steps
-  29.6%; lr 3e-3 oscillated. Logs distill-train-{1200,tinit1200}.
-- tiny.json (fixed metric): alpha 0.0105 — weak approx of target (ngram wins every
-  kind); REPORT needs more distill steps/capacity. Old 0.0142 (pre-fix) replaced.
+  curve results/distill_curve.json; teacher-init control 2.6379 (no gain); lr 3e-3 oscillated.
+  Logs distill-train-{1200,tinit1200}.
+- REPORT needs more distill steps/capacity (alpha 0.0105, see alpha section).

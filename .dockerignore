@@ -1,0 +1,16 @@
+# Build context is the repo root (see deploy/docker/Dockerfile.*).
+# Keep images small: no data, checkpoints, tools or venvs.
+.git/
+.venv/
+.tools/
+.agent-evidence/
+state/
+data/
+models/
+ckpt/
+results/
+web/node_modules/
+*.log
+TODO.md
+TASKLOG.md
+NOTES.md

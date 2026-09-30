@@ -146,3 +146,13 @@ def test_teacher_npz_sanity():
         assert np.all(p[blk].sum(axis=1) <= 1.0 + 1e-4)
         assert all(len(np.unique(x[r])) == x.shape[1] for r in range(off[i], off[i + 1]))
     assert np.all(np.diff(off) > 0)
+
+
+def test_project_teacher_embed():
+    e = np.random.default_rng(0).normal(size=(128, 896)).astype(np.float32)
+    out = distill._project_teacher_embed(e, 256, seed=0)
+    assert out.shape == (128, 256)
+    assert np.array_equal(out, distill._project_teacher_embed(e, 256, seed=0))
+    assert not np.array_equal(out, distill._project_teacher_embed(e, 256, seed=1))
+    rel = np.linalg.norm(out, axis=1) / np.linalg.norm(e, axis=1)
+    assert np.all((rel > 0.6) & (rel < 1.4))  # row norms preserved in expectation

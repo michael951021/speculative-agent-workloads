@@ -32,6 +32,29 @@ signal (constant across inits).
   @ 200k oscillated worse (val 2.95) — abandoned. Overfit diagnostic
   (train on val data, 200k): 2.8874 @ 50 → 2.2487 @ 200, still dropping
   → capacity sufficient; the 400-step floor is an epoch-count problem.
+- Measured (2026-09-30): 800 steps @1e-3 → val KL 2.6678 (drop 29.57%, log .agent-evidence/distill-train-800.log) — 0.6% short of 30%. Run D: 1200 steps @1e-3 in progress (log distill-train-1200.log).
+- Expected before run (plausible range): tiny student vs 0.5B target alpha overall 0.4-0.9 (Leviathan: ~100x smaller drafter gives 0.5-0.9; student distills the target directly, unlike ngram's 0.0096); greedy ≥ 0.3, must beat ngram alpha 0.0096 on every kind.
+- Alpha probe (2026-09-30): self-check α=1.0000/greedy=1.0000 on real blocks
+  (known answer ✅ — metric pipeline correct). Student vs 0.5B, train blocks no-ctx:
+  α=0.026, greedy=0.295, but H(q)=11.79 ≈ ln V=11.93, student peak=3.8e-4 vs teacher
+  peak=0.36, top-64 mass=0.83 → student ≈ uniform; the argmax "match" is shared
+  high-freq punctuation (mode `'"'`). Low α is a true distributional gap, not a bug.
+  results/alpha/tiny.json (val, ctx): overall α=0.0142, greedy=0.1465 (ngram:
+  0.0096/0.0118).
+- Teacher-init control (1200 steps, --teacher-init, norm-preserving random
+  projection of the 0.5B embed): val KL 3.7707 → 2.6379 (30.0%) ≈ random-init
+  2.6292 (30.6%) — no gain; the 2.63 floor is approximation limit, not init.
+- Conclusion: tiny drafter is a weak 0.5B approximation (2.63 nats ≈ 3.8 bits vs
+  teacher H≈3.5 nats); beats ngram on α (1.5x) and greedy (12x) but is not enough
+  alone — acceptance is bottlenecked by the 0.5B↔27B mismatch (~1.2% corpus argmax)
+  plus student approximation error. Pre-run α range 0.4–0.9 was mis-anchored on
+  Leviathan (whose drafters are strong approximations).
+
+## Status: DONE (2026-09-30)
+All Done-when items pass: make check (50 pytest), val KL drop 30.6% ≥ 30%,
+results/alpha/tiny.json written. Artifacts: results/distill_curve.json,
+results/alpha/tiny.json, ckpt/tiny/export (HF layout), ckpt/tiny_tinit (control).
+
 - Note: teacher hidden is 896, student d=256 — "share T's embeddings vocab"
   = same 151936 vocab, student-own (trainable) embedding; weights cannot be
   shared across the dimension mismatch. Training is block-only (no

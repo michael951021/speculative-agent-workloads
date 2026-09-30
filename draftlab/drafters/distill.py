@@ -227,6 +227,14 @@ def _batch_arrays(data, spans: list[tuple[int, int]], batch: int, max_len: int, 
     }
 
 
+def _project_teacher_embed(e: np.ndarray, hidden: int, seed: int) -> np.ndarray:
+    """Random projection of the teacher's (V, D) embedding to (V, hidden) that
+    preserves row norms in expectation (columns ~ N(0, 1/hidden))."""
+    w = np.random.default_rng(seed + 1).normal(0, 1, (e.shape[1], hidden))
+    w /= np.sqrt(hidden)
+    return e.astype(np.float32) @ w
+
+
 def train(
     steps: int = 300,
     batch: int = 16,
@@ -238,11 +246,22 @@ def train(
     ckpt_dir: Path = CKPT_DIR,
     curve_path: Path = CURVE_PATH,
     teacher_dir: Path = TEACHER_DIR,
+    teacher_init: bool = False,
 ) -> dict:
+    ckpt_dir, curve_path = Path(ckpt_dir).resolve(), Path(curve_path).resolve()
     cfg = TINY_CFG
     k = min(TOP_K, cfg.vocab_size)
     rng = jax.random.PRNGKey(seed)
     params = M.init_params(cfg, rng)
+    if teacher_init:
+        # Project the 0.5B's (V, 896) embeddings to (V, 256) with a seeded
+        # random map (norm-preserving in expectation): the student starts from
+        # meaningful token geometry instead of a random embedding.
+        from safetensors import safe_open
+
+        with safe_open(str(TARGET_DIR / "model.safetensors"), framework="np") as f:
+            e = f.get_tensor("model.embed_tokens.weight")
+        params["embed"] = jnp.asarray(_project_teacher_embed(e, cfg.hidden_size, seed))
     train_data = load_teacher("train", teacher_dir)
     val_data = load_teacher("val", teacher_dir)
     spans = train_data["spans"]
@@ -324,6 +343,7 @@ def train(
         "batch": batch,
         "seed": seed,
         "peak_lr": peak_lr,
+        "teacher_init": teacher_init,
         "val_tokens": int(n_v),
         "val_kl_step0": v0,
         "val_kl_final": vf,
@@ -399,13 +419,18 @@ def main(argv: list[str] | None = None) -> None:
     )
     p_cache.add_argument("--max-tokens", type=int, default=256)
     p_train = sub.add_parser("train", help="train the tiny student on the cache")
-    p_train.add_argument("--steps", type=int, default=300)
+    p_train.add_argument("--steps", type=int, default=1200)
     p_train.add_argument("--batch", type=int, default=16)
     p_train.add_argument("--max-len", type=int, default=256)
     p_train.add_argument("--seed", type=int, default=0)
     p_train.add_argument("--val-tokens", type=int, default=25_000)
     p_train.add_argument("--log-every", type=int, default=25)
     p_train.add_argument("--peak-lr", type=float, default=1e-3)
+    p_train.add_argument(
+        "--teacher-init",
+        action="store_true",
+        help="init student embedding from a random projection of the 0.5B embedding",
+    )
     args = ap.parse_args(argv)
     if args.cmd == "cache":
         cache_teacher(args.split, args.max_tokens, args.tokens)
@@ -418,6 +443,7 @@ def main(argv: list[str] | None = None) -> None:
             val_tokens=args.val_tokens,
             log_every=args.log_every,
             peak_lr=args.peak_lr,
+            teacher_init=args.teacher_init,
         )
 
 

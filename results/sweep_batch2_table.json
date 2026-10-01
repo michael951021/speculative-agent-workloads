@@ -1,0 +1,136 @@
+{
+ "metric": "tok/s = sum(n_emit)/sum(wall_s); tpc = sum(n_emit)/sum(n_steps); speedup = tok_s / none tok_s (same kind, T=0, n_gen=16, 393 val prompts)",
+ "target": "qwen2.5-0.5b-instruct",
+ "none_tok_s": 6.319425557133938,
+ "cells": {
+  "base k=1": {
+   "tpc": 2.0,
+   "tok_s": 3.418179529322372,
+   "speedup_vs_none": 0.5409003553279653,
+   "by_kind": {
+    "code": {
+     "tok_s": 3.0730664346903485,
+     "speedup_vs_none": 0.4676686440729248
+    },
+    "text": {
+     "tok_s": 2.738706861158196,
+     "speedup_vs_none": 0.4128017891052907
+    },
+    "thinking": {
+     "tok_s": 3.570015130864355,
+     "speedup_vs_none": 0.5418007443852109
+    },
+    "tool_result": {
+     "tok_s": 3.760845243457185,
+     "speedup_vs_none": 0.569729145920352
+    },
+    "tool_use:Bash": {
+     "tok_s": 3.7786351887709597,
+     "speedup_vs_none": 0.6359650989101273
+    },
+    "tool_use:Edit": {
+     "tok_s": 3.6736954541550193,
+     "speedup_vs_none": 0.6840469496584427
+    },
+    "tool_use:Read": {
+     "tok_s": 3.925169961853711,
+     "speedup_vs_none": 0.6743848875617667
+    },
+    "tool_use:WebFetch": {
+     "tok_s": 3.942950272652534,
+     "speedup_vs_none": 0.5744290379800695
+    },
+    "tool_use:Write": {
+     "tok_s": 3.9139556652121943,
+     "speedup_vs_none": 0.7893149251084715
+    }
+   }
+  },
+  "lora k=1": {
+   "tpc": 1.496074232690935,
+   "tok_s": 2.860917410253842,
+   "speedup_vs_none": 0.4527179542488922,
+   "by_kind": {
+    "code": {
+     "tok_s": 3.1165852186935057,
+     "speedup_vs_none": 0.47429146565488317
+    },
+    "text": {
+     "tok_s": 2.8342118081416885,
+     "speedup_vs_none": 0.42719712784794056
+    },
+    "thinking": {
+     "tok_s": 3.000179464162924,
+     "speedup_vs_none": 0.45532004974419726
+    },
+    "tool_result": {
+     "tok_s": 3.1686307502076922,
+     "speedup_vs_none": 0.4800147770487075
+    },
+    "tool_use:Bash": {
+     "tok_s": 2.6873217386905304,
+     "speedup_vs_none": 0.45229103895196143
+    },
+    "tool_use:Edit": {
+     "tok_s": 2.480742368871566,
+     "speedup_vs_none": 0.46191750826698985
+    },
+    "tool_use:Read": {
+     "tok_s": 2.6892682899328166,
+     "speedup_vs_none": 0.4620441690309051
+    },
+    "tool_use:WebFetch": {
+     "tok_s": 2.42307710956077,
+     "speedup_vs_none": 0.35300618997159194
+    },
+    "tool_use:Write": {
+     "tok_s": 2.4677570974441005,
+     "speedup_vs_none": 0.4976646838050956
+    }
+   }
+  },
+  "lora_dpo k=1": {
+   "tpc": 1.5032273487927326,
+   "tok_s": 2.8641326853412545,
+   "speedup_vs_none": 0.45322674655261397,
+   "by_kind": {
+    "code": {
+     "tok_s": 3.047511262665289,
+     "speedup_vs_none": 0.46377957987467094
+    },
+    "text": {
+     "tok_s": 2.9312378577275813,
+     "speedup_vs_none": 0.4418217404440974
+    },
+    "thinking": {
+     "tok_s": 2.97324811461878,
+     "speedup_vs_none": 0.4512328331091287
+    },
+    "tool_result": {
+     "tok_s": 3.1238064049268988,
+     "speedup_vs_none": 0.47322435247654676
+    },
+    "tool_use:Bash": {
+     "tok_s": 2.6248729427799984,
+     "speedup_vs_none": 0.4417805628980459
+    },
+    "tool_use:Edit": {
+     "tok_s": 2.6084005113871305,
+     "speedup_vs_none": 0.485687623149014
+    },
+    "tool_use:Read": {
+     "tok_s": 2.7986042303150493,
+     "speedup_vs_none": 0.48082921695945646
+    },
+    "tool_use:WebFetch": {
+     "tok_s": 2.5968213786107355,
+     "speedup_vs_none": 0.37831813823965393
+    },
+    "tool_use:Write": {
+     "tok_s": 2.6260217415764173,
+     "speedup_vs_none": 0.5295814085756215
+    }
+   }
+  }
+ }
+}

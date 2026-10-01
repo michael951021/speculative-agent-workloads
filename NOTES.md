@@ -60,6 +60,12 @@
 - scripts/gpu_run.sh (HOST, after `./agent stop`; sandbox: `--dry-run` exit 0 verified): (1) `eval.alpha` ngram + hf-lora at T=7B-instruct (fused_alpha on CUDA) → results/gpu/alpha_*_7b.json; (2) vllm serve baseline/ngram/LoRA arms + gateway (:8200) → `tools/bench_gateway.py` c=1/4/16 → bench_<arm>_c*.json; (3) summary.json + checks (baseline null: 0 drafts; spec arms accept_rate 0.05–0.95).
 - Bench tool probed vs mock SSE server (ok=4, usage tokens, ttft/latency, /metrics delta parse). Expected anchors pre-run: ngram α 0.2–0.4, lora α 0.5–0.9, speedup ~1.4–1.75× (llama.cpp #10466 k=4). ruff clean, pytest 89 passed.
 
+## Results export (id: export)
+- `python -m draftlab.export_ui` → web/public/data/{summary,alpha,sweep,replays}.json (schema v1); missing sweep cells ⇒ {"status":"pending"} (21/42 pending now, batch 3 running); rerun after sweep (`--no-replays` = 2s fast path).
+- replays = 30 val blocks (5 × top-6 kinds by n_tokens in dpo alpha; first per kind per run, round-robin) re-scored with the alpha-run pair (1.5b-instruct, ctx 1024): per-token p, q (null = no proposal / unscorable pos 0), accept (greedy spec-accept), per-position α. ~2.6 min CPU.
+- Known answer: test_replays_match_alpha_pipeline re-runs alpha.evaluate() on the same 30 blocks ⇒ per-position α/accept identical (<1e-5). Fast mean-vs-dpo.json check tol 0.05→0.15 (5-block samples, SE~0.04; gaps ≤0.11 all one sign = selection of first/short blocks per kind, NOT a pipeline bug — identity test proves pipeline exact).
+- Gotcha: corpus (run,seq) NOT unique (val: 15 blocks share (contrib-loop-w1-…,28885)) — match blocks by token ids, not (run,seq). Export wall_s kept full precision (tok_s recomputable).
+
 ## Judge (id: judge)
 - `python -m draftlab.eval.judge`: gen {target, spec(k=4, lora_dpo), drafter_alone} T=0.7 (49 prompts, n_gen 16) → blind pairwise vs qwen-agent 27B ($OLLAMA_BASE_URL), cache data/judge_cache/, cap 150 → results/judge.json. Tests 7/7.
 - Result: spec_vs_target n=81: win 0.444/loss 0.543, CIs overlap (binom p=0.434) — no significant loss; T=0.7 exact matches 0/46 = lossless signature; spec_vs_drafter gap 25pp ✓, underpowered.

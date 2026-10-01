@@ -3,6 +3,178 @@
  "target": "qwen2.5-0.5b-instruct",
  "none_tok_s": 6.319425557133938,
  "cells": {
+  "ngram k=1": {
+   "tpc": 1.1144984048209854,
+   "tok_s": 5.553199969913398,
+   "speedup_vs_none": 0.8787507534833517,
+   "by_kind": {
+    "code": {
+     "tok_s": 5.174528912442943,
+     "speedup_vs_none": 0.7874756278876803
+    },
+    "text": {
+     "tok_s": 4.61693044024381,
+     "speedup_vs_none": 0.6959040315476951
+    },
+    "thinking": {
+     "tok_s": 5.808909358617877,
+     "speedup_vs_none": 0.8815848950767279
+    },
+    "tool_result": {
+     "tok_s": 6.117147021599123,
+     "speedup_vs_none": 0.926684487788488
+    },
+    "tool_use:Bash": {
+     "tok_s": 5.922519170253306,
+     "speedup_vs_none": 0.996792572381767
+    },
+    "tool_use:Edit": {
+     "tok_s": 5.6521149689569965,
+     "speedup_vs_none": 1.0524312784994154
+    },
+    "tool_use:Read": {
+     "tok_s": 6.274658112966838,
+     "speedup_vs_none": 1.0780513065995423
+    },
+    "tool_use:WebFetch": {
+     "tok_s": 6.622445269131124,
+     "speedup_vs_none": 0.9647914891058244
+    },
+    "tool_use:Write": {
+     "tok_s": 6.632079933159283,
+     "speedup_vs_none": 1.3374703557024612
+    }
+   }
+  },
+  "tiny k=1": {
+   "tpc": 1.0734038921133493,
+   "tok_s": 3.9806540035564613,
+   "speedup_vs_none": 0.6299075711181912,
+   "by_kind": {
+    "code": {
+     "tok_s": 3.9479699906918895,
+     "speedup_vs_none": 0.6008141417136387
+    },
+    "text": {
+     "tok_s": 3.993334906283627,
+     "speedup_vs_none": 0.6019102727603931
+    },
+    "thinking": {
+     "tok_s": 4.056695853311145,
+     "speedup_vs_none": 0.6156614895176162
+    },
+    "tool_result": {
+     "tok_s": 4.307042396782113,
+     "speedup_vs_none": 0.6524723638736332
+    },
+    "tool_use:Bash": {
+     "tok_s": 3.8346205626757865,
+     "speedup_vs_none": 0.6453877454674639
+    },
+    "tool_use:Edit": {
+     "tok_s": 3.592505307491181,
+     "speedup_vs_none": 0.6689292370279889
+    },
+    "tool_use:Read": {
+     "tok_s": 3.6407436353186684,
+     "speedup_vs_none": 0.6255174963139862
+    },
+    "tool_use:WebFetch": {
+     "tok_s": 3.4283272804633063,
+     "speedup_vs_none": 0.4994561446174518
+    },
+    "tool_use:Write": {
+     "tok_s": 3.751644984911293,
+     "speedup_vs_none": 0.7565822491600164
+    }
+   }
+  },
+  "tiny k=2": {
+   "tpc": 1.0848861283643891,
+   "tok_s": 4.597554783926018,
+   "speedup_vs_none": 0.7275273270267237,
+   "by_kind": {
+    "code": {
+     "tok_s": 4.166194337766075,
+     "speedup_vs_none": 0.634024189940327
+    },
+    "text": {
+     "tok_s": 4.390364176774691,
+     "speedup_vs_none": 0.6617539878765734
+    },
+    "thinking": {
+     "tok_s": 4.711608038566993,
+     "speedup_vs_none": 0.7150537599903336
+    },
+    "tool_result": {
+     "tok_s": 5.097468956999705,
+     "speedup_vs_none": 0.7722138102543309
+    },
+    "tool_use:Bash": {
+     "tok_s": 4.532642587882805,
+     "speedup_vs_none": 0.7628686940441952
+    },
+    "tool_use:Edit": {
+     "tok_s": 4.128486854496733,
+     "speedup_vs_none": 0.7687297095706129
+    },
+    "tool_use:Read": {
+     "tok_s": 4.4750052349614,
+     "speedup_vs_none": 0.7688522870465797
+    },
+    "tool_use:WebFetch": {
+     "tok_s": 4.133635901674549,
+     "speedup_vs_none": 0.60220908968284
+    },
+    "tool_use:Write": {
+     "tok_s": 4.580219689389159,
+     "speedup_vs_none": 0.923678260651568
+    }
+   }
+  },
+  "tiny k=4": {
+   "tpc": 1.0892083838558808,
+   "tok_s": 4.319308395713059,
+   "speedup_vs_none": 0.6834969977353454,
+   "by_kind": {
+    "code": {
+     "tok_s": 4.446255245913542,
+     "speedup_vs_none": 0.6766447150590283
+    },
+    "text": {
+     "tok_s": 4.454348690668056,
+     "speedup_vs_none": 0.6713982919767366
+    },
+    "thinking": {
+     "tok_s": 4.1355023907660415,
+     "speedup_vs_none": 0.6276215062375303
+    },
+    "tool_result": {
+     "tok_s": 4.674808325838245,
+     "speedup_vs_none": 0.7081850973407369
+    },
+    "tool_use:Bash": {
+     "tok_s": 4.225618620422567,
+     "speedup_vs_none": 0.7111948705393814
+    },
+    "tool_use:Edit": {
+     "tok_s": 4.022716767105754,
+     "speedup_vs_none": 0.7490351794856341
+    },
+    "tool_use:Read": {
+     "tok_s": 4.336932677864483,
+     "speedup_vs_none": 0.7451299904841154
+    },
+    "tool_use:WebFetch": {
+     "tok_s": 3.6783229289346453,
+     "speedup_vs_none": 0.5358767814300961
+    },
+    "tool_use:Write": {
+     "tok_s": 3.4912466441863756,
+     "speedup_vs_none": 0.7040685483446252
+    }
+   }
+  },
   "base k=1": {
    "tpc": 2.0,
    "tok_s": 3.418179529322372,

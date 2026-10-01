@@ -4,6 +4,7 @@ Recomputes headline numbers from results/ (sweep parquet + alpha JSONs + judge)
 and asserts they are present in REPORT.md, figures exist, and README has the
 architecture diagram + skills map. Exit 0 = pass.
 """
+
 from __future__ import annotations
 
 import json
@@ -40,12 +41,22 @@ def main() -> int:
     )
 
     def cell(drafter: str, k: int, temp: float) -> dict:
-        r = agg.filter((pl.col("drafter") == drafter) & (pl.col("k") == k) & (pl.col("temp") == temp))
+        r = agg.filter(
+            (pl.col("drafter") == drafter) & (pl.col("k") == k) & (pl.col("temp") == temp)
+        )
         return {c: float(r[c][0]) for c in ("acc", "tpc", "tok_s")} if len(r) else {}
 
     none_ts = {
-        0.0: float(df.filter(pl.col("drafter") == "none").select(pl.sum("n_emit") / pl.sum("wall_s"))[0, 0]),
-        0.7: float(df.filter((pl.col("drafter") == "none") & (pl.col("temp") == 0.7)).select(pl.sum("n_emit") / pl.sum("wall_s"))[0, 0]),
+        0.0: float(
+            df.filter((pl.col("drafter") == "none") & (pl.col("temp") == 0.0)).select(
+                pl.sum("n_emit") / pl.sum("wall_s")
+            )[0, 0]
+        ),
+        0.7: float(
+            df.filter((pl.col("drafter") == "none") & (pl.col("temp") == 0.7)).select(
+                pl.sum("n_emit") / pl.sum("wall_s")
+            )[0, 0]
+        ),
     }
 
     # known-answer: identity drafter (base = target weights) must give acc 1.0 and
@@ -64,13 +75,21 @@ def main() -> int:
         c = cell("base", k, 0.0)
         check(f"known-answer base k={k} acc=1.0", abs(c.get("acc", -1) - 1.0) < 1e-9)
         exp = perfect_tpc(k, n_gen)
-        check(f"known-answer base k={k} tpc={exp:.4f}", abs(c.get("tpc", -1) - exp) < 1e-6,
-              f"got {c.get('tpc')}")
+        check(
+            f"known-answer base k={k} tpc={exp:.4f}",
+            abs(c.get("tpc", -1) - exp) < 1e-6,
+            f"got {c.get('tpc')}",
+        )
 
-    # ngram T=0.7 k1 acc must match the hand-computed reference (tools/check_ngram_t07_ref.py: 0.3295, CI contains diff)
+    # ngram T=0.7 k1 acc must match the hand-computed reference
+    # (tools/check_ngram_t07_ref.py: 0.3295, CI contains the difference)
     ng = cell("ngram", 1, 0.7)["acc"]
     ref = 0.3295
-    check("ngram T=0.7 k1 acc in hand-computed ref range", abs(ng - ref) <= 0.01, f"got {ng:.4f} ref {ref}")
+    check(
+        "ngram T=0.7 k1 acc in hand-computed ref range",
+        abs(ng - ref) <= 0.01,
+        f"got {ng:.4f} ref {ref}",
+    )
 
     headline = {  # (drafter, k, temp): number that must appear in REPORT.md
         ("ngram", 1, 0.7): ng,
@@ -93,15 +112,15 @@ def main() -> int:
         check(f"REPORT has ngram k8 speedup T{t}", fmt(sp) in report)
 
     # --- alpha metric: headline per-drafter overall alpha (both targets) in REPORT
-    for f, key in [
-        ("results/alpha_sweep_ngram.json", None),
-        ("results/alpha_sweep_base.json", None),
-        ("results/alpha_sweep_lora.json", None),
-        ("results/alpha_sweep_lora_dpo.json", None),
-        ("results/alpha/ngram.json", None),
-        ("results/alpha/tiny.json", None),
-        ("results/alpha/lora.json", None),
-        ("results/alpha/dpo.json", None),
+    for f in [
+        "results/alpha_sweep_ngram.json",
+        "results/alpha_sweep_base.json",
+        "results/alpha_sweep_lora.json",
+        "results/alpha_sweep_lora_dpo.json",
+        "results/alpha/ngram.json",
+        "results/alpha/tiny.json",
+        "results/alpha/lora.json",
+        "results/alpha/dpo.json",
     ]:
         d = json.loads((ROOT / f).read_text())
         a = d["overall"]["alpha"]
@@ -126,10 +145,27 @@ def main() -> int:
     # --- README
     check("README has mermaid diagram", "```mermaid" in readme)
     check("README has quickstart", re.search(r"quickstart", readme, re.I) is not None)
-    for skill in ["JAX", "PyTorch", "FSDP", "LoRA", "DPO", "Triton", "Ray", "Go",
-                  "Prometheus", "Grafana", "Kubernetes", "Helm", "Terraform",
-                  "React", "LLM-as-judge", "OpenAI"]:
-        check(f"README skills map has {skill}", re.search(re.escape(skill), readme, re.I) is not None)
+    for skill in [
+        "JAX",
+        "PyTorch",
+        "FSDP",
+        "LoRA",
+        "DPO",
+        "Triton",
+        "Ray",
+        "Go",
+        "Prometheus",
+        "Grafana",
+        "Kubernetes",
+        "Helm",
+        "Terraform",
+        "React",
+        "LLM-as-judge",
+        "OpenAI",
+    ]:
+        check(
+            f"README skills map has {skill}", re.search(re.escape(skill), readme, re.I) is not None
+        )
 
     print(f"\n{len(FAIL)} failure(s)")
     return 1 if FAIL else 0

@@ -59,3 +59,55 @@ full grid > 90 min → split by drafter group and note in NOTES.md).
    (num_cpus flag, cpus-per-cell), per-cell rows → parquet, resume-skip.
 3. test_sweep.py (2-cell, small budgets) — run first, red→green.
 4. Run full grid incrementally; compare with metric CIs; update NOTES.md.
+
+## Batch 3 (this run): T=0.7 row
+
+### Issue
+The main report table needs the T=0.7 (sampled target) row: does a draft model
+still help when the target samples at T=0.7, and does measured acceptance move
+as the temperature changes? Batches 1/2 delivered the 21 T=0 cells; the parquet
+has no T>0 cells.
+
+### Question
+For the same (drafter, k), does the engine's per-draft acceptance at T=0.7 stay
+lower than at T=0? Refutation: any cell where acc(T=0.7) > acc(T=0) beyond the
+per-position theory below — in particular ngram, whose one-hot q gives
+per-position acceptance P[t] < 1 while T=0 matched positions accept with prob 1,
+so ngram must drop. Model drafters (full-softmax q) have NO guaranteed ordering:
+stochastic accept min(1, P/q) is more lenient than binary greedy on matched
+positions (P_sharp[argmax] ≥ q[argmax] ⇒ always accept) and also accepts some
+mismatched positions, so acc(T=0.7) can exceed acc(T=0) — expected, not a bug.
+
+### Evidence
+results/sweep.parquet (21 T=0 cells, 393 prompts each, acc T=0: ngram k1 0.4411,
+tiny k1 0.0799, base 1.0 exact, lora k1 0.5334 / k8 0.1746, lora_dpo k1 0.5405 /
+k8 0.1787). Smallest check: tools/check_sweep_batch3.py on the parquet (runs
+first, red on missing cells). Run: `python -m draftlab.sweep --drafters ngram
+tiny base lora lora_dpo --ks 1 2 4 8 --temps 0.7 --num-cpus 16 --cpus-per-cell
+16` (21 cells, resumable; ~12 h total at ~14 s/prompt for 0.5B-drafter cells →
+2 h background windows, sidecars preserve per-prompt progress).
+
+### Done when
+- Parquet has all 21 T=0.7 cells × 393 prompts and exactly 42 cells total.
+- tools/check_sweep_batch3.py exit 0: (a) completeness; (b) per-prompt paired
+  acc(T=0.7)−acc(T=0) with bootstrap CI; (c) known answers: base k=1 acc == 1.0
+  and tpc == 2.0 exact (drafter==target, T<1 sharpens target so u·q < P at the
+  argmax); base k≥2 acc ≥ 0.95 and tpc ∈ [tpc(T=0)−0.15, tpc(T=0)]; ngram
+  acc(T=0.7) < acc(T=0) every k (one-hot q ⇒ P[t] < 1); tiny acc(T=0.7) ≤
+  acc(T=0)+0.02; |lora|, |lora_dpo| diff ≤ 0.15 (direction unpredicted); none
+  tpc == 1.0. Pre-registered pooled acc(T=0.7) ranges: ngram k1 [0.25,0.44),
+  k8 [0.08,0.16); tiny k1 [0,0.10]; base [0.95,1.0]; lora k1 [0.48,0.68],
+  k8 [0.12,0.33]; lora_dpo k1 [0.49,0.69], k8 [0.13,0.33].
+- Table over 42 cells → results/sweep_batch3_table.json.
+
+### Stop when
+No GPU. Excluded: metric-extension at T=0.7 (alpha.py is T=1-only), report
+writing. If a 2 h window makes no cell complete (worker crash, OOM), stop after
+2 such windows and record. If a pre-registered range is missed, verify against
+the per-position formula min(1, P77/q) before calling it a bug.
+
+### Plan
+1. Extend this ticket; write tools/check_sweep_batch3.py; run it (red: no T=0.7).
+2. Run the sweep command in 2 h background windows (capture.py logs), poll
+   `sleep N; tail`; resume picks up per prompt.
+3. Run check; write table; NOTES.md; commit.

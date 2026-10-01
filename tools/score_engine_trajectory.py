@@ -10,7 +10,8 @@ the `none` baseline trajectory (deterministic, same seed). This tool:
    NullDrafter, k=0, T=0, seed 90000 + crc32(run:seq) as in draftlab.sweep);
 2. for each drafter, runs the alpha-metric drafter (HF, f32) on
    block = prompt_ids + gen_ids and counts argmax-q == emitted-token at exactly
-   the draft positions the engine used (row L+j-2 for draft j, 1..n_steps);
+   the draft positions the engine used (row L+j-1 for draft j, 1..n_steps,
+   since row r of the empty-ctx dists() output predicts ids[r]);
 3. compares per-drafter accept/tpc against results/sweep.parquet, with a
    bootstrap CI over prompts. base == target, so base is 1.0 exactly.
 
@@ -80,6 +81,13 @@ def main() -> int:
         print(f"wrote {cache}")
 
     ok = True
+    res: dict = {
+        "metric": "greedy acceptance of HF drafter at exactly the engine's T=0 draft "
+        "positions on prompt+none-trajectory (== spec trajectory); bootstrap ci95 "
+        "over prompts (mean of per-prompt accept)",
+        "target": "qwen2.5-0.5b-instruct",
+        "traj_cache": str(cache.relative_to(ROOT)),
+    }
     print(f"{'drafter':10s} {'meas acc':>9s} {'traj acc':>9s} {'traj ci95':>22s} "
           f"{'meas tpc':>9s} {'verdict':>8s}")
     for d in ["base"] + args.drafters:
@@ -92,7 +100,8 @@ def main() -> int:
             vals = np.array([a for a, _ in per.values()])
             lo = hi = float(vals.mean())
         else:
-            drafter = HFDrafter(CKPT / d)
+            # sweep drafter name -> ckpt dir (dpo adapter lives in ckpt/dpo)
+            drafter = HFDrafter(CKPT / {"lora_dpo": "dpo"}.get(d, d))
             per: dict[int, tuple[int, int]] = {}
             for p in prompts:
                 i = p["i"]
@@ -101,10 +110,11 @@ def main() -> int:
                 q, valid = drafter.dists([], ids)
                 L = len(p["ids"])
                 n_steps = int(r["n_steps"])
-                rows = q[L - 1 : L - 1 + n_steps]  # row L+j-2 predicts gen[j-1]
+                # empty ctx: row r (r>=1) predicts ids[r]; gen[j-1] = ids[L+j-1]
+                rows = q[L : L + n_steps]
                 gen = np.asarray(traj[i])
                 m = int(np.sum((rows.argmax(axis=-1) == gen[:n_steps]) &
-                               valid[L - 1 : L - 1 + n_steps]))
+                               valid[L : L + n_steps]))
                 per[i] = (m, n_steps)
             vals = np.array([a / dr for a, dr in per.values()])
             rng = np.random.default_rng(0)
@@ -117,7 +127,16 @@ def main() -> int:
         tstr = (f"{traj_acc:9.4f} [{lo:.4f}, {hi:.4f}]" if d != "base"
                 else f"{'1.0000':>9s} [1.0000, 1.0000]")
         print(f"{d:10s} {meas:9.4f} {tstr} {tpc:9.4f} {'PASS' if in_ci else 'FAIL':>8s}")
+        res[d] = {
+            "meas_acc": meas, "meas_tpc": tpc,
+            "traj_acc": 1.0 if d == "base" else traj_acc,
+            "traj_ci95": [1.0, 1.0] if d == "base" else [lo, hi],
+            "in_ci": bool(in_ci),
+        }
     print("KNOWN ANSWER (b) on engine trajectory:", "PASS" if ok else "FAIL")
+    out = ROOT / "results" / "engine_traj_metric.json"
+    out.write_text(json.dumps(res, indent=1))
+    print(f"wrote {out}")
     return 0 if ok else 1
 
 

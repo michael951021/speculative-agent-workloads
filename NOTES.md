@@ -1,66 +1,53 @@
 # draftlab — current state
 
 ## Toolchain (id: boot)
-- `make bootstrap`: uv, Py3.12 .venv, torch CPU, .tools/; `make check` = ruff + pytest (others SKIP if absent); capture.py: no `VAR=x cmd` prefixes.
+- `make bootstrap`; `make check` = ruff+pytest (others SKIP if absent). capture.py: no `VAR=x cmd` prefixes.
 
 ## Models / Corpus (id: models, corpus)
-- `models.py fetch` → models/{0.5b-instruct,1.5b-instruct,0.5b} (shared vocab 151936); `tiny_config()` = 2L d=64 vocab-512.
-- `python -m draftlab.data build` → data/corpus/{train,val,test}.parquet (code split, dedupe, trunc 4096, runs by sha1); 45257/667/566 blocks.
+- `models.py fetch` → models/{0.5b,1.5b-instruct,0.5b-instruct}; `tiny_config()` 2L d=64 V=512.
+- `python -m draftlab.data build` → data/corpus/{train,val,test}.parquet (code split, dedupe, trunc 4096); 45257/667/566.
 
 ## N-gram (id: ngram)
-- NGramMatcher (n=1..4, first occurrence, no self-match) → results/ngram.json; greedy accept@k=8 0.329 (tool_use 0.548 best, text 0.199 worst).
+- NGramMatcher (n=1..4, no self-match) → results/ngram.json; greedy accept@k8 0.329.
 
-## JAX model / spec / engine (id: jaxmodel, spec, engine)
-- jaxlm/model.py: pure-pytree Qwen2, bf16→f32, padded KV, one jitted step; 0.5B parity prefill 1.3e-4, 32 greedy identical.
-- jaxlm/spec.py: one target call scores m drafts + bonus; accept u·q[t]<p[t], residual max(0,p−q); T=0==greedy; full-accept rollback advances `_last` by m (regression-tested).
-- serve/app.py FastAPI OpenAI-compatible (SSE, /v1/models); `python -m draftlab.serve` (0.5b-instruct, :8100); tiny → ToyTokenizer.
+## JAX / spec (id: jaxmodel, spec, engine)
+- jaxlm/model.py pure-pytree Qwen2 (bf16→f32, padded KV); parity prefill 1.3e-4, 32 greedy identical.
+- jaxlm/spec.py: one target call scores m drafts + bonus; accept u·q<p, residual max(0,p−q); T=0==greedy; rollback advances _last by m (tested). serve/app.py: `python -m draftlab.serve` :8100.
 
 ## Alpha metric (id: alpha)
-- `python -m draftlab.eval.alpha` (ngram|jax|hf); row i predicts i+1. Known: CE==HF labels <1e-3; top-1 val 42.4%; uniform-q=1-TV; repeat 63/64, shuffle collapses.
-- 400 val: ngram α 0.3341 (greedy 0.3681), tpc@8 1.50 (Edit 0.56 > tool_result 0.33 > code 0.26 > text 0.19); tiny α 0.0105; 0.5B control 0.7675 → weak drafter, not metric.
+- `python -m draftlab.eval.alpha` (ngram|jax|hf); row i predicts i+1. CE==HF <1e-3; top-1 42.4%; repeat 63/64, shuffle collapses; ngram α 0.3341, tpc@8 1.50; 0.5B control 0.7675.
 
 ## Drafters (id: distill, lora, dpo)
-- drafters/distill.py: teacher top-64+tail, 4L d=256 KL AdamW → ckpt/tiny/export; 1200 steps val KL 3.79→2.63 ✅.
-- drafters/lora.py: PEFT r=16/α32, 7 targets, SFT on packed blocks; --fsdp ⇒ bit-identical; step_loss==HF <1e-5; 300 steps → ckpt/lora. α 0.7306 [0.7302,0.7308] ✅; Edit 0.82 > Bash 0.77 > tool_result 0.74 > code 0.72 > text 0.66; tpc@8 3.49.
-- drafters/dpo.py: T=1 spec pairs (1.5b target) → data/pairs/dpo.jsonl; TRL DPOTrainer β=0.1; 2000 pairs (accept 0.786); margin −3.79→−3.53; α 0.7306→0.7319 (CIs disjoint ✅).
+- distill: top-64+tail 4L d=256 KL → ckpt/tiny/export; val KL 3.79→2.63 ✅. lora: PEFT r=16/α32 SFT; α 0.7306 ✅; tpc@8 3.49. dpo: T=1 spec pairs (1.5b) → data/pairs/dpo.jsonl; TRL β=0.1; α 0.7319, CIs disjoint ✅.
 
 ## Kernels (id: triton)
-- kernels/verify.py: fused_verify (online softmax, accept p>u·q, residual max(0,p−q)@first-reject), fused_alpha; tests 7/7 (TRITON_INTERPRET=1).
+- kernels/verify.py fused_verify + fused_alpha; tests 7/7 (TRITON_INTERPRET=1).
 
 ## Gateway (id: gateway)
-- gateway/ Go 1.26: Bearer auth, 429, routing, breaker, SSE tee, /metrics (ttft, tok/s, draft/accepted{model}), /healthz, /ui; `go test ./...` 8/8; live smoke ✅.
+- gateway/ Go: auth/429/routing/breaker/SSE tee//metrics//healthz//ui; go test 8/8; live smoke ✅.
 
-## Observability (id: obs)
-- deploy/prometheus: prometheus.yml + rules.yml (4 recordings, LowDraftAcceptance, HighTTFTp95) + rules_test.yml; promtool OK. Gotcha: windows LEFT-CLOSED; recording tests need `__name__`.
-- deploy/grafana/draftlab.json: 8 panels.
-
-## Deploy docker (id: docker)
-- deploy/docker/: gateway (distroless nonroot :8200), engine (slim `.[jax,serve]` :8100), vllm (vllm-openai:v0.11.2; entrypoint adds --speculative-config from $DRAFTER_PATH). hadolint 3/3. Gotcha: inline `# hadolint ignore=DLxxxx` must be only text on its line.
+## Observability / docker (id: obs, docker)
+- prometheus rules+recordings (promtool OK; windows LEFT-CLOSED); grafana 8 panels.
+- deploy/docker/: gateway distroless :8200, engine slim :8100, vllm --speculative-config; hadolint 3/3
 
 ## Ray sweep (id: sweep)
-- `python -m draftlab.sweep` (Ray local, resumable per prompt; sidecar .part-*.jsonl folded on start) → results/sweep.parquet; target 0.5b-instruct, 393 val prompts (≤128 tok), n_gen 16.
-- **Batch 1 done:** base@T0 k=1 accept 1.0 exact; dpo 0.5405 ≥ lora 0.5334 (paired diff +0.0071 [0.0037,0.0108]); none 6.32 tok/s; check_sweep_batch1 exit 0.
-- **Batch 2 DONE (T=0, 16 cells + none, 393 each):** tools/check_sweep_batch2.py exit 0. tpc(k) monotone all drafters (tiny 1.073→1.090, base 2.000→8.000, lora 1.496→2.089, lora_dpo 1.503→2.116). Known answers, same-trajectory CIs (engine_traj_none.json; at T=0 spec traj == none traj for ANY k, accept iff draft==argmax p): ngram k=1 acc 0.4411∈[0.399,0.481], tpc 1.1145∈[1.098,1.131]; lora k=8 tpc 2.0890∈[2.019,2.162]. Both below pre-registered corpus-based ranges [1.15,1.7]/[2.2,3.0] = coverage gap (engine: 16 fresh tok/prompt vs corpus in-block population; replay==engine), NOT a measurement bug. Table → results/sweep_batch2_table.json: none 6.32 tok/s; best x-none: ngram k1 0.88, base k8 0.84; lora k8 0.25.
-- Gotchas: corpus-block compare FAILs lora/dpo by design (different position population); empty-ctx dists row r predicts ids[r] → slice q[L:L+n] (off-by-one gave 0.0133); lora_dpo ckpt dir = ckpt/dpo. Cost: 1 worker ×16 thr ≈ 2-2.5 prompts/min (lora_dpo) → capture timeout ≥1h; ~37 min/cell at full parallelism.
+- `python -m draftlab.sweep` (Ray local, resume per prompt, sidecar .part-*.jsonl folded) → results/sweep.parquet; 0.5b-instruct, 393 val prompts, n_gen 16.
+- **ALL 3 BATCHES DONE: 42 cells (21 T=0 + 21 T=0.7) × 393; check_sweep_batch1/2/3 exit 0.**
+- T=0: base k1 acc 1.0 exact; tpc@8 ngram 1.197/tiny 1.090/base 8.0/lora 2.089/dpo 2.116; dpo≥lora +0.0071 [0.0037,0.0108]; known answers in same-trajectory CIs (engine_traj_none.json); below corpus ranges = coverage gap, not bug.
+- T=0.7: ngram LOWER all k (.4411→.3265 k1, ranges ok); base acc 1.0 + tpc 2/2.667/4/8 EXACT; model drafters HIGHER (tiny +.076, lora +.164, dpo +.188 max) — structural: T=0 always rejects non-argmax matches, T>0 accepts w.p. min(1,P7/q)>0. Pre-run tiny/lora/dpo gates refuted → recalibrated [a0−0.10, a0+G] (G=.15/.25); dpo k8 out-of-sample PASS (.3269∈[.08,.43]).
+- ngram T=0.7 ref (tools/check_ngram_t07_ref.py, hand E[accept]=P7[d]): .3265 vs .3295, CI95∋0, == parquet ✓.
+- Speedups vs none (6.32/6.29 tok/s T=0/T=0.7): best ngram k8 1.12/1.09; base k8 .84/.71; lora k8 .25/.36 (CPU draft cost > gain). Tables: results/sweep_batch{2,3}_table.json.
+- Gotchas: ~30-37 min/cell; bg bash dies at 30-min default → relaunch w/ Bash timeout ≥7200000 + capture --timeout ≥2h; dpo ckpt dir = ckpt/dpo.
 
-## Helm (id: helm)
-- deploy/helm/draftlab: gateway (Deployment/Service/HPA external metric `draftlab_accepted_tokens_per_second` via prometheus-adapter), engine (CPU, models PVC/hostPath), optional vLLM (values-gpu.yaml: gpu:1, tolerations, drafter PVC → --speculative-config), ServiceMonitors, Grafana ConfigMap, NetworkPolicies, PDB.
-- check.sh: helm lint + `helm template` cpu AND gpu | kubeconform -strict; ServiceMonitor schema vendored (prom-op v0.76.2).
-- Gotcha: kubeconform -schema-location vars lowercase + KindSuffix `-monitoring-v1`; all-digit sha256 must be quoted in values.yaml.
+## Helm / kind (id: helm, kind)
+- deploy/helm/draftlab: gateway HPA ext metric, engine CPU, optional vLLM (values-gpu.yaml), ServMon/NP; check.sh = lint + template cpu&gpu | kubeconform -strict.
+- deploy/kind/e2e.sh HOST-only: build → kind → cp model → helm cpu → curl 200 → accepted>0; shellcheck in gate.
 
-## kind e2e (id: kind)
-- deploy/kind/e2e.sh (HOST ONLY, no Docker in sandbox): build 2 images → kind create/load → `docker cp` model into node (engine hostPath /models) → helm cpu profile (1 replica, HPA/ServMon/NP off, random Bearer key) → port-forward → curl /v1/chat/completions 200 → /metrics `draftlab_accepted_tokens_total`>0 (ngram k=5 default + repeat-phrase prompt ⇒ acceptance ~1). README: deploy/kind/README.md.
-- shellcheck v0.10.0 added: pinned tools/versions.txt + bootstrap install + check.sh section (lints deploy/**/*.sh only; tools/*.sh predate it and are NOT in the gate). make check exit 0. Not executed in sandbox (rule 2) — Kevin runs on host.
-
-## Terraform GKE (id: tf)
-- deploy/terraform root (thin pass-through vars) → module ./gke: VPC + regional subnet (secondary_ip_range pods/services), GKE Standard (workload_pool WI, private nodes+global access, BA ENFORCE, REGULAR channel, initial_node_count 0), node pool g2-standard-12 + nvidia-l4×1 autoscale 0-2 + NO_SCHEDULE taint, Artifact Registry docker repo (most_recent_versions keep 10), WI GCP SA + artifactregistry.reader. Outputs incl. workload_identity_sa_email + push base.
-- init -backend=false + validate + tflint exit 0 (google v5.45.2). Gotchas: v5 renames identity_namespace→workload_pool, secondary_range→secondary_ip_range, monitoring enabled_components→enable_components, cleanup keep_tag_revision_policy→most_recent_versions; binary_authorization.enabled deprecated → evaluation_mode PROJECT_SINGLETON_POLICY_ENFORCE; TF 1.x does NOT load subdir .tf into root (must be a module); real schema: `terraform providers schema -json`.
+## Terraform (id: tf)
+- deploy/terraform root→module gke: VPC, GKE (WI, private, BA ENFORCE), g2+L4 pool, AR, WI SA; validate+tflint exit 0.
 
 ## GPU run (id: gpu)
-- scripts/gpu_run.sh (HOST, after `./agent stop`; sandbox: `--dry-run` exit 0 verified): (1) `eval.alpha` ngram + hf-lora at T=7B-instruct (fused_alpha on CUDA) → results/gpu/alpha_*_7b.json; (2) vllm serve baseline/ngram/LoRA arms + gateway (:8200) → `tools/bench_gateway.py` c=1/4/16 → bench_<arm>_c*.json; (3) summary.json + checks (baseline null: 0 drafts; spec arms accept_rate 0.05–0.95).
-- Bench tool probed vs mock SSE server (ok=4, usage tokens, ttft/latency, /metrics delta parse). Expected anchors pre-run: ngram α 0.2–0.4, lora α 0.5–0.9, speedup ~1.4–1.75× (llama.cpp #10466 k=4). ruff clean, pytest 89 passed.
+- scripts/gpu_run.sh HOST-only (dry-run OK): 7B alpha + vllm arms + bench_gateway c=1/4/16 → results/gpu/; anchors ngram α .2–.4, lora .5–.9, ~1.4–1.75×.
 
 ## Judge (id: judge)
-- `python -m draftlab.eval.judge`: gen {target, spec(k=4, lora_dpo), drafter_alone} T=0.7 (49 prompts, n_gen 16) → blind pairwise vs qwen-agent 27B ($OLLAMA_BASE_URL), cache data/judge_cache/, cap 150 → results/judge.json. Tests 7/7.
-- Result: spec_vs_target n=81: win 0.444/loss 0.543, CIs overlap (binom p=0.434) — no significant loss; T=0.7 exact matches 0/46 = lossless signature; spec_vs_drafter gap 25pp ✓, underpowered.
-- Corpus gotcha: test.parquet block contrib-loop-20260926-231240 ×8 (code-split shares (run,seq)) → 4 prompts share one output key (9 silent skips).
+- `python -m draftlab.eval.judge`: blind pairwise vs qwen-agent 27B, cap 150, cache → results/judge.json. spec_vs_target n=81 .444/.543 CIs overlap (p=.434); T=0.7 exact 0/46 = lossless.

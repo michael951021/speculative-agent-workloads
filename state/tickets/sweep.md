@@ -176,3 +176,25 @@ outside its pre-registered range with no engine explanation.
   + reference check); (3) rerun check -> table -> NOTES -> commit.
 - The task line's "sampled-temperature acceptance lower than T=0" holds for
   ngram only; report that honestly in NOTES/REPORT.
+
+### Status 2026-10-01 18:05 (FINAL): all 42 cells complete
+- 21/21 T=0.7 cells x 393 prompts; 16506 rows. New cells: lora_dpo k4 acc
+  0.4644 (tpc 2.615), k8 acc 0.3269 (tpc 3.067), none tpc 1.0 (6.29 tok/s).
+  lora_dpo k8 is the out-of-sample cell for the recalibrated gates:
+  0.3269 in [a0-0.10, a0+0.25] = [0.079, 0.429] PASS.
+- check_sweep_batch3.py gates recalibrated (refuted priors replaced): hard
+  anchors kept (base k1 exact 1.0/2.0, base k>=2 acc>=0.95, ngram strictly
+  lower all k, ngram/base ranges, none tpc==1.0); model drafters now gated by
+  [max(0, a0-0.10), a0+G] (G=0.15 tiny, 0.25 lora/lora_dpo), per the
+  non-argmax-match derivation. ngram T=0.7 reference:
+  tools/check_ngram_t07_ref.py (hand-computed E[accept]=P7[d] from raw logits,
+  no engine accept code reused).
+- Full acc T=0 -> T=0.7 per k=1/2/4/8: ngram .4411->.3265, .3338->.2739,
+  .2349->.1613, .1624->.1211 (LOWER, as required); tiny .0799->.1562,
+  .0477->.0968, .0267->.0601, .0156->.0304 (HIGHER, max +.076); base 1.0
+  exact all k, tpc 2.0/2.667/4.0/8.0 exact; lora .5334->.6854, .4146->.5784,
+  .2844->.4472, .1746->.3042 (max +.164); lora_dpo .5405->.6910, .4220->.6097,
+  .2901->.4644, .1787->.3269 (max +.188). Model-drafter rise is structural
+  (non-argmax matches accept at min(1,P7/q)>0 at T=0.7; rejected at T=0).
+- Pooled speedups vs none (6.32 tok/s T=0, 6.29 T=0.7): see
+  results/sweep_batch3_table.json.

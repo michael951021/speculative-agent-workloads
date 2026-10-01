@@ -116,3 +116,8 @@
 - Goal: Sweep batch 2
 - Approach: Relaunched resumable sweep for the only missing cell (lora_dpo k=8); it folded the 140+124 sidecar rows and measured 145 then 21 remaining prompts (single 16-thread Ray worker ≈2 prompts/min, so I relaunched once with a longer capture timeout); reran the check and updated NOTES/ticket.
 - Blockers: Measured ngram k=1 and lora k=8 tpc fall below the pre-registered corpus-metric ranges [1.15,1.7]/[2.2,3.0]; ruled out as a bug because the same-trajectory replay (replay==engine at T=0) contains both measurements — a coverage gap from the 16-fresh-tokens-per-prompt population, not a measurement error.
+
+## export — Results export
+- Goal: draftlab/export_ui.py: results/*.json + sweep.parquet → web/public/data/{summary,alpha,sweep,replays}.json; replays = 30 val blocks (5 per kind) with per-token target prob, drafter prob and accept flag for the best drafter and ngram
+- Approach: draftlab/export_ui.py derives versioned web/public/data/{summary,alpha,sweep,replays}.json from results/*.json + sweep.parquet; replays = 30 val blocks (5×top-6 kinds) with per-token target prob, drafter prob, accept flag for dpo + ngram; missing sweep cells marked pending (21/42) instead of failing exported from real results, re-scored replays with the alpha-run pair (1.5b-instruct, ctx 1024), and validated with 8 schema + known-answer tests (per-position α identity <1e-5 vs alpha.evaluate())
+- Blockers: prior attempt finished the work but its run looked incomplete due to a malformed RESULT block; no technical blocker this run

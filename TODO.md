@@ -83,7 +83,7 @@
 
 ## Explorer
 > why: the cool output: an interactive page where you can see, token by token, which parts of a real agent turn a drafter would have guessed.
-- [ ] **Results export** — draftlab/export_ui.py: results/*.json + sweep.parquet → web/public/data/{summary,alpha,sweep,replays}.json; replays = 30 val blocks (5 per kind) with per-token target prob, drafter prob and accept flag for the best drafter and ngram. Test: schema check. Exports whichever sweep cells exist (batch 3 may still be running): mark missing cells as pending in summary.json instead of failing; rerun after the sweep. (id: export) (after: alpha)
+- [x] **Results export** — draftlab/export_ui.py: results/*.json + sweep.parquet → web/public/data/{summary,alpha,sweep,replays}.json; replays = 30 val blocks (5 per kind) with per-token target prob, drafter prob and accept flag for the best drafter and ngram. Test: schema check. Exports whichever sweep cells exist (batch 3 may still be running): mark missing cells as pending in summary.json instead of failing; rerun after the sweep. (id: export) (after: alpha)
   why: one small, versioned data contract between the Python results and the web UI.
 - [ ] **React explorer** — web/ (Vite + React + TypeScript + Recharts): Overview (KPI tiles, best speedup, corpus stats); Acceptance heatmap (kind × drafter, CI on hover); Speedup vs k lines per drafter with CI bands, measured vs expected; Token replay (pick a block, tokens coloured accepted/rejected, hover shows p and q); light/dark. Vitest + Testing Library tests per page; `npm run build` in make check; gateway serves it at /ui. (id: web) (after: export)
   why: makes the findings explorable and shows full-stack web skills in the same project.

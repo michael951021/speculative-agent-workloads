@@ -42,9 +42,6 @@
 - **Batch 1 done (09-30):** 4 cells × 393. base@T0 k=1 accept 1.0 exact ✅; dpo 0.5405 ≥ lora 0.5334, paired-bootstrap diff +0.0071 [0.0037,0.0108] (unpaired CIs overlap — underpowered; check uses paired, prints both); none 6.32 tok/s. check_sweep_batch1 exit 0.
 - Engine-vs-metric: corpus-block compare (compare_sweep_alpha vs alpha_sweep_*.json, 100 blk ctx 0) FAILs lora/dpo by design (different position population). Same-text check = tools/score_engine_trajectory.py (none traj == T=0 spec traj; cache results/engine_traj_none.json): measures acc/tpc vs trajectory-metric CI. Gotcha: empty-ctx dists row r predicts ids[r] → slice q[L:L+n_steps] (off-by-one gave 0.0133); ckpt dir for lora_dpo is ckpt/dpo.
 - Cost: 6.4 tok/s @1 proc (XLA ignores OMP); none≈140, lora/dpo≈150, base≈175 min/cell. k≥2 accept expect ≥0.99 (GEMM tiling ~1e-4).
-- `python -m draftlab.sweep` (Ray local, resumable by (drafter,k,temp)) → results/sweep.parquet; target 0.5b-instruct, 488 val prompts (100/kind ≤128 tok), n_gen 16. 2-cell test ✅ (base@T0 k=1 n_acc==n_draft = known answer (a)).
-- k≥2 accept expect ≥0.99 (GEMM tiling ~1e-4). ModelDrafter bugs fixed earlier (regression-tested).
-- Cost (measured 09-30): XLA ignores OMP_NUM_THREADS; 1 proc 6.4 tok/s; 4 parallel ≈ 3.7 tok/s: none≈140, lora/dpo≈150, base≈175 min. TODO batches 1-3 resumable; b1 = base/lora/lora_dpo k=1 T=0 + none.
 - Known (b): tools/compare_sweep_alpha.py vs `eval.alpha --target 0.5b-instruct --blocks 100 --ctx-tokens 0` (k=1 T=0 acc vs `greedy_ci95`).
 - Known: base@T0 k=1 accept exactly 1.0; k≥2 expect ≥0.99. Cost: 6.4 tok/s @16 thr → 42 cells ≈ 20 CPU-h.
 

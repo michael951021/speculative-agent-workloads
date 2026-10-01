@@ -92,3 +92,18 @@
 - Goal: deploy/helm/draftlab: gateway Deployment/Service/HPA (custom metric via prometheus-adapter), API-key Secret, engine Deployment, optional vLLM Deployment (nvidia.com/gpu: 1, tolerations, `--speculative-config` with the trained drafter from a PVC, readiness on /health), ServiceMonitor, Grafana dashboa
 - Approach: deploy/helm/draftlab chart (gateway+HPA+Secret, engine, optional vLLM GPU, ServiceMonitors, dashboard ConfigMap, NetworkPolicies, PDB) with cpu/gpu values; make check runs helm lint + template|kubeconform -strict with vendored ServiceMonitor schema — all pass. vendored prometheus-operator ServiceMonitor CRD schema, wrote chart from observed gateway/engine/vLLM interfaces, wired both profiles into tools/check.sh, verified known-answer properties on rendered output.
 - Blockers: kubeconform v0.6.7 schema-location template semantics undocumented (lowercased ResourceKind + KindSuffix filename) — found by reading its source; grafana-sync check initially ran with wrong cwd.
+
+## tf — Terraform GKE
+- Goal: deploy/terraform/gke: VPC + subnet, GKE Standard cluster, L4 GPU node pool (autoscale 0-2, taint), Artifact Registry repo, Workload Identity service account; variables and outputs documented
+- Approach: Added deploy/terraform (root + gke child module) provisioning VPC/subnet, GKE Standard cluster, L4 GPU pool (autoscale 0-2, NO_SCHEDULE taint), Artifact Registry repo and Workload Identity SA; validate + tflint green in make check. Thin root passing all vars to a ./gke child module (TF 1.x ignores subdir .tf otherwise); fixed schema mismatches against `terraform providers schema -json` (google v5.45.2) instead of guessing.
+- Blockers: None — only iteration on provider-v5 attribute renames (workload_pool, secondary_ip_range, enable_components, most_recent_versions) and the subdir-loads-as-root misconception.
+
+## kind — kind end-to-end script
+- Goal: deploy/kind/e2e.sh (host only, needs docker): build images, kind cluster, load images, helm install cpu profile with tiny models, port-forward, curl the gateway with a key, check /metrics shows accepted tokens; shellcheck clean
+- Approach: Added deploy/kind/e2e.sh — host-only one-command demo: builds gateway+engine images, creates/loads a kind cluster, copies the 0.5B model into the node (engine hostPath volume), helm-installs the cpu profile (1 replica, HPA/ServMon/NP off, random Bearer key), port-forwards, curls an authed completion, and asserts /metrics shows draftlab_accepted_tokens_total > 0; plus deploy/kind/README.md and shellcheck in make check. Read chart templates, gateway metric/auth paths and engine model loading to drive the script's --set flags; wrote script + ticket, linted with a fetched shellcheck v0.10.0 (0 fin
+- Blockers: none (Docker unavailable in sandbox per rule 2, so the script itself is validated by shellcheck/static review only — Kevin runs it on the host)
+
+## gpu — GPU run script
+- Goal: scripts/gpu_run.sh (host, after `./agent stop` frees the GPUs): alpha eval at T = Qwen2.5-7B-Instruct with the Triton kernel; vLLM serving with --speculative-config for ngram and the LoRA drafter, a throughput/latency benchmark through the gateway at concurrency 1/4/16; results/gpu/*.json
+- Approach: Added scripts/gpu_run.sh (host: alpha@7B w/ Triton kernel, vLLM baseline/ngram/LoRA spec arms, gateway bench c=1/4/16 → results/gpu/*.json; sandbox --dry-run verified exit 0) plus tools/bench_gateway.py SSE load bench with /metrics delta. Reused existing eval.alpha (auto Triton fused_alpha on CUDA), vllm-entrypoint spec-config pattern, and gateway config/metrics; wrote bench tool + orchestrator; validated via dry-run, mock-SSE probe, and synthetic summary test; ruff+pytest green.
+- Blockers: none

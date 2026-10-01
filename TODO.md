@@ -76,9 +76,9 @@
   why: the images the chart deploys; linted since the sandbox cannot build them.
 - [x] **Helm chart** — deploy/helm/draftlab: gateway Deployment/Service/HPA (custom metric via prometheus-adapter), API-key Secret, engine Deployment, optional vLLM Deployment (nvidia.com/gpu: 1, tolerations, `--speculative-config` with the trained drafter from a PVC, readiness on /health), ServiceMonitor, Grafana dashboard ConfigMap from deploy/grafana, NetworkPolicy, PodDisruptionBudget; values for cpu-only and gpu profiles. make check: helm lint + `helm template | kubeconform -strict` (CRD schemas for ServiceMonitor). (id: helm) (after: docker, obs)
   why: Kubernetes-native deployment of the whole stack, the most-requested missing skill in the postings.
-- [ ] **Terraform GKE** — deploy/terraform/gke: VPC + subnet, GKE Standard cluster, L4 GPU node pool (autoscale 0-2, taint), Artifact Registry repo, Workload Identity service account; variables and outputs documented. `terraform init -backend=false && terraform validate` + tflint in make check. Never plan/apply. (id: tf) (after: boot)
+- [x] **Terraform GKE** — deploy/terraform/gke: VPC + subnet, GKE Standard cluster, L4 GPU node pool (autoscale 0-2, taint), Artifact Registry repo, Workload Identity service account; variables and outputs documented. `terraform init -backend=false && terraform validate` + tflint in make check. Never plan/apply. (id: tf) (after: boot)
   why: cloud infrastructure as code for the GPU pool the chart targets.
-- [ ] **kind end-to-end script** — deploy/kind/e2e.sh (host only, needs docker): build images, kind cluster, load images, helm install cpu profile with tiny models, port-forward, curl the gateway with a key, check /metrics shows accepted tokens; shellcheck clean. Document in README; do not run it in the sandbox. (id: kind) (after: helm)
+- [x] **kind end-to-end script** — deploy/kind/e2e.sh (host only, needs docker): build images, kind cluster, load images, helm install cpu profile with tiny models, port-forward, curl the gateway with a key, check /metrics shows accepted tokens; shellcheck clean. Document in README; do not run it in the sandbox. (id: kind) (after: helm)
   why: a one-command demo Kevin can run on the host (or once the microVM sandbox allows Docker).
 
 ## Explorer
@@ -90,7 +90,7 @@
 
 ## Results
 > why: the goal is answered only when the numbers are written down, with the GPU-scale run and an honest account of what did not work.
-- [ ] **GPU run script** — scripts/gpu_run.sh (host, after `./agent stop` frees the GPUs): alpha eval at T = Qwen2.5-7B-Instruct with the Triton kernel; vLLM serving with --speculative-config for ngram and the LoRA drafter, a throughput/latency benchmark through the gateway at concurrency 1/4/16; results/gpu/*.json. In the sandbox only `--dry-run` (prints the plan, checks files exist). (id: gpu) (after: triton, helm, lora)
+- [x] **GPU run script** — scripts/gpu_run.sh (host, after `./agent stop` frees the GPUs): alpha eval at T = Qwen2.5-7B-Instruct with the Triton kernel; vLLM serving with --speculative-config for ngram and the LoRA drafter, a throughput/latency benchmark through the gateway at concurrency 1/4/16; results/gpu/*.json. In the sandbox only `--dry-run` (prints the plan, checks files exist). (id: gpu) (after: triton, helm, lora)
   why: the numbers at a realistic target size, which CPU runs can only approximate.
 - [ ] **REPORT and README** — REPORT.md: question, corpus, method, headline table (drafter × kind α, measured speedups), figures (matplotlib PNGs in results/fig/), judge result, what failed and why, GPU results if present. README.md: architecture diagram (mermaid), quickstart, and a skills map table (skill → files: JAX, PyTorch/FSDP, LoRA/QLoRA, DPO, Triton, Ray, Go, Prometheus/Grafana, Kubernetes/Helm, Terraform/GKE, React/TS, LLM-as-judge, OpenAI API). (id: report) (after: judge, web, kind, tf)
   why: the portfolio artifact: findings first, then how to reproduce and what each part demonstrates.

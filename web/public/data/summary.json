@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "generated_at": "2026-10-01T16:33:08+00:00",
+ "generated_at": "2026-10-01T22:44:37+00:00",
  "inputs": [
   "results/sweep.parquet",
   "results/corpus_stats.json",
@@ -264,7 +264,7 @@
  },
  "sweep": {
   "target": "qwen2.5-0.5b-instruct",
-  "n_cells_done": 21,
+  "n_cells_done": 42,
   "n_cells_expected": 42,
   "cells": {
    "ngram k=1 T=0.0": {
@@ -275,7 +275,11 @@
     "speedup_vs_none": 0.8787507534833517
    },
    "ngram k=1 T=0.7": {
-    "status": "pending"
+    "status": "done",
+    "alpha": 0.3264781491002571,
+    "tpc": 1.0796703296703296,
+    "tok_s": 5.60370806230594,
+    "speedup_vs_none": 0.8908604298493907
    },
    "ngram k=2 T=0.0": {
     "status": "done",
@@ -285,7 +289,11 @@
     "speedup_vs_none": 1.0913781148070019
    },
    "ngram k=2 T=0.7": {
-    "status": "pending"
+    "status": "done",
+    "alpha": 0.2739285714285714,
+    "tpc": 1.1266798064862928,
+    "tok_s": 6.7267325593263365,
+    "speedup_vs_none": 1.0693954418491585
    },
    "ngram k=4 T=0.0": {
     "status": "done",
@@ -295,7 +303,11 @@
     "speedup_vs_none": 1.1225467772620539
    },
    "ngram k=4 T=0.7": {
-    "status": "pending"
+    "status": "done",
+    "alpha": 0.16126928928493806,
+    "tpc": 1.121655369247235,
+    "tok_s": 6.668662414695903,
+    "speedup_vs_none": 1.0601636272307509
    },
    "ngram k=8 T=0.0": {
     "status": "done",
@@ -305,7 +317,11 @@
     "speedup_vs_none": 1.118586745714945
    },
    "ngram k=8 T=0.7": {
-    "status": "pending"
+    "status": "done",
+    "alpha": 0.12112491824722041,
+    "tpc": 1.1552452691530406,
+    "tok_s": 6.8405901233316975,
+    "speedup_vs_none": 1.0874961703817012
    },
    "tiny k=1 T=0.0": {
     "status": "done",
@@ -315,7 +331,11 @@
     "speedup_vs_none": 0.6299075711181912
    },
    "tiny k=1 T=0.7": {
-    "status": "pending"
+    "status": "done",
+    "alpha": 0.1562328892133601,
+    "tpc": 1.1476546815112247,
+    "tok_s": 3.8257955452828765,
+    "speedup_vs_none": 0.6082133162704562
    },
    "tiny k=2 T=0.0": {
     "status": "done",
@@ -325,7 +345,11 @@
     "speedup_vs_none": 0.7275273270267237
    },
    "tiny k=2 T=0.7": {
-    "status": "pending"
+    "status": "done",
+    "alpha": 0.09679907443116081,
+    "tpc": 1.1753271028037384,
+    "tok_s": 4.793835950867607,
+    "speedup_vs_none": 0.7621094297442755
    },
    "tiny k=4 T=0.0": {
     "status": "done",
@@ -335,7 +359,11 @@
     "speedup_vs_none": 0.6834969977353454
    },
    "tiny k=4 T=0.7": {
-    "status": "pending"
+    "status": "done",
+    "alpha": 0.06007291171342526,
+    "tpc": 1.2069097888675624,
+    "tok_s": 4.588117524571213,
+    "speedup_vs_none": 0.7294049412804473
    },
    "tiny k=8 T=0.0": {
     "status": "done",
@@ -345,7 +373,11 @@
     "speedup_vs_none": 0.6515322937003397
    },
    "tiny k=8 T=0.7": {
-    "status": "pending"
+    "status": "done",
+    "alpha": 0.030350241184048898,
+    "tpc": 1.1779692768827277,
+    "tok_s": 4.494408319321768,
+    "speedup_vs_none": 0.714507337418655
    },
    "base k=1 T=0.0": {
     "status": "done",
@@ -355,7 +387,11 @@
     "speedup_vs_none": 0.5409003553279653
    },
    "base k=1 T=0.7": {
-    "status": "pending"
+    "status": "done",
+    "alpha": 1.0,
+    "tpc": 2.0,
+    "tok_s": 3.7223833176242502,
+    "speedup_vs_none": 0.5917731554770445
    },
    "base k=2 T=0.0": {
     "status": "done",
@@ -365,7 +401,11 @@
     "speedup_vs_none": 0.6697220403173924
    },
    "base k=2 T=0.7": {
-    "status": "pending"
+    "status": "done",
+    "alpha": 1.0,
+    "tpc": 2.6666666666666665,
+    "tok_s": 4.359393837559419,
+    "speedup_vs_none": 0.6930431465790623
    },
    "base k=4 T=0.0": {
     "status": "done",
@@ -375,7 +415,11 @@
     "speedup_vs_none": 0.7509376103837986
    },
    "base k=4 T=0.7": {
-    "status": "pending"
+    "status": "done",
+    "alpha": 1.0,
+    "tpc": 4.0,
+    "tok_s": 4.6866686033255505,
+    "speedup_vs_none": 0.7450722914359231
    },
    "base k=8 T=0.0": {
     "status": "done",
@@ -385,7 +429,11 @@
     "speedup_vs_none": 0.8428650727377057
    },
    "base k=8 T=0.7": {
-    "status": "pending"
+    "status": "done",
+    "alpha": 1.0,
+    "tpc": 8.0,
+    "tok_s": 4.455462689258769,
+    "speedup_vs_none": 0.7083158798421871
    },
    "lora k=1 T=0.0": {
     "status": "done",
@@ -395,7 +443,11 @@
     "speedup_vs_none": 0.4527179542488922
    },
    "lora k=1 T=0.7": {
-    "status": "pending"
+    "status": "done",
+    "alpha": 0.6854374017810372,
+    "tpc": 1.6469355683603981,
+    "tok_s": 2.449999131089289,
+    "speedup_vs_none": 0.3894933952277823
    },
    "lora k=2 T=0.0": {
     "status": "done",
@@ -405,7 +457,11 @@
     "speedup_vs_none": 0.4393753506071233
    },
    "lora k=2 T=0.7": {
-    "status": "pending"
+    "status": "done",
+    "alpha": 0.5783738474434199,
+    "tpc": 2.053559764859569,
+    "tok_s": 2.7105597623880886,
+    "speedup_vs_none": 0.43091653030544336
    },
    "lora k=4 T=0.0": {
     "status": "done",
@@ -415,7 +471,11 @@
     "speedup_vs_none": 0.3556877879177855
    },
    "lora k=4 T=0.7": {
-    "status": "pending"
+    "status": "done",
+    "alpha": 0.44719076655052264,
+    "tpc": 2.547811993517018,
+    "tok_s": 2.8021950053753226,
+    "speedup_vs_none": 0.4454844219674098
    },
    "lora k=8 T=0.0": {
     "status": "done",
@@ -425,7 +485,11 @@
     "speedup_vs_none": 0.24575329763691078
    },
    "lora k=8 T=0.7": {
-    "status": "pending"
+    "status": "done",
+    "alpha": 0.3042201584266594,
+    "tpc": 2.9355742296918765,
+    "tok_s": 2.2449867335749603,
+    "speedup_vs_none": 0.3569011490680291
    },
    "lora_dpo k=1 T=0.0": {
     "status": "done",
@@ -435,7 +499,11 @@
     "speedup_vs_none": 0.45322674655261397
    },
    "lora_dpo k=1 T=0.7": {
-    "status": "pending"
+    "status": "done",
+    "alpha": 0.6909803921568628,
+    "tpc": 1.643921568627451,
+    "tok_s": 3.1130162800243273,
+    "speedup_vs_none": 0.494897840950233
    },
    "lora_dpo k=2 T=0.0": {
     "status": "done",
@@ -445,7 +513,11 @@
     "speedup_vs_none": 0.4398564703632112
    },
    "lora_dpo k=2 T=0.7": {
-    "status": "pending"
+    "status": "done",
+    "alpha": 0.6097267571747723,
+    "tpc": 2.104417670682731,
+    "tok_s": 3.2294520162449825,
+    "speedup_vs_none": 0.5134084394443093
    },
    "lora_dpo k=4 T=0.0": {
     "status": "done",
@@ -455,7 +527,11 @@
     "speedup_vs_none": 0.3695687290909695
    },
    "lora_dpo k=4 T=0.7": {
-    "status": "pending"
+    "status": "done",
+    "alpha": 0.4644052666815443,
+    "tpc": 2.6145530145530147,
+    "tok_s": 2.822989395001399,
+    "speedup_vs_none": 0.4487902506570505
    },
    "lora_dpo k=8 T=0.0": {
     "status": "done",
@@ -465,7 +541,11 @@
     "speedup_vs_none": 0.25222976242737544
    },
    "lora_dpo k=8 T=0.7": {
-    "status": "pending"
+    "status": "done",
+    "alpha": 0.3268954623779437,
+    "tpc": 3.0673170731707318,
+    "tok_s": 2.1787109483943654,
+    "speedup_vs_none": 0.3463648267225187
    },
    "none k=0 T=0.0": {
     "status": "done",
@@ -475,7 +555,11 @@
     "speedup_vs_none": 1.0
    },
    "none k=0 T=0.7": {
-    "status": "pending"
+    "status": "done",
+    "alpha": null,
+    "tpc": 1.0,
+    "tok_s": 6.290219965492581,
+    "speedup_vs_none": 1.0
    }
   }
  },

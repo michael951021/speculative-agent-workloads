@@ -1,12 +1,13 @@
 {
  "schema_version": 1,
- "generated_at": "2026-10-01T16:33:08+00:00",
+ "generated_at": "2026-10-01T22:44:37+00:00",
  "metric": "tpc = sum(n_emit)/sum(n_steps); tok_s = sum(n_emit)/sum(wall_s); speedup_vs_none = tok_s / none tok_s (same temp); alpha = n_acc/n_draft",
  "target": "qwen2.5-0.5b-instruct",
  "n_gen": 16,
  "max_tokens": 128,
  "none_tok_s": {
-  "0.0": 6.319425557133938
+  "0.0": 6.319425557133938,
+  "0.7": 6.290219965492581
  },
  "cells": {
   "base k=1 T=0.0": {
@@ -57,6 +58,57 @@
     "tool_use:Write": {
      "tok_s": 3.9139556652121943,
      "speedup_vs_none": 0.7893149251084715
+    }
+   }
+  },
+  "base k=1 T=0.7": {
+   "status": "done",
+   "n_prompts": 386,
+   "n_steps": 3144,
+   "n_draft": 3144,
+   "n_acc": 3144,
+   "n_emit": 6288,
+   "wall_s": 1689.2403235927923,
+   "alpha": 1.0,
+   "tpc": 2.0,
+   "tok_s": 3.7223833176242502,
+   "speedup_vs_none": 0.5917731554770445,
+   "by_kind": {
+    "code": {
+     "tok_s": 3.83334925083679,
+     "speedup_vs_none": 0.619789588652562
+    },
+    "text": {
+     "tok_s": 3.638022722655712,
+     "speedup_vs_none": 0.586209852764732
+    },
+    "thinking": {
+     "tok_s": 3.7477449858770155,
+     "speedup_vs_none": 0.6115919215479412
+    },
+    "tool_result": {
+     "tok_s": 3.7861690185940424,
+     "speedup_vs_none": 0.590513743647957
+    },
+    "tool_use:Bash": {
+     "tok_s": 3.735434759531357,
+     "speedup_vs_none": 0.5849374191010221
+    },
+    "tool_use:Edit": {
+     "tok_s": 3.6495863864390583,
+     "speedup_vs_none": 0.5775058170751247
+    },
+    "tool_use:Read": {
+     "tok_s": 3.8035765988244017,
+     "speedup_vs_none": 0.559813413727584
+    },
+    "tool_use:WebFetch": {
+     "tok_s": 3.5971024509575797,
+     "speedup_vs_none": 0.5468466554696215
+    },
+    "tool_use:Write": {
+     "tok_s": 3.7424451117537867,
+     "speedup_vs_none": 0.5782940569845582
     }
    }
   },
@@ -111,6 +163,57 @@
     }
    }
   },
+  "base k=2 T=0.7": {
+   "status": "done",
+   "n_prompts": 386,
+   "n_steps": 2358,
+   "n_draft": 4323,
+   "n_acc": 4323,
+   "n_emit": 6288,
+   "wall_s": 1442.4023692982737,
+   "alpha": 1.0,
+   "tpc": 2.6666666666666665,
+   "tok_s": 4.359393837559419,
+   "speedup_vs_none": 0.6930431465790623,
+   "by_kind": {
+    "code": {
+     "tok_s": 3.963700281039833,
+     "speedup_vs_none": 0.6408652084574482
+    },
+    "text": {
+     "tok_s": 4.160448139189329,
+     "speedup_vs_none": 0.6703904502633552
+    },
+    "thinking": {
+     "tok_s": 4.349855480822869,
+     "speedup_vs_none": 0.7098499182835283
+    },
+    "tool_result": {
+     "tok_s": 4.464311487742817,
+     "speedup_vs_none": 0.6962809310653894
+    },
+    "tool_use:Bash": {
+     "tok_s": 4.478192968944168,
+     "speedup_vs_none": 0.701247058540297
+    },
+    "tool_use:Edit": {
+     "tok_s": 4.420140483945026,
+     "speedup_vs_none": 0.6994372982244065
+    },
+    "tool_use:Read": {
+     "tok_s": 4.547864982747596,
+     "speedup_vs_none": 0.6693583670566718
+    },
+    "tool_use:WebFetch": {
+     "tok_s": 4.5143934001577115,
+     "speedup_vs_none": 0.6862970866156991
+    },
+    "tool_use:Write": {
+     "tok_s": 4.502696361349456,
+     "speedup_vs_none": 0.6957704036851331
+    }
+   }
+  },
   "base k=4 T=0.0": {
    "status": "done",
    "n_prompts": 386,
@@ -159,6 +262,57 @@
     "tool_use:Write": {
      "tok_s": 5.058367479564778,
      "speedup_vs_none": 1.0201047967382482
+    }
+   }
+  },
+  "base k=4 T=0.7": {
+   "status": "done",
+   "n_prompts": 386,
+   "n_steps": 1572,
+   "n_draft": 5109,
+   "n_acc": 5109,
+   "n_emit": 6288,
+   "wall_s": 1341.677966207848,
+   "alpha": 1.0,
+   "tpc": 4.0,
+   "tok_s": 4.6866686033255505,
+   "speedup_vs_none": 0.7450722914359231,
+   "by_kind": {
+    "code": {
+     "tok_s": 4.829088147921914,
+     "speedup_vs_none": 0.7807842074692602
+    },
+    "text": {
+     "tok_s": 4.9083290962193455,
+     "speedup_vs_none": 0.7908996441658261
+    },
+    "thinking": {
+     "tok_s": 4.647085466187233,
+     "speedup_vs_none": 0.7583546747639425
+    },
+    "tool_result": {
+     "tok_s": 4.650665346495146,
+     "speedup_vs_none": 0.725345802241147
+    },
+    "tool_use:Bash": {
+     "tok_s": 4.590277850751348,
+     "speedup_vs_none": 0.7187986009189303
+    },
+    "tool_use:Edit": {
+     "tok_s": 4.4849969350939265,
+     "speedup_vs_none": 0.7097000989495823
+    },
+    "tool_use:Read": {
+     "tok_s": 4.750280575946533,
+     "speedup_vs_none": 0.6991500542427309
+    },
+    "tool_use:WebFetch": {
+     "tok_s": 4.7875982729939714,
+     "speedup_vs_none": 0.7278308413545279
+    },
+    "tool_use:Write": {
+     "tok_s": 4.812148731909873,
+     "speedup_vs_none": 0.7435879297866743
     }
    }
   },
@@ -213,6 +367,57 @@
     }
    }
   },
+  "base k=8 T=0.7": {
+   "status": "done",
+   "n_prompts": 386,
+   "n_steps": 786,
+   "n_draft": 5895,
+   "n_acc": 5895,
+   "n_emit": 6288,
+   "wall_s": 1411.301235932042,
+   "alpha": 1.0,
+   "tpc": 8.0,
+   "tok_s": 4.455462689258769,
+   "speedup_vs_none": 0.7083158798421871,
+   "by_kind": {
+    "code": {
+     "tok_s": 5.198376863662017,
+     "speedup_vs_none": 0.8404921250748967
+    },
+    "text": {
+     "tok_s": 5.121076368774509,
+     "speedup_vs_none": 0.8251805040801977
+    },
+    "thinking": {
+     "tok_s": 4.249600171849573,
+     "speedup_vs_none": 0.693489323501487
+    },
+    "tool_result": {
+     "tok_s": 5.3167505493695,
+     "speedup_vs_none": 0.8292324657276872
+    },
+    "tool_use:Bash": {
+     "tok_s": 4.65270102717802,
+     "speedup_vs_none": 0.7285735412034412
+    },
+    "tool_use:Edit": {
+     "tok_s": 2.5717376146587734,
+     "speedup_vs_none": 0.40694842516262963
+    },
+    "tool_use:Read": {
+     "tok_s": 2.5943838137137334,
+     "speedup_vs_none": 0.38184346273546005
+    },
+    "tool_use:WebFetch": {
+     "tok_s": 2.5416220466218507,
+     "speedup_vs_none": 0.3863880816886425
+    },
+    "tool_use:Write": {
+     "tok_s": 5.579577508220242,
+     "speedup_vs_none": 0.8621733698524192
+    }
+   }
+  },
   "lora k=1 T=0.0": {
    "status": "done",
    "n_prompts": 386,
@@ -261,6 +466,57 @@
     "tool_use:Write": {
      "tok_s": 2.4677570974441005,
      "speedup_vs_none": 0.4976646838050956
+    }
+   }
+  },
+  "lora k=1 T=0.7": {
+   "status": "done",
+   "n_prompts": 386,
+   "n_steps": 3818,
+   "n_draft": 3818,
+   "n_acc": 2617,
+   "n_emit": 6288,
+   "wall_s": 2566.53152248438,
+   "alpha": 0.6854374017810372,
+   "tpc": 1.6469355683603981,
+   "tok_s": 2.449999131089289,
+   "speedup_vs_none": 0.3894933952277823,
+   "by_kind": {
+    "code": {
+     "tok_s": 2.0773599270595646,
+     "speedup_vs_none": 0.3358749674046806
+    },
+    "text": {
+     "tok_s": 2.0243284948858786,
+     "speedup_vs_none": 0.32618853685120464
+    },
+    "thinking": {
+     "tok_s": 2.328085065725477,
+     "speedup_vs_none": 0.37991859751389
+    },
+    "tool_result": {
+     "tok_s": 2.7889027952977203,
+     "speedup_vs_none": 0.4349740918151255
+    },
+    "tool_use:Bash": {
+     "tok_s": 2.7773057220706723,
+     "speedup_vs_none": 0.4349025336280625
+    },
+    "tool_use:Edit": {
+     "tok_s": 2.772426956142307,
+     "speedup_vs_none": 0.43870524630882013
+    },
+    "tool_use:Read": {
+     "tok_s": 2.919760934782706,
+     "speedup_vs_none": 0.42973272489749287
+    },
+    "tool_use:WebFetch": {
+     "tok_s": 2.6552118067951995,
+     "speedup_vs_none": 0.4036564751506793
+    },
+    "tool_use:Write": {
+     "tok_s": 2.9214629546460205,
+     "speedup_vs_none": 0.45143338483877554
     }
    }
   },
@@ -315,6 +571,57 @@
     }
    }
   },
+  "lora k=2 T=0.7": {
+   "status": "done",
+   "n_prompts": 386,
+   "n_steps": 3062,
+   "n_draft": 5965,
+   "n_acc": 3450,
+   "n_emit": 6288,
+   "wall_s": 2319.8160347735975,
+   "alpha": 0.5783738474434199,
+   "tpc": 2.053559764859569,
+   "tok_s": 2.7105597623880886,
+   "speedup_vs_none": 0.43091653030544336,
+   "by_kind": {
+    "code": {
+     "tok_s": 3.3866546835710705,
+     "speedup_vs_none": 0.547566416699597
+    },
+    "text": {
+     "tok_s": 3.2278690215005397,
+     "speedup_vs_none": 0.520120067434978
+    },
+    "thinking": {
+     "tok_s": 2.62165144412562,
+     "speedup_vs_none": 0.42782549249852797
+    },
+    "tool_result": {
+     "tok_s": 2.2692919450090825,
+     "speedup_vs_none": 0.3539324513238664
+    },
+    "tool_use:Bash": {
+     "tok_s": 2.6301287997833556,
+     "speedup_vs_none": 0.4118558751757073
+    },
+    "tool_use:Edit": {
+     "tok_s": 3.0218598169033504,
+     "speedup_vs_none": 0.4781751787358046
+    },
+    "tool_use:Read": {
+     "tok_s": 3.2703994108598784,
+     "speedup_vs_none": 0.4813399732798888
+    },
+    "tool_use:WebFetch": {
+     "tok_s": 3.379751578004358,
+     "speedup_vs_none": 0.5138040608929141
+    },
+    "tool_use:Write": {
+     "tok_s": 3.331700541191978,
+     "speedup_vs_none": 0.5148245505518355
+    }
+   }
+  },
   "lora k=4 T=0.0": {
    "status": "done",
    "n_prompts": 386,
@@ -363,6 +670,57 @@
     "tool_use:Write": {
      "tok_s": 1.6895112205166034,
      "speedup_vs_none": 0.3407183260517813
+    }
+   }
+  },
+  "lora k=4 T=0.7": {
+   "status": "done",
+   "n_prompts": 386,
+   "n_steps": 2468,
+   "n_draft": 9184,
+   "n_acc": 4107,
+   "n_emit": 6288,
+   "wall_s": 2243.955180827179,
+   "alpha": 0.44719076655052264,
+   "tpc": 2.547811993517018,
+   "tok_s": 2.8021950053753226,
+   "speedup_vs_none": 0.4454844219674098,
+   "by_kind": {
+    "code": {
+     "tok_s": 3.937272930918134,
+     "speedup_vs_none": 0.6365923401667414
+    },
+    "text": {
+     "tok_s": 2.973165009551325,
+     "speedup_vs_none": 0.47907854220933527
+    },
+    "thinking": {
+     "tok_s": 2.8999588258401308,
+     "speedup_vs_none": 0.47324228232952625
+    },
+    "tool_result": {
+     "tok_s": 3.199254504128618,
+     "speedup_vs_none": 0.49897501797664484
+    },
+    "tool_use:Bash": {
+     "tok_s": 2.4907453878237504,
+     "speedup_vs_none": 0.3900296143772522
+    },
+    "tool_use:Edit": {
+     "tok_s": 2.292307421317568,
+     "speedup_vs_none": 0.3627317537281371
+    },
+    "tool_use:Read": {
+     "tok_s": 2.6150826226951653,
+     "speedup_vs_none": 0.38488992982108994
+    },
+    "tool_use:WebFetch": {
+     "tok_s": 1.9835209997609875,
+     "speedup_vs_none": 0.30154321139346596
+    },
+    "tool_use:Write": {
+     "tok_s": 2.1682311954073348,
+     "speedup_vs_none": 0.3350417112423579
     }
    }
   },
@@ -417,6 +775,57 @@
     }
    }
   },
+  "lora k=8 T=0.7": {
+   "status": "done",
+   "n_prompts": 386,
+   "n_steps": 2142,
+   "n_draft": 14644,
+   "n_acc": 4455,
+   "n_emit": 6288,
+   "wall_s": 2800.907420057163,
+   "alpha": 0.3042201584266594,
+   "tpc": 2.9355742296918765,
+   "tok_s": 2.2449867335749603,
+   "speedup_vs_none": 0.3569011490680291,
+   "by_kind": {
+    "code": {
+     "tok_s": 2.3972547629721976,
+     "speedup_vs_none": 0.3875967062259188
+    },
+    "text": {
+     "tok_s": 2.299379654332592,
+     "speedup_vs_none": 0.37050868325323844
+    },
+    "thinking": {
+     "tok_s": 2.3995908649877395,
+     "speedup_vs_none": 0.3915875796184434
+    },
+    "tool_result": {
+     "tok_s": 2.774524470622572,
+     "speedup_vs_none": 0.43273156162442084
+    },
+    "tool_use:Bash": {
+     "tok_s": 1.9060451832630896,
+     "speedup_vs_none": 0.2984705186840748
+    },
+    "tool_use:Edit": {
+     "tok_s": 1.8510288789880682,
+     "speedup_vs_none": 0.29290440943163204
+    },
+    "tool_use:Read": {
+     "tok_s": 2.291214968723335,
+     "speedup_vs_none": 0.3372228322209123
+    },
+    "tool_use:WebFetch": {
+     "tok_s": 3.2078856379514016,
+     "speedup_vs_none": 0.48767627727027024
+    },
+    "tool_use:Write": {
+     "tok_s": 2.18887640899569,
+     "speedup_vs_none": 0.33823187274554894
+    }
+   }
+  },
   "lora_dpo k=1 T=0.0": {
    "status": "done",
    "n_prompts": 386,
@@ -465,6 +874,57 @@
     "tool_use:Write": {
      "tok_s": 2.6260217415764173,
      "speedup_vs_none": 0.5295814085756215
+    }
+   }
+  },
+  "lora_dpo k=1 T=0.7": {
+   "status": "done",
+   "n_prompts": 386,
+   "n_steps": 3825,
+   "n_draft": 3825,
+   "n_acc": 2643,
+   "n_emit": 6288,
+   "wall_s": 2019.905915799085,
+   "alpha": 0.6909803921568628,
+   "tpc": 1.643921568627451,
+   "tok_s": 3.1130162800243273,
+   "speedup_vs_none": 0.494897840950233,
+   "by_kind": {
+    "code": {
+     "tok_s": 3.3774574552145262,
+     "speedup_vs_none": 0.5460793759926743
+    },
+    "text": {
+     "tok_s": 3.2574763597511365,
+     "speedup_vs_none": 0.5248908219683549
+    },
+    "thinking": {
+     "tok_s": 3.098839328798993,
+     "speedup_vs_none": 0.5056974545521282
+    },
+    "tool_result": {
+     "tok_s": 3.348100820248881,
+     "speedup_vs_none": 0.5221899867032717
+    },
+    "tool_use:Bash": {
+     "tok_s": 2.9571623305099997,
+     "speedup_vs_none": 0.4630665539152117
+    },
+    "tool_use:Edit": {
+     "tok_s": 2.78881780413479,
+     "speedup_vs_none": 0.44129891283980727
+    },
+    "tool_use:Read": {
+     "tok_s": 2.8464718518362213,
+     "speedup_vs_none": 0.4189459796730332
+    },
+    "tool_use:WebFetch": {
+     "tok_s": 2.614193041545235,
+     "speedup_vs_none": 0.397420629801747
+    },
+    "tool_use:Write": {
+     "tok_s": 2.9086633308171566,
+     "speedup_vs_none": 0.4494555478442869
     }
    }
   },
@@ -519,6 +979,57 @@
     }
    }
   },
+  "lora_dpo k=2 T=0.7": {
+   "status": "done",
+   "n_prompts": 386,
+   "n_steps": 2988,
+   "n_draft": 5819,
+   "n_acc": 3548,
+   "n_emit": 6288,
+   "wall_s": 1947.0795566460583,
+   "alpha": 0.6097267571747723,
+   "tpc": 2.104417670682731,
+   "tok_s": 3.2294520162449825,
+   "speedup_vs_none": 0.5134084394443093,
+   "by_kind": {
+    "code": {
+     "tok_s": 3.7565905291251984,
+     "speedup_vs_none": 0.6073789645632649
+    },
+    "text": {
+     "tok_s": 3.3527634027349524,
+     "speedup_vs_none": 0.5402448226704598
+    },
+    "thinking": {
+     "tok_s": 3.258759680482953,
+     "speedup_vs_none": 0.5317947465369317
+    },
+    "tool_result": {
+     "tok_s": 3.4694102973204415,
+     "speedup_vs_none": 0.5411101440162973
+    },
+    "tool_use:Bash": {
+     "tok_s": 3.0156380889211833,
+     "speedup_vs_none": 0.4722233619996618
+    },
+    "tool_use:Edit": {
+     "tok_s": 2.952023926201166,
+     "speedup_vs_none": 0.4671244379529607
+    },
+    "tool_use:Read": {
+     "tok_s": 2.9408874704957086,
+     "speedup_vs_none": 0.4328421451419515
+    },
+    "tool_use:WebFetch": {
+     "tok_s": 3.791488674687258,
+     "speedup_vs_none": 0.5763980674088746
+    },
+    "tool_use:Write": {
+     "tok_s": 3.590624199879578,
+     "speedup_vs_none": 0.5548342256600881
+    }
+   }
+  },
   "lora_dpo k=4 T=0.0": {
    "status": "done",
    "n_prompts": 386,
@@ -567,6 +1078,57 @@
     "tool_use:Write": {
      "tok_s": 1.82158721482978,
      "speedup_vs_none": 0.36735366954494275
+    }
+   }
+  },
+  "lora_dpo k=4 T=0.7": {
+   "status": "done",
+   "n_prompts": 386,
+   "n_steps": 2405,
+   "n_draft": 8962,
+   "n_acc": 4162,
+   "n_emit": 6288,
+   "wall_s": 2227.426008448354,
+   "alpha": 0.4644052666815443,
+   "tpc": 2.6145530145530147,
+   "tok_s": 2.822989395001399,
+   "speedup_vs_none": 0.4487902506570505,
+   "by_kind": {
+    "code": {
+     "tok_s": 3.4138984890902955,
+     "speedup_vs_none": 0.5519712924130231
+    },
+    "text": {
+     "tok_s": 3.0977649031980774,
+     "speedup_vs_none": 0.4991558454252548
+    },
+    "thinking": {
+     "tok_s": 3.0329555000789257,
+     "speedup_vs_none": 0.4949459179460664
+    },
+    "tool_result": {
+     "tok_s": 3.1895292458856925,
+     "speedup_vs_none": 0.49745820807598556
+    },
+    "tool_use:Bash": {
+     "tok_s": 2.4140919345552314,
+     "speedup_vs_none": 0.37802633336540725
+    },
+    "tool_use:Edit": {
+     "tok_s": 2.2521578072841035,
+     "speedup_vs_none": 0.3563785308687461
+    },
+    "tool_use:Read": {
+     "tok_s": 2.499905782103086,
+     "speedup_vs_none": 0.3679381112790003
+    },
+    "tool_use:WebFetch": {
+     "tok_s": 3.4105543365329924,
+     "speedup_vs_none": 0.5184868258989923
+    },
+    "tool_use:Write": {
+     "tok_s": 3.0826076746279774,
+     "speedup_vs_none": 0.4763339594891105
     }
    }
   },
@@ -621,6 +1183,57 @@
     }
    }
   },
+  "lora_dpo k=8 T=0.7": {
+   "status": "done",
+   "n_prompts": 386,
+   "n_steps": 2050,
+   "n_draft": 13928,
+   "n_acc": 4553,
+   "n_emit": 6288,
+   "wall_s": 2886.1102500237757,
+   "alpha": 0.3268954623779437,
+   "tpc": 3.0673170731707318,
+   "tok_s": 2.1787109483943654,
+   "speedup_vs_none": 0.3463648267225187,
+   "by_kind": {
+    "code": {
+     "tok_s": 2.3634490014459044,
+     "speedup_vs_none": 0.38213087004470103
+    },
+    "text": {
+     "tok_s": 2.3459033604403894,
+     "speedup_vs_none": 0.37800524305691463
+    },
+    "thinking": {
+     "tok_s": 2.215939687936102,
+     "speedup_vs_none": 0.3616176705955999
+    },
+    "tool_result": {
+     "tok_s": 2.6936009925915387,
+     "speedup_vs_none": 0.42011024817369075
+    },
+    "tool_use:Bash": {
+     "tok_s": 1.934443122184703,
+     "speedup_vs_none": 0.302917395197769
+    },
+    "tool_use:Edit": {
+     "tok_s": 1.5838054367998882,
+     "speedup_vs_none": 0.2506193184701089
+    },
+    "tool_use:Read": {
+     "tok_s": 2.074331961822471,
+     "speedup_vs_none": 0.30530181963759745
+    },
+    "tool_use:WebFetch": {
+     "tok_s": 1.503200236127584,
+     "speedup_vs_none": 0.22852282714624542
+    },
+    "tool_use:Write": {
+     "tok_s": 1.8825350620578116,
+     "speedup_vs_none": 0.29089507152261773
+    }
+   }
+  },
   "ngram k=1 T=0.0": {
    "status": "done",
    "n_prompts": 386,
@@ -669,6 +1282,57 @@
     "tool_use:Write": {
      "tok_s": 6.632079933159283,
      "speedup_vs_none": 1.3374703557024612
+    }
+   }
+  },
+  "ngram k=1 T=0.7": {
+   "status": "done",
+   "n_prompts": 386,
+   "n_steps": 5824,
+   "n_draft": 1556,
+   "n_acc": 508,
+   "n_emit": 6288,
+   "wall_s": 1122.1141305160127,
+   "alpha": 0.3264781491002571,
+   "tpc": 1.0796703296703296,
+   "tok_s": 5.60370806230594,
+   "speedup_vs_none": 0.8908604298493907,
+   "by_kind": {
+    "code": {
+     "tok_s": 4.823067077678871,
+     "speedup_vs_none": 0.7798106993422955
+    },
+    "text": {
+     "tok_s": 5.492823755917048,
+     "speedup_vs_none": 0.8850817190246225
+    },
+    "thinking": {
+     "tok_s": 5.492173000365373,
+     "speedup_vs_none": 0.8962639270881828
+    },
+    "tool_result": {
+     "tok_s": 5.71685662807691,
+     "speedup_vs_none": 0.891635421653187
+    },
+    "tool_use:Bash": {
+     "tok_s": 5.732040147612403,
+     "speedup_vs_none": 0.8975888982059185
+    },
+    "tool_use:Edit": {
+     "tok_s": 5.570496217408564,
+     "speedup_vs_none": 0.8814680977279952
+    },
+    "tool_use:Read": {
+     "tok_s": 6.180815046782334,
+     "speedup_vs_none": 0.9096972496958451
+    },
+    "tool_use:WebFetch": {
+     "tok_s": 6.021499199099053,
+     "speedup_vs_none": 0.9154136538601342
+    },
+    "tool_use:Write": {
+     "tok_s": 6.518164314857699,
+     "speedup_vs_none": 1.0072066718874617
     }
    }
   },
@@ -723,6 +1387,57 @@
     }
    }
   },
+  "ngram k=2 T=0.7": {
+   "status": "done",
+   "n_prompts": 386,
+   "n_steps": 5581,
+   "n_draft": 2800,
+   "n_acc": 767,
+   "n_emit": 6288,
+   "wall_s": 934.7777609029436,
+   "alpha": 0.2739285714285714,
+   "tpc": 1.1266798064862928,
+   "tok_s": 6.7267325593263365,
+   "speedup_vs_none": 1.0693954418491585,
+   "by_kind": {
+    "code": {
+     "tok_s": 6.958803478384572,
+     "speedup_vs_none": 1.1251241833601513
+    },
+    "text": {
+     "tok_s": 6.5079646587499065,
+     "speedup_vs_none": 1.0486556284120554
+    },
+    "thinking": {
+     "tok_s": 6.606751131898628,
+     "speedup_vs_none": 1.0781511642797548
+    },
+    "tool_result": {
+     "tok_s": 6.7727490362927245,
+     "speedup_vs_none": 1.0563187666921559
+    },
+    "tool_use:Bash": {
+     "tok_s": 6.923484644790324,
+     "speedup_vs_none": 1.084159006920333
+    },
+    "tool_use:Edit": {
+     "tok_s": 6.619739981868751,
+     "speedup_vs_none": 1.0474990703765934
+    },
+    "tool_use:Read": {
+     "tok_s": 8.036754647566656,
+     "speedup_vs_none": 1.1828559088137935
+    },
+    "tool_use:WebFetch": {
+     "tok_s": 6.299231739180353,
+     "speedup_vs_none": 0.9576357236313497
+    },
+    "tool_use:Write": {
+     "tok_s": 6.500825349053565,
+     "speedup_vs_none": 1.0045274018970223
+    }
+   }
+  },
   "ngram k=4 T=0.0": {
    "status": "done",
    "n_prompts": 386,
@@ -771,6 +1486,57 @@
     "tool_use:Write": {
      "tok_s": 6.671228060487272,
      "speedup_vs_none": 1.3453652333743453
+    }
+   }
+  },
+  "ngram k=4 T=0.7": {
+   "status": "done",
+   "n_prompts": 386,
+   "n_steps": 5606,
+   "n_draft": 4601,
+   "n_acc": 742,
+   "n_emit": 6288,
+   "wall_s": 942.9177260709694,
+   "alpha": 0.16126928928493806,
+   "tpc": 1.121655369247235,
+   "tok_s": 6.668662414695903,
+   "speedup_vs_none": 1.0601636272307509,
+   "by_kind": {
+    "code": {
+     "tok_s": 6.310773986940578,
+     "speedup_vs_none": 1.0203484622726124
+    },
+    "text": {
+     "tok_s": 6.7388692619582855,
+     "speedup_vs_none": 1.0858622551344614
+    },
+    "thinking": {
+     "tok_s": 6.459562074118346,
+     "speedup_vs_none": 1.0541314833735291
+    },
+    "tool_result": {
+     "tok_s": 7.024947057641377,
+     "speedup_vs_none": 1.0956530903834165
+    },
+    "tool_use:Bash": {
+     "tok_s": 6.606328211828566,
+     "speedup_vs_none": 1.034494997965399
+    },
+    "tool_use:Edit": {
+     "tok_s": 6.561204098434101,
+     "speedup_vs_none": 1.038236428090127
+    },
+    "tool_use:Read": {
+     "tok_s": 6.864774313059599,
+     "speedup_vs_none": 1.010362915749115
+    },
+    "tool_use:WebFetch": {
+     "tok_s": 6.088304780188456,
+     "speedup_vs_none": 0.9255697194944947
+    },
+    "tool_use:Write": {
+     "tok_s": 6.025866467939098,
+     "speedup_vs_none": 0.9311353039346777
     }
    }
   },
@@ -825,6 +1591,57 @@
     }
    }
   },
+  "ngram k=8 T=0.7": {
+   "status": "done",
+   "n_prompts": 386,
+   "n_steps": 5443,
+   "n_draft": 7645,
+   "n_acc": 926,
+   "n_emit": 6288,
+   "wall_s": 919.2189396866597,
+   "alpha": 0.12112491824722041,
+   "tpc": 1.1552452691530406,
+   "tok_s": 6.8405901233316975,
+   "speedup_vs_none": 1.0874961703817012,
+   "by_kind": {
+    "code": {
+     "tok_s": 5.571845772057938,
+     "speedup_vs_none": 0.9008759111488372
+    },
+    "text": {
+     "tok_s": 6.484720058534731,
+     "speedup_vs_none": 1.0449101285324487
+    },
+    "thinking": {
+     "tok_s": 6.698834183718,
+     "speedup_vs_none": 1.0931781340486248
+    },
+    "tool_result": {
+     "tok_s": 7.015793783500554,
+     "speedup_vs_none": 1.0942254905713138
+    },
+    "tool_use:Bash": {
+     "tok_s": 7.177743211121852,
+     "speedup_vs_none": 1.1239737431286958
+    },
+    "tool_use:Edit": {
+     "tok_s": 7.010179541647899,
+     "speedup_vs_none": 1.1092817200013672
+    },
+    "tool_use:Read": {
+     "tok_s": 7.806693974503438,
+     "speedup_vs_none": 1.1489953968967226
+    },
+    "tool_use:WebFetch": {
+     "tok_s": 7.570703930158667,
+     "speedup_vs_none": 1.1509302779674455
+    },
+    "tool_use:Write": {
+     "tok_s": 6.308515744260675,
+     "speedup_vs_none": 0.9748111339941214
+    }
+   }
+  },
   "none k=0 T=0.0": {
    "status": "done",
    "n_prompts": 386,
@@ -872,6 +1689,57 @@
     },
     "tool_use:Write": {
      "tok_s": 4.958674339870514,
+     "speedup_vs_none": 1.0
+    }
+   }
+  },
+  "none k=0 T=0.7": {
+   "status": "done",
+   "n_prompts": 386,
+   "n_steps": 6288,
+   "n_draft": 0,
+   "n_acc": 0,
+   "n_emit": 6288,
+   "wall_s": 999.6470766515704,
+   "alpha": null,
+   "tpc": 1.0,
+   "tok_s": 6.290219965492581,
+   "speedup_vs_none": 1.0,
+   "by_kind": {
+    "code": {
+     "tok_s": 6.184920368169764,
+     "speedup_vs_none": 1.0
+    },
+    "text": {
+     "tok_s": 6.206007465582102,
+     "speedup_vs_none": 1.0
+    },
+    "thinking": {
+     "tok_s": 6.127852337211159,
+     "speedup_vs_none": 1.0
+    },
+    "tool_result": {
+     "tok_s": 6.411652665701919,
+     "speedup_vs_none": 1.0
+    },
+    "tool_use:Bash": {
+     "tok_s": 6.3860417158339216,
+     "speedup_vs_none": 1.0
+    },
+    "tool_use:Edit": {
+     "tok_s": 6.3195664502965565,
+     "speedup_vs_none": 1.0
+    },
+    "tool_use:Read": {
+     "tok_s": 6.794364882216445,
+     "speedup_vs_none": 1.0
+    },
+    "tool_use:WebFetch": {
+     "tok_s": 6.577899699996256,
+     "speedup_vs_none": 1.0
+    },
+    "tool_use:Write": {
+     "tok_s": 6.471526149288646,
      "speedup_vs_none": 1.0
     }
    }
@@ -927,6 +1795,57 @@
     }
    }
   },
+  "tiny k=1 T=0.7": {
+   "status": "done",
+   "n_prompts": 386,
+   "n_steps": 5479,
+   "n_draft": 5479,
+   "n_acc": 856,
+   "n_emit": 6288,
+   "wall_s": 1643.5797275557416,
+   "alpha": 0.1562328892133601,
+   "tpc": 1.1476546815112247,
+   "tok_s": 3.8257955452828765,
+   "speedup_vs_none": 0.6082133162704562,
+   "by_kind": {
+    "code": {
+     "tok_s": 3.8723946369207676,
+     "speedup_vs_none": 0.6261025860332432
+    },
+    "text": {
+     "tok_s": 3.8875406767988108,
+     "speedup_vs_none": 0.626415726754878
+    },
+    "thinking": {
+     "tok_s": 3.8750656370945364,
+     "speedup_vs_none": 0.6323692908791784
+    },
+    "tool_result": {
+     "tok_s": 3.8706436485890157,
+     "speedup_vs_none": 0.6036889161657785
+    },
+    "tool_use:Bash": {
+     "tok_s": 3.7823250910322934,
+     "speedup_vs_none": 0.5922800475377694
+    },
+    "tool_use:Edit": {
+     "tok_s": 3.4629650579284568,
+     "speedup_vs_none": 0.5479751000586364
+    },
+    "tool_use:Read": {
+     "tok_s": 3.840339888106409,
+     "speedup_vs_none": 0.5652242637362774
+    },
+    "tool_use:WebFetch": {
+     "tok_s": 3.357685743138836,
+     "speedup_vs_none": 0.5104495197974434
+    },
+    "tool_use:Write": {
+     "tok_s": 4.077910891500329,
+     "speedup_vs_none": 0.6301312545802779
+    }
+   }
+  },
   "tiny k=2 T=0.0": {
    "status": "done",
    "n_prompts": 386,
@@ -975,6 +1894,57 @@
     "tool_use:Write": {
      "tok_s": 4.580219689389159,
      "speedup_vs_none": 0.923678260651568
+    }
+   }
+  },
+  "tiny k=2 T=0.7": {
+   "status": "done",
+   "n_prompts": 386,
+   "n_steps": 5350,
+   "n_draft": 10372,
+   "n_acc": 1004,
+   "n_emit": 6288,
+   "wall_s": 1311.6844348547165,
+   "alpha": 0.09679907443116081,
+   "tpc": 1.1753271028037384,
+   "tok_s": 4.793835950867607,
+   "speedup_vs_none": 0.7621094297442755,
+   "by_kind": {
+    "code": {
+     "tok_s": 4.727966294397064,
+     "speedup_vs_none": 0.7644344652728584
+    },
+    "text": {
+     "tok_s": 4.787016736819382,
+     "speedup_vs_none": 0.7713520751252232
+    },
+    "thinking": {
+     "tok_s": 5.044949224702311,
+     "speedup_vs_none": 0.8232817873346981
+    },
+    "tool_result": {
+     "tok_s": 5.227423574484239,
+     "speedup_vs_none": 0.8153004922502246
+    },
+    "tool_use:Bash": {
+     "tok_s": 4.37756462700046,
+     "speedup_vs_none": 0.685489513190381
+    },
+    "tool_use:Edit": {
+     "tok_s": 4.4531982955478355,
+     "speedup_vs_none": 0.7046683234636866
+    },
+    "tool_use:Read": {
+     "tok_s": 5.2255244591294305,
+     "speedup_vs_none": 0.7690968250478726
+    },
+    "tool_use:WebFetch": {
+     "tok_s": 5.384214831206325,
+     "speedup_vs_none": 0.8185310018043281
+    },
+    "tool_use:Write": {
+     "tok_s": 4.792283896771329,
+     "speedup_vs_none": 0.7405183547466774
     }
    }
   },
@@ -1029,6 +1999,57 @@
     }
    }
   },
+  "tiny k=4 T=0.7": {
+   "status": "done",
+   "n_prompts": 386,
+   "n_steps": 5210,
+   "n_draft": 18927,
+   "n_acc": 1137,
+   "n_emit": 6288,
+   "wall_s": 1370.4967159897787,
+   "alpha": 0.06007291171342526,
+   "tpc": 1.2069097888675624,
+   "tok_s": 4.588117524571213,
+   "speedup_vs_none": 0.7294049412804473,
+   "by_kind": {
+    "code": {
+     "tok_s": 5.239150146955038,
+     "speedup_vs_none": 0.8470844950434507
+    },
+    "text": {
+     "tok_s": 4.6640651556216515,
+     "speedup_vs_none": 0.7515403714043354
+    },
+    "thinking": {
+     "tok_s": 4.472988632311384,
+     "speedup_vs_none": 0.729943932419736
+    },
+    "tool_result": {
+     "tok_s": 4.986150817937386,
+     "speedup_vs_none": 0.7776701387163374
+    },
+    "tool_use:Bash": {
+     "tok_s": 4.419965285342724,
+     "speedup_vs_none": 0.6921290968681909
+    },
+    "tool_use:Edit": {
+     "tok_s": 4.010924578931929,
+     "speedup_vs_none": 0.6346835040786238
+    },
+    "tool_use:Read": {
+     "tok_s": 5.40948415171146,
+     "speedup_vs_none": 0.7961721581762898
+    },
+    "tool_use:WebFetch": {
+     "tok_s": 4.707446029423146,
+     "speedup_vs_none": 0.7156457599111499
+    },
+    "tool_use:Write": {
+     "tok_s": 4.231220013609895,
+     "speedup_vs_none": 0.653821048698844
+    }
+   }
+  },
   "tiny k=8 T=0.0": {
    "status": "done",
    "n_prompts": 386,
@@ -1077,6 +2098,57 @@
     "tool_use:Write": {
      "tok_s": 1.5712633322514353,
      "speedup_vs_none": 0.3168716524934093
+    }
+   }
+  },
+  "tiny k=8 T=0.7": {
+   "status": "done",
+   "n_prompts": 386,
+   "n_steps": 5338,
+   "n_draft": 33377,
+   "n_acc": 1013,
+   "n_emit": 6288,
+   "wall_s": 1399.0718139621313,
+   "alpha": 0.030350241184048898,
+   "tpc": 1.1779692768827277,
+   "tok_s": 4.494408319321768,
+   "speedup_vs_none": 0.714507337418655,
+   "by_kind": {
+    "code": {
+     "tok_s": 3.8884336000834216,
+     "speedup_vs_none": 0.6286958228427577
+    },
+    "text": {
+     "tok_s": 4.292106037327733,
+     "speedup_vs_none": 0.6916050393318611
+    },
+    "thinking": {
+     "tok_s": 4.634125012664578,
+     "speedup_vs_none": 0.7562396672850654
+    },
+    "tool_result": {
+     "tok_s": 4.8914477325674,
+     "speedup_vs_none": 0.7628996746398
+    },
+    "tool_use:Bash": {
+     "tok_s": 4.370648794889227,
+     "speedup_vs_none": 0.6844065525053473
+    },
+    "tool_use:Edit": {
+     "tok_s": 4.2196133216160066,
+     "speedup_vs_none": 0.6677061400973153
+    },
+    "tool_use:Read": {
+     "tok_s": 5.07282157145133,
+     "speedup_vs_none": 0.7466218931998959
+    },
+    "tool_use:WebFetch": {
+     "tok_s": 4.159690185973944,
+     "speedup_vs_none": 0.6323736109835046
+    },
+    "tool_use:Write": {
+     "tok_s": 3.890561886708185,
+     "speedup_vs_none": 0.601181513750947
     }
    }
   }

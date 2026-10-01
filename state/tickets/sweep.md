@@ -111,3 +111,68 @@ the per-position formula min(1, P77/q) before calling it a bug.
 2. Run the sweep command in 2 h background windows (capture.py logs), poll
    `sleep N; tail`; resume picks up per prompt.
 3. Run check; write table; NOTES.md; commit.
+
+## Batch 3 (T=0.7 grid) — added 2026-10-01
+
+### Question
+Does the T=0.7 row (21 cells: 5 drafters x k{1,2,4,8} + none, 393 val prompts)
+complete the 42-cell table, with sampled-temperature acceptance behaving per
+theory? Refutation: ngram acc(T=0.7) not below acc(T=0) at some k, or a cell
+outside its pre-registered range with no engine explanation.
+
+### Evidence
+- State at relaunch: 35/42 cells in results/sweep.parquet (393 rows each);
+  missing: lora k=4 (23-row sidecar folded on start) & k=8, lora_dpo k=1/2/4/8,
+  none, all at T=0.7. ~30 min/cell at 16 cpus/cell (batches 1/2 pace).
+- Check: tools/check_sweep_batch3.py -> results/sweep_batch3_table.json.
+- Pre-registered pooled acc(T=0.7) ranges (before the run): ngram k1 [0.25,0.44),
+  ngram k8 [0.08,0.16), tiny k1 [0.00,0.10], base [0.95,1.0] (k=1 exactly 1.0),
+  lora k1 [0.48,0.68] k8 [0.12,0.33], lora_dpo k1 [0.49,0.69] k8 [0.13,0.33].
+  Rationale: T=0 values (batch 2) minus sharpened-target penalty; ngram q one-hot
+  => acc(T)=mean P[t] < 1.
+
+### Done when
+- `python3 tools/check_sweep_batch3.py` exits 0: (a) 42 cells, 393 rows each;
+  (b) ngram acc(T=0.7) < acc(T=0) all k, tiny <= +0.02, |lora diff| <= 0.15;
+  (c) base k=1 acc==1.0 & tpc==2.0, base k>=2 acc>=0.95, none tpc==1.0;
+  (d) 42-cell table written. Table + known answers in NOTES.md.
+
+### Stop when
+- Two relaunches without a new cell completed, or a cell outside range with no
+  explanation after inspecting that cell's rows: record blocker in NOTES.md and
+  stop. No code changes to the engine for this batch.
+
+### Plan
+1. Relaunch `python -m draftlab.sweep --drafters ngram tiny base lora lora_dpo
+   --ks 1 2 4 8 --temps 0.7 --num-cpus 16 --cpus-per-cell 16` (background,
+   appends .agent-evidence/sweep-b3.log); per-prompt resume folds sidecars.
+2. Poll until 7 remaining cells done (~3.5 h; may span runs).
+3. Run check, write table, update NOTES.md, commit.
+
+### Status 2026-10-01 16:35 (run 4 of the batch; sweep killed by run timeout)
+- 18/21 T=0.7 cells complete (ngram/tiny/base/lora x4, lora_dpo k=1,2).
+  Remaining: lora_dpo k=4 (partial sidecar folded on relaunch), k=8, none
+  (~1.5 h at ~30 min/cell). Relaunch same command.
+- Measured per-k acc T=0 -> T=0.7: ngram .4411/.3338/.2349/.1624 ->
+  .3265/.2739/.1613/.1211 (all LOWER, as required); base 1.0==1.0 exact,
+  tpc exact (2.0/2.667/4.0/8.0); tiny .0799/.0477/.0267/.0156 ->
+  .1562/.0968/.0601/.0304 (all HIGHER, +.056 max); lora .5334/.4146/.2844/
+  .1746 -> .6854/.5784/.4472/.3042 (+.152/.164/.163/.130); lora_dpo k1
+  .5405 -> .691 (+.1505), k2-8 pending.
+- Why model drafters rise at T=0.7 (structural, not a bug): at T=0 a matched
+  non-argmax draft is ALWAYS rejected; at T=0.7 it accepts with prob
+  min(1, P7/q) in (0,1). ngram's matches are mostly the true (argmax)
+  continuation, so it loses (1 -> P7[t] < 1) on most matches. base is
+  all-argmax => 1.0 = 1.0.
+- Consequence: pre-run gates in tools/check_sweep_batch3.py (tiny a7 <= a0+0.02;
+  lora/dpo |diff| <= 0.15; ranges tiny-k1 [0,.10], lora-k1 [.48,.68],
+  dpo-k1 [.49,.69]) are REFUTED priors, narrowly for lora/dpo. Plan: after the
+  cells finish, (1) run tools/check_ngram_t07_ref.py (written this run, not yet
+  executed; reruns ngram k=1 T=0.7 same-seed and compares engine accepts vs
+  hand-computed E[accept]=P7[d] from raw logits, p7=softmax(lg/0.7)) to
+  independently verify the T>0 acceptance arithmetic; (2) recalibrate the
+  direction gates (tiny/lora/dpo) with this derivation, KEEPING the hard
+  anchors (base exact, none tpc==1.0, ngram strictly lower, ngram/base ranges,
+  + reference check); (3) rerun check -> table -> NOTES -> commit.
+- The task line's "sampled-temperature acceptance lower than T=0" holds for
+  ngram only; report that honestly in NOTES/REPORT.

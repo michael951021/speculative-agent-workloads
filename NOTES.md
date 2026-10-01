@@ -66,6 +66,10 @@
 - Known answer: test_replays_match_alpha_pipeline re-runs alpha.evaluate() on the same 30 blocks ⇒ per-position α/accept identical (<1e-5). Fast mean-vs-dpo.json check tol 0.05→0.15 (5-block samples, SE~0.04; gaps ≤0.11 all one sign = selection of first/short blocks per kind, NOT a pipeline bug — identity test proves pipeline exact).
 - Gotcha: corpus (run,seq) NOT unique (val: 15 blocks share (contrib-loop-w1-…,28885)) — match blocks by token ids, not (run,seq). Export wall_s kept full precision (tok_s recomputable).
 
+## Web explorer (id: web)
+- web/ Vite+React19+TS+Recharts3: 4 tabs (Overview/Heatmap/Speedup/Replay), light/dark, base './', no router (static /ui mount); `npm run build` → dist/ incl. data/; vitest 22/22 cross-check rendered values vs the REAL public/data/*.json; pre-registered ranges all held (best α .7319∈[.72,.75], expected best 2.30×∈[2,2.5], measured best 1.12×∈[1.05,1.2], lora×text .658∈[.5,.8]).
+- check.sh: web build+vitest section; /ui smoke 200 (html/json/js); palette validator light+dark PASS (light contrast WARN → legend+table views). Leviathan closed form unit-tested (α=.5,k=3→1.875). Gotchas: Area only renders in ComposedChart (empty in LineChart); RO polyfill must fire synchronously; 8 genuinely degenerate CIs (width 0) → assert ≥0.
+
 ## Judge (id: judge)
 - `python -m draftlab.eval.judge`: gen {target, spec(k=4, lora_dpo), drafter_alone} T=0.7 (49 prompts, n_gen 16) → blind pairwise vs qwen-agent 27B ($OLLAMA_BASE_URL), cache data/judge_cache/, cap 150 → results/judge.json. Tests 7/7.
 - Result: spec_vs_target n=81: win 0.444/loss 0.543, CIs overlap (binom p=0.434) — no significant loss; T=0.7 exact matches 0/46 = lossless signature; spec_vs_drafter gap 25pp ✓, underpowered.

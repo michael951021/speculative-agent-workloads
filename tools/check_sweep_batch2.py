@@ -41,58 +41,63 @@ MODELS = ["tiny", "base", "lora", "lora_dpo"]
 VOCAB = 151936
 
 
-def boot_ci(vals: np.ndarray, n: int = 2000, seed: int = 0) -> tuple[float, float]:
+def boot_pooled(numer: np.ndarray, denom: np.ndarray, n: int = 2000,
+                seed: int = 0) -> tuple[float, float]:
+    """95% CI of the pooled ratio sum(numer)/sum(denom), resampling prompts."""
     rng = np.random.default_rng(seed)
-    b = [vals[rng.integers(0, len(vals), len(vals))].mean() for _ in range(n)]
+    b = [numer[s].sum() / denom[s].sum()
+         for s in (rng.integers(0, len(numer), len(numer)) for _ in range(n))]
     return tuple(float(x) for x in np.percentile(b, [2.5, 97.5]))
 
 
-def sim_ngram(prompts: list[dict], traj: dict[int, list[int]]) -> tuple[np.ndarray, np.ndarray]:
-    """Per-prompt (accept_rate, tpc) replaying the T=0 k=1 engine loop."""
+def sim_ngram(
+    prompts: list[dict], traj: dict[int, list[int]]
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Per-prompt (drafts, acc, steps) replaying the T=0 k=1 engine loop."""
     from draftlab.jaxlm.spec import NGramDrafter
 
-    accs: list[float] = []
-    tpc: list[float] = []
+    drafts, accs, steps = [], [], []
     for p in prompts:
         t = np.asarray(traj[p["i"]])
         assert len(t) == N_GEN, f"traj for i={p['i']} is {len(t)} tokens"
         drafter = NGramDrafter(VOCAB)
-        ctx, s, steps, acc, drafts = list(p["ids"]), 0, 0, 0, 0
+        ctx, s, st, ac, dr = list(p["ids"]), 0, 0, 0, 0
         while s < N_GEN:
             dtoks, _ = drafter.propose(ctx, 1)
-            steps += 1
+            st += 1
             a = int(bool(dtoks) and dtoks[0] == t[s])
-            drafts += bool(dtoks)
-            acc += a
+            dr += bool(dtoks)
+            ac += a
             s += a + 1
             ctx.extend(t[s - a - 1 : s])
-        accs.append(acc / drafts if drafts else np.nan)
-        tpc.append(N_GEN / steps)
-    return np.asarray(accs, float), np.asarray(tpc, float)
+        drafts.append(dr)
+        accs.append(ac)
+        steps.append(st)
+    return (np.asarray(drafts, float), np.asarray(accs, float), np.asarray(steps, float))
 
 
 def sim_lora_k8(prompts: list[dict], traj: dict[int, list[int]]) -> np.ndarray:
-    """Per-prompt tpc for k=8 greedy acceptance, from HFDrafter argmax rows."""
+    """Per-prompt steps for k=8 greedy acceptance, from HFDrafter argmax rows."""
     from draftlab.eval.alpha import HFDrafter
 
     drafter = HFDrafter(CKPT / "lora")
-    tpc: list[float] = []
+    steps = []
     for n, p in enumerate(prompts):
         t = np.asarray(traj[p["i"]])
         q, valid = drafter.dists([], p["ids"] + t.tolist())
         L = len(p["ids"])
         v = (q[L : L + N_GEN].argmax(axis=-1) == t) & valid[L : L + N_GEN]
-        s = steps = 0
+        s, st = 0, 0
         while s < N_GEN:
             a = 0
             while a < 8 and s + a < N_GEN and v[s + a]:
                 a += 1
-            steps += 1
+            st += 1
             s += a + 1
-        tpc.append(N_GEN / steps)
+        steps.append(st)
         if (n + 1) % 50 == 0:
             print(f"  lora sim {n + 1}/{len(prompts)}", flush=True)
-    return np.asarray(tpc, float)
+    return np.asarray(steps, float)
 
 
 def main() -> int:
@@ -141,26 +146,29 @@ def main() -> int:
     # ngram k=1
     ng = df[(df["drafter"] == "ngram") & (df["k"] == 1) & (df["temp"] == 0.0)]
     if len(ng) == N_PROMPTS:
-        acc_p, tpc_p = sim_ngram(prompts, traj)
+        dr_p, ac_p, st_p = sim_ngram(prompts, traj)
         m_acc = float(ng["n_acc"].sum() / ng["n_draft"].sum())
         m_tpc = float(ng["n_emit"].sum() / ng["n_steps"].sum())
-        a_lo, a_hi = boot_ci(acc_p[~np.isnan(acc_p)])
-        t_lo, t_hi = boot_ci(tpc_p)
+        a_lo, a_hi = boot_pooled(ac_p, dr_p)
+        t_lo, t_hi = boot_pooled(np.full(N_PROMPTS, N_GEN), st_p)
         in_a = a_lo <= m_acc <= a_hi
         in_t = t_lo <= m_tpc <= t_hi
         ok &= in_a and in_t
+        corpus = json.loads((RESULTS / "alpha_sweep_ngram.json").read_text())
+        c_lo, c_hi = corpus["overall"]["tpc_valid_ci95"]["1"]
         print(f"  ngram k=1: meas acc {m_acc:.4f} vs traj acc ci95 [{a_lo:.4f}, {a_hi:.4f}] "
               f"{'PASS' if in_a else 'FAIL'}; meas tpc {m_tpc:.4f} vs [{t_lo:.4f}, {t_hi:.4f}] "
-              f"{'PASS' if in_t else 'FAIL'} (pre-registered tpc range [1.15, 1.7])")
+              f"{'PASS' if in_t else 'FAIL'}; corpus-metric ci95 [{c_lo:.3f}, {c_hi:.3f}] "
+              f"(info, different position population); pre-registered range [1.15, 1.7]")
     else:
         ok = False
         print(f"  ngram k=1: MISSING ({len(ng)}/{N_PROMPTS})")
     # lora k=8
     lr = df[(df["drafter"] == "lora") & (df["k"] == 8) & (df["temp"] == 0.0)]
     if len(lr) == N_PROMPTS:
-        tpc_p = sim_lora_k8(prompts, traj)
+        st_p = sim_lora_k8(prompts, traj)
         m_tpc = float(lr["n_emit"].sum() / lr["n_steps"].sum())
-        t_lo, t_hi = boot_ci(tpc_p)
+        t_lo, t_hi = boot_pooled(np.full(N_PROMPTS, N_GEN), st_p)
         in_t = t_lo <= m_tpc <= t_hi
         ok &= in_t
         corpus = json.loads((RESULTS / "alpha_sweep_lora.json").read_text())

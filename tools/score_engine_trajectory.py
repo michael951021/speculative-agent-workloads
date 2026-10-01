@@ -37,6 +37,7 @@ def gen_trajectories(prompts: list[dict]) -> dict[int, list[int]]:
     """Regenerate the T=0 greedy trajectory (== none baseline) per prompt."""
     from draftlab.jaxlm import model as M
     from draftlab.jaxlm import spec as S
+    from draftlab.sweep import NullDrafter
 
     target = MODELS / "qwen2.5-0.5b-instruct"
     max_len = max(len(p["ids"]) for p in prompts) + N_GEN + 8
@@ -46,7 +47,7 @@ def gen_trajectories(prompts: list[dict]) -> dict[int, list[int]]:
         # T=0 k=0: pure argmax, seed irrelevant; fresh decoder per prompt
         # exactly as draftlab.sweep.run_cell does.
         seed = 90000 + zlib.crc32(f"{p['run']}:{p['seq']}".encode())
-        dec = S.SpecDecoder(tcfg, tparams, S.NullDrafter(), max_len, k=0,
+        dec = S.SpecDecoder(tcfg, tparams, NullDrafter(), max_len, k=0,
                             temperature=0.0, seed=seed)
         out, _ = dec.generate(p["ids"], N_GEN)
         traj[p["i"]] = out

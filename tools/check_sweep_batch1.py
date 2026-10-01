@@ -4,7 +4,7 @@
     drafter == target at T=0, greedy).
 (b) lora_dpo accept >= lora accept, 95% CIs disjoint; CI = bootstrap over
     prompts (unit = prompt, pooled n_acc/n_draft per resample).
-(c) none baseline (k=0 T=0): 488 prompts, n_emit == n_gen on every row.
+(c) none baseline (k=0 T=0): n_prompts prompts, n_emit == n_gen on every row.
 Known-answer (b) of the sweep ticket (measured tpc/accept within the alpha-metric
 CIs) is tools/compare_sweep_alpha.py; run it separately after writing
 results/alpha_sweep_{base,lora,lora_dpo}.json.
@@ -18,7 +18,10 @@ import numpy as np
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
-N_PROMPTS = 488  # 100 val blocks/kind, n_tokens <= 128 (load_prompts default)
+# val split, n_tokens <= 128, first 100 blocks/kind (load_prompts default):
+# code 6, text 90, thinking 92, tool_result 71, Bash 100, Edit 22, Read 10,
+# WebFetch 1, Write 1 (measured 2026-09-30 from the base cell).
+N_PROMPTS = 393
 
 
 def ci_accept(sub: pd.DataFrame, n_boot: int = 10000, seed: int = 0) -> tuple[float, float, float]:

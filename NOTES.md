@@ -51,11 +51,11 @@
 - Gotcha: hadolint inline `# hadolint ignore=DLxxxx` must be only text on its line; DL3006 ignored in .hadolint.yaml.
 
 ## Ray sweep (id: sweep)
-- `python -m draftlab.sweep` (Ray local, resumable by (drafter,k,temp)) → results/sweep.parquet; target 0.5b-instruct, 488 val prompts (100/kind ≤128 tok), n_gen 16. 2-cell test ✅ (base@T0 k=1 n_acc==n_draft = known answer (a)).
+- `python -m draftlab.sweep` (Ray local, resumable by (drafter,k,temp)) → results/sweep.parquet; target 0.5b-instruct, 393 val prompts (≤128 tok, 100/kind cap: code 6 text 90 thinking 92 tool_result 71 Bash 100 Edit 22 Read 10 WebFetch 1 Write 1), n_gen 16. 2-cell test ✅ (base@T0 k=1 n_acc==n_draft = known answer (a)).
 - k≥2 accept expect ≥0.99 (GEMM tiling ~1e-4). ModelDrafter bugs fixed earlier (regression-tested).
 - Cost (measured 09-30): XLA ignores OMP_NUM_THREADS; 1 proc 6.4 tok/s; 4 parallel ≈ 3.7 tok/s: none≈140, lora/dpo≈150, base≈175 min. TODO batches 1-3 resumable; b1 = base/lora/lora_dpo k=1 T=0 + none.
 - Known (b): tools/compare_sweep_alpha.py vs `eval.alpha --target 0.5b-instruct --blocks 100 --ctx-tokens 0` (k=1 T=0 acc vs `greedy_ci95`).
-- `python -m draftlab.sweep` (Ray local, per-cell incremental parquet, resumable by (drafter,k,temp)) → results/sweep.parquet; target 0.5b-instruct, 488 val prompts (100/kind ≤128 tok), n_gen 16.
+- `python -m draftlab.sweep` (Ray local, per-cell incremental parquet, resumable by (drafter,k,temp)) → results/sweep.parquet; target 0.5b-instruct, 393 val prompts (≤128 tok, 100/kind cap: code 6 text 90 thinking 92 tool_result 71 Bash 100 Edit 22 Read 10 WebFetch 1 Write 1), n_gen 16.
 - Known: base@T0 k=1 accept exactly 1.0 (2-cell Ray test); k≥2 expect ≥0.99 (GEMM tiling ~1e-4).
 - Cost: 6.4 tok/s @16 thr → 42 cells ≈ 20 CPU-h → batches: B1 base/lora/dpo k=1 T=0 + none; then ngram/tiny k=1 ×{0,0.7}; then k=8.
 

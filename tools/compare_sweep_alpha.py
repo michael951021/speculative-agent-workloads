@@ -3,9 +3,12 @@
 Usage: python tools/compare_sweep_alpha.py [--drafters base lora lora_dpo]
 Reads results/sweep.parquet (k=1, T=0 rows) and results/alpha_sweep_<drafter>.json
 (written by draftlab.eval.alpha, target 0.5b-instruct, ctx-tokens 0). At k=1, T=0
-the measured accept rate is the empirical mean of (argmax q == argmax p), i.e.
-the metric's `greedy`, so measured overall accept must fall in greedy_ci95.
-Prints per-kind detail; exits 1 if any overall comparison is outside its CI.
+the measured accept rate is the empirical mean of (argmax q == argmax p) over
+drafted positions, i.e. the metric's `greedy_valid` (proposed positions only;
+the diluted `greedy` also counts positions the drafter did not propose), so
+measured overall accept must fall in greedy_valid_ci95, and measured tpc
+(n_emit/n_steps) in tpc_valid_ci95 at k=1. Prints per-kind detail; exits 1 if
+any overall comparison is outside its CI.
 """
 
 from __future__ import annotations
@@ -40,25 +43,27 @@ def main() -> int:
             continue
         meas = s["n_acc"].sum() / s["n_draft"].sum()
         tpc = s["n_emit"].sum() / s["n_steps"].sum()
-        a = json.loads((ROOT / "results" / f"alpha_sweep_{d}.json").read_text())["overall"]
-        lo, hi = a["greedy_ci95"]
+        j = json.loads((ROOT / "results" / f"alpha_sweep_{d}.json").read_text())
+        a, by_kind = j["overall"], j["by_kind"]
+        lo, hi = a["greedy_valid_ci95"]
         in_ci = lo <= meas <= hi
         ok &= in_ci
-        tlo, thi = a["tokens_per_call_ci95"]["1"]
+        tlo, thi = a["tpc_valid_ci95"]["1"]
         in_tpc = tlo <= tpc <= thi
         ok &= in_tpc
         print(
-            f"{d:10s} {meas:9.4f} {a['greedy']:13.4f} [{lo:.4f}, {hi:.4f}] "
+            f"{d:10s} {meas:9.4f} {a['greedy_valid']:13.4f} [{lo:.4f}, {hi:.4f}] "
             f"{tpc:9.4f} [{tlo:.4f}, {thi:.4f}]  "
             f"{'PASS' if in_ci and in_tpc else 'FAIL'}"
         )
-        print("    by kind (meas acc / metric greedy [ci95]):")
+        print("    by kind (meas acc / metric greedy_valid [ci95]):")
         g = s.groupby("kind").agg(acc=("n_acc", "sum"), dr=("n_draft", "sum"))
         for kind, row in g.iterrows():
             m = row["acc"] / row["dr"]
-            k = a["by_kind"].get(kind)
+            k = by_kind.get(kind)
             ref = (
-                f"{k['greedy']:.4f} [{k['greedy_ci95'][0]:.4f}, {k['greedy_ci95'][1]:.4f}]"
+                f"{k['greedy_valid']:.4f} [{k['greedy_valid_ci95'][0]:.4f}, "
+                f"{k['greedy_valid_ci95'][1]:.4f}]"
                 if k
                 else "n/a"
             )

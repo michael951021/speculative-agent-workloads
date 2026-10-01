@@ -175,6 +175,49 @@
     }
    }
   },
+  "tiny k=8": {
+   "tpc": 1.0901525658807212,
+   "tok_s": 4.117309828108022,
+   "speedup_vs_none": 0.6515322937003397,
+   "by_kind": {
+    "code": {
+     "tok_s": 3.551776794444701,
+     "speedup_vs_none": 0.5405202499876985
+    },
+    "text": {
+     "tok_s": 4.10168294504154,
+     "speedup_vs_none": 0.6182414343314424
+    },
+    "thinking": {
+     "tok_s": 3.97783892820145,
+     "speedup_vs_none": 0.6036938257519959
+    },
+    "tool_result": {
+     "tok_s": 4.636212481315852,
+     "speedup_vs_none": 0.7023382261954609
+    },
+    "tool_use:Bash": {
+     "tok_s": 4.100123405644553,
+     "speedup_vs_none": 0.6900733351987318
+    },
+    "tool_use:Edit": {
+     "tok_s": 3.905137319719013,
+     "speedup_vs_none": 0.7271417309591762
+    },
+    "tool_use:Read": {
+     "tok_s": 4.075600292510336,
+     "speedup_vs_none": 0.7002303777218507
+    },
+    "tool_use:WebFetch": {
+     "tok_s": 3.7931358110133164,
+     "speedup_vs_none": 0.552603305692296
+    },
+    "tool_use:Write": {
+     "tok_s": 1.5712633322514353,
+     "speedup_vs_none": 0.3168716524934093
+    }
+   }
+  },
   "base k=1": {
    "tpc": 2.0,
    "tok_s": 3.418179529322372,
@@ -218,6 +261,135 @@
     }
    }
   },
+  "base k=2": {
+   "tpc": 2.6666666666666665,
+   "tok_s": 4.232258577757615,
+   "speedup_vs_none": 0.6697220403173924,
+   "by_kind": {
+    "code": {
+     "tok_s": 3.556232369535252,
+     "speedup_vs_none": 0.5411983130252043
+    },
+    "text": {
+     "tok_s": 4.049052521736427,
+     "speedup_vs_none": 0.6103085178116614
+    },
+    "thinking": {
+     "tok_s": 4.249338760012467,
+     "speedup_vs_none": 0.6448977998483336
+    },
+    "tool_result": {
+     "tok_s": 4.332412556981145,
+     "speedup_vs_none": 0.656315680672484
+    },
+    "tool_use:Bash": {
+     "tok_s": 4.346623766599701,
+     "speedup_vs_none": 0.7315607026223154
+    },
+    "tool_use:Edit": {
+     "tok_s": 4.1990001272927815,
+     "speedup_vs_none": 0.7818593741735993
+    },
+    "tool_use:Read": {
+     "tok_s": 4.512361950129067,
+     "speedup_vs_none": 0.7752705579502239
+    },
+    "tool_use:WebFetch": {
+     "tok_s": 4.465424980696925,
+     "speedup_vs_none": 0.6505458092192247
+    },
+    "tool_use:Write": {
+     "tok_s": 4.559699146609678,
+     "speedup_vs_none": 0.9195399483985363
+    }
+   }
+  },
+  "base k=4": {
+   "tpc": 4.0,
+   "tok_s": 4.745494326872464,
+   "speedup_vs_none": 0.7509376103837986,
+   "by_kind": {
+    "code": {
+     "tok_s": 4.9651038210670935,
+     "speedup_vs_none": 0.7556046772915664
+    },
+    "text": {
+     "tok_s": 4.921550740186374,
+     "speedup_vs_none": 0.741819060497125
+    },
+    "thinking": {
+     "tok_s": 4.512432851233406,
+     "speedup_vs_none": 0.6848260828504125
+    },
+    "tool_result": {
+     "tok_s": 4.737864423795324,
+     "speedup_vs_none": 0.7177374438236601
+    },
+    "tool_use:Bash": {
+     "tok_s": 4.789196795862763,
+     "speedup_vs_none": 0.8060481792558525
+    },
+    "tool_use:Edit": {
+     "tok_s": 4.691310957154109,
+     "speedup_vs_none": 0.8735283014575884
+    },
+    "tool_use:Read": {
+     "tok_s": 5.0426020607620705,
+     "speedup_vs_none": 0.8663713053994127
+    },
+    "tool_use:WebFetch": {
+     "tok_s": 5.111666464139081,
+     "speedup_vs_none": 0.7446935534124987
+    },
+    "tool_use:Write": {
+     "tok_s": 5.058367479564778,
+     "speedup_vs_none": 1.0201047967382482
+    }
+   }
+  },
+  "base k=8": {
+   "tpc": 8.0,
+   "tok_s": 5.326423081874213,
+   "speedup_vs_none": 0.8428650727377057,
+   "by_kind": {
+    "code": {
+     "tok_s": 5.207616683936326,
+     "speedup_vs_none": 0.7925110260993902
+    },
+    "text": {
+     "tok_s": 5.386933409225942,
+     "speedup_vs_none": 0.8119655961204686
+    },
+    "thinking": {
+     "tok_s": 5.367076946880085,
+     "speedup_vs_none": 0.8145305211320747
+    },
+    "tool_result": {
+     "tok_s": 5.322236534125733,
+     "speedup_vs_none": 0.8062637728177683
+    },
+    "tool_use:Bash": {
+     "tok_s": 5.261991719712135,
+     "speedup_vs_none": 0.8856221670818305
+    },
+    "tool_use:Edit": {
+     "tok_s": 5.212498309828923,
+     "speedup_vs_none": 0.9705740754600409
+    },
+    "tool_use:Read": {
+     "tok_s": 5.42442276768515,
+     "speedup_vs_none": 0.9319720607831287
+    },
+    "tool_use:WebFetch": {
+     "tok_s": 5.413740891120182,
+     "speedup_vs_none": 0.7887012913980965
+    },
+    "tool_use:Write": {
+     "tok_s": 5.29160324389906,
+     "speedup_vs_none": 1.0671407076184882
+    }
+   }
+  },
   "lora k=1": {
    "tpc": 1.496074232690935,
    "tok_s": 2.860917410253842,
@@ -258,6 +430,92 @@
     "tool_use:Write": {
      "tok_s": 2.4677570974441005,
      "speedup_vs_none": 0.4976646838050956
+    }
+   }
+  },
+  "lora k=2": {
+   "tpc": 1.7481234361968307,
+   "tok_s": 2.7765998198013393,
+   "speedup_vs_none": 0.4393753506071233,
+   "by_kind": {
+    "code": {
+     "tok_s": 3.1055782097427818,
+     "speedup_vs_none": 0.47261638538549017
+    },
+    "text": {
+     "tok_s": 2.8363226479338324,
+     "speedup_vs_none": 0.42751529203523264
+    },
+    "thinking": {
+     "tok_s": 3.0165587213084453,
+     "speedup_vs_none": 0.45780583576711864
+    },
+    "tool_result": {
+     "tok_s": 3.1245320587440677,
+     "speedup_vs_none": 0.473334281522473
+    },
+    "tool_use:Bash": {
+     "tok_s": 2.450449034986639,
+     "speedup_vs_none": 0.4124240592319232
+    },
+    "tool_use:Edit": {
+     "tok_s": 2.405691722458812,
+     "speedup_vs_none": 0.44794297869882044
+    },
+    "tool_use:Read": {
+     "tok_s": 2.601190694048057,
+     "speedup_vs_none": 0.44691152504995435
+    },
+    "tool_use:WebFetch": {
+     "tok_s": 2.1523611575912835,
+     "speedup_vs_none": 0.31356691402275355
+    },
+    "tool_use:Write": {
+     "tok_s": 2.5495233477246533,
+     "speedup_vs_none": 0.5141542220720284
+    }
+   }
+  },
+  "lora k=4": {
+   "tpc": 1.9848484848484849,
+   "tok_s": 2.2477424973280895,
+   "speedup_vs_none": 0.3556877879177855,
+   "by_kind": {
+    "code": {
+     "tok_s": 2.72996791982757,
+     "speedup_vs_none": 0.41545486326493586
+    },
+    "text": {
+     "tok_s": 2.354440361434779,
+     "speedup_vs_none": 0.354881790134692
+    },
+    "thinking": {
+     "tok_s": 2.424740957532173,
+     "speedup_vs_none": 0.36798904418485395
+    },
+    "tool_result": {
+     "tok_s": 2.7978503693799346,
+     "speedup_vs_none": 0.42384538532472543
+    },
+    "tool_use:Bash": {
+     "tok_s": 1.8979403570348505,
+     "speedup_vs_none": 0.31943380786642916
+    },
+    "tool_use:Edit": {
+     "tok_s": 1.8375228744319423,
+     "speedup_vs_none": 0.34214918815906403
+    },
+    "tool_use:Read": {
+     "tok_s": 1.907004837015333,
+     "speedup_vs_none": 0.32764319891589483
+    },
+    "tool_use:WebFetch": {
+     "tok_s": 1.6590633456045314,
+     "speedup_vs_none": 0.24170078130924208
+    },
+    "tool_use:Write": {
+     "tok_s": 1.6895112205166034,
+     "speedup_vs_none": 0.3407183260517813
     }
    }
   },

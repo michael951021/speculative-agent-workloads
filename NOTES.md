@@ -49,5 +49,15 @@
 ## GPU run (id: gpu)
 - scripts/gpu_run.sh HOST-only (dry-run OK): 7B alpha + vllm arms + bench_gateway c=1/4/16 → results/gpu/; anchors ngram α .2–.4, lora .5–.9, ~1.4–1.75×.
 
+## Results export (id: export)
+- `python -m draftlab.export_ui` → web/public/data/{summary,alpha,sweep,replays}.json (schema v1); missing sweep cells ⇒ {"status":"pending"} (21/42 pending now, batch 3 running); rerun after sweep (`--no-replays` = 2s fast path).
+- replays = 30 val blocks (5 × top-6 kinds by n_tokens in dpo alpha; first per kind per run, round-robin) re-scored with the alpha-run pair (1.5b-instruct, ctx 1024): per-token p, q (null = no proposal / unscorable pos 0), accept (greedy spec-accept), per-position α. ~2.6 min CPU.
+- Known answer: test_replays_match_alpha_pipeline re-runs alpha.evaluate() on the same 30 blocks ⇒ per-position α/accept identical (<1e-5). Fast mean-vs-dpo.json check tol 0.05→0.15 (5-block samples, SE~0.04; gaps ≤0.11 all one sign = selection of first/short blocks per kind, NOT a pipeline bug — identity test proves pipeline exact).
+- Gotcha: corpus (run,seq) NOT unique (val: 15 blocks share (contrib-loop-w1-…,28885)) — match blocks by token ids, not (run,seq). Export wall_s kept full precision (tok_s recomputable).
+
+## Web explorer (id: web)
+- web/ Vite+React19+TS+Recharts3: 4 tabs (Overview/Heatmap/Speedup/Replay), light/dark, base './', no router (static /ui mount); `npm run build` → dist/ incl. data/; vitest 22/22 cross-check rendered values vs the REAL public/data/*.json; pre-registered ranges all held (best α .7319∈[.72,.75], expected best 2.30×∈[2,2.5], measured best 1.12×∈[1.05,1.2], lora×text .658∈[.5,.8]).
+- check.sh: web build+vitest section; /ui smoke 200 (html/json/js); palette validator light+dark PASS (light contrast WARN → legend+table views). Leviathan closed form unit-tested (α=.5,k=3→1.875). Gotchas: Area only renders in ComposedChart (empty in LineChart); RO polyfill must fire synchronously; 8 genuinely degenerate CIs (width 0) → assert ≥0.
+
 ## Judge (id: judge)
 - `python -m draftlab.eval.judge`: blind pairwise vs qwen-agent 27B, cap 150, cache → results/judge.json. spec_vs_target n=81 .444/.543 CIs overlap (p=.434); T=0.7 exact 0/46 = lossless.

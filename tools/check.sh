@@ -39,8 +39,9 @@ else
 fi
 
 if [ -d web ] && [ -f web/package.json ]; then
-  section "web: vitest"
+  section "web: build + vitest"
   if [ ! -d web/node_modules ]; then (cd web && npm install --no-audit --no-fund); fi
+  (cd web && npm run build) || { echo "FAIL web build" >&2; fail=1; }
   (cd web && npx vitest run) || { echo "FAIL web vitest" >&2; fail=1; }
 else
   skip "web" web

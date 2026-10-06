@@ -270,7 +270,8 @@ def _bootstrap(
         sums_gc = np.array([np.concatenate([r[2] for r in by_run[rn]]).sum() for rn in runs])
         sums_v = np.array([np.concatenate([r[3] for r in by_run[rn]]).sum() for rn in runs])
         cnts = np.array([sum(r[0].size for r in by_run[rn]) for rn in runs])
-        w = rng.multinomial(n_boot, np.full(len(runs), 1.0 / len(runs)), size=len(runs))
+        # (n_boot, n_runs): each replicate draws len(runs) runs with replacement
+        w = rng.multinomial(len(runs), np.full(len(runs), 1.0 / len(runs)), size=n_boot)
         # per-run rates over the drafter's valid (proposed) positions: this is
         # what the sweep's accept = n_acc/n_draft measures (spec.py only scores
         # positions the drafter proposed)
@@ -281,8 +282,8 @@ def _bootstrap(
             w @ sums_g / (w @ cnts),
             w @ sums_gc / (w @ cnts),
             w @ sums_v / (w @ cnts),
-            w @ gv / n_boot,
-            w @ av / n_boot,
+            w @ gv / len(runs),
+            w @ av / len(runs),
             int(cnts.sum()),
             len(runs),
         )

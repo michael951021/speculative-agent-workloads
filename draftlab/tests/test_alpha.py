@@ -98,3 +98,22 @@ def test_identical_models_alpha_one():
     a2, g2 = alpha_and_greedy(p2, q2, valid2)
     assert valid2.all()
     assert a2.min() >= 1.0 - 1e-6 and g2.all()
+
+
+def test_bootstrap_resamples_runs():
+    """Regression: weights were (n_runs, n_runs) with n_boot draws per row, so
+    every 'replicate' was ~equal weights and CIs collapsed to the point
+    estimate. Two runs at alpha 0.2 / 0.8: n_boot replicates, CI spans both."""
+    from draftlab.eval.alpha import _bootstrap
+
+    def rec(run, a):
+        x = np.full(100, a)
+        return (run, "text", x, x > 0.5, x > 0.5, np.ones(100, bool))
+
+    out = _bootstrap([rec("r1", 0.2), rec("r2", 0.8)], n_boot=2000, seed=0)
+    b_alpha = out["overall"][0]
+    assert b_alpha.shape == (2000,)
+    lo, hi = np.percentile(b_alpha, [2.5, 97.5])
+    assert lo == pytest.approx(0.2) and hi == pytest.approx(0.8)
+    assert out["overall"][5].shape == (2000,)  # alpha over valid positions, per replicate
+    assert np.mean(out["overall"][5]) == pytest.approx(0.5, abs=0.02)

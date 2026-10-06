@@ -1,13 +1,13 @@
 {
  "meta": {
-  "created": "2026-09-30T20:25:29+00:00",
+  "created": "2026-10-06T17:18:20+00:00",
   "judge_model": "qwen-agent",
   "rubric_version": "v1",
   "calls_used": 150,
-  "cache_hits": 8,
-  "invalid": 24,
-  "wall_s": 1984.5,
-  "n_prompts": 49,
+  "cache_hits": 0,
+  "invalid": 18,
+  "wall_s": 3749.9,
+  "n_prompts": 44,
   "n_gen": 16,
   "k": 4,
   "temperature": 0.7,
@@ -16,450 +16,456 @@
   "drafter": "dpo adapter merged into qwen2.5-0.5b"
  },
  "spec_vs_drafter_alone": {
-  "n_prompts": 22,
-  "n_verdicts": 24,
-  "wins": 15,
+  "n_prompts": 25,
+  "n_verdicts": 29,
+  "wins": 19,
   "ties": 0,
-  "losses": 9,
-  "win_rate": 0.625,
+  "losses": 10,
+  "win_rate": 0.6551724137931034,
   "win_ci95": [
-   0.4270996229526447,
-   0.7884063254095233
+   0.47345103949857975,
+   0.8005928156337425
   ],
-  "loss_rate": 0.375,
+  "loss_rate": 0.3448275862068966,
   "loss_ci95": [
-   0.21159367459047676,
-   0.5729003770473553
+   0.19940718436625743,
+   0.5265489605014202
   ],
-  "order_bias_disagreement": 0.0,
+  "order_bias_disagreement": 0.04,
   "per_prompt": [
    {
-    "run_seq": "contrib-loop-20260926-231240:77976",
+    "run_seq": "contrib-loop-w1-20261002-235753:73194",
+    "kind": "code",
+    "ab": null,
+    "ba": null
+   },
+   {
+    "run_seq": "contrib-loop-w1-20261003-112945:61475",
+    "kind": "code",
+    "ab": "win",
+    "ba": "win"
+   },
+   {
+    "run_seq": "contrib-loop-w2-20261003-052804:40142",
     "kind": "code",
     "ab": null,
     "ba": "loss"
    },
    {
-    "run_seq": "contrib-loop-20260926-231240:167",
-    "kind": "text",
-    "ab": null,
-    "ba": "loss"
-   },
-   {
-    "run_seq": "contrib-loop-20260926-231240:2921",
-    "kind": "text",
+    "run_seq": "contrib-loop-w2-20261003-183100:45309",
+    "kind": "code",
     "ab": "win",
     "ba": "win"
    },
    {
-    "run_seq": "contrib-loop-20260926-231240:2979",
+    "run_seq": "contrib-loop-w1-20261002-235753:4917",
     "kind": "text",
     "ab": "loss",
     "ba": "loss"
    },
    {
-    "run_seq": "contrib-loop-20260926-231240:7564",
+    "run_seq": "contrib-loop-w1-20261003-052604:571",
+    "kind": "text",
+    "ab": "loss",
+    "ba": "win"
+   },
+   {
+    "run_seq": "contrib-loop-w1-20261003-112945:520",
     "kind": "text",
     "ab": "win",
     "ba": "win"
    },
    {
-    "run_seq": "contrib-loop-20260926-231240:7723",
+    "run_seq": "contrib-loop-w1-20261003-200734:3954",
     "kind": "text",
     "ab": "win",
     "ba": "win"
    },
    {
-    "run_seq": "contrib-loop-20260926-231240:16654",
-    "kind": "text",
-    "ab": "win",
-    "ba": "win"
-   },
-   {
-    "run_seq": "contrib-loop-20260926-231240:16763",
-    "kind": "text",
-    "ab": "win",
-    "ba": "win"
-   },
-   {
-    "run_seq": "contrib-loop-20260926-231240:58",
+    "run_seq": "contrib-loop-w1-20261002-235753:206",
     "kind": "thinking",
+    "ab": "win",
+    "ba": "win"
+   },
+   {
+    "run_seq": "contrib-loop-w1-20261003-052604:237",
+    "kind": "thinking",
+    "ab": "win",
+    "ba": null
+   },
+   {
+    "run_seq": "contrib-loop-w1-20261003-112945:646",
+    "kind": "thinking",
+    "ab": "win",
+    "ba": "win"
+   },
+   {
+    "run_seq": "contrib-loop-w1-20261003-200734:348",
+    "kind": "thinking",
+    "ab": "win",
+    "ba": "win"
+   },
+   {
+    "run_seq": "contrib-loop-w1-20261002-235753:208",
+    "kind": "tool_result",
+    "ab": "win",
+    "ba": "win"
+   },
+   {
+    "run_seq": "contrib-loop-w1-20261003-052604:188",
+    "kind": "tool_result",
+    "ab": "loss",
+    "ba": null
+   },
+   {
+    "run_seq": "contrib-loop-w1-20261003-112945:343",
+    "kind": "tool_result",
+    "ab": "win",
+    "ba": null
+   },
+   {
+    "run_seq": "contrib-loop-w1-20261003-200734:444",
+    "kind": "tool_result",
+    "ab": null,
+    "ba": null
+   },
+   {
+    "run_seq": "contrib-loop-w1-20261002-235753:207",
+    "kind": "tool_use:Bash",
     "ab": "loss",
     "ba": "loss"
    },
    {
-    "run_seq": "contrib-loop-20260926-231240:166",
-    "kind": "thinking",
-    "ab": "win",
-    "ba": "win"
+    "run_seq": "contrib-loop-w1-20261003-052604:187",
+    "kind": "tool_use:Bash",
+    "ab": null,
+    "ba": "loss"
    },
    {
-    "run_seq": "contrib-loop-20260926-231240:2978",
-    "kind": "thinking",
-    "ab": "win",
-    "ba": "win"
+    "run_seq": "contrib-loop-w1-20261003-112945:341",
+    "kind": "tool_use:Bash",
+    "ab": "loss",
+    "ba": "loss"
    },
    {
-    "run_seq": "contrib-loop-20260926-231240:16762",
-    "kind": "thinking",
+    "run_seq": "contrib-loop-w1-20261003-200734:219",
+    "kind": "tool_use:Bash",
     "ab": null,
     "ba": null
    },
    {
-    "run_seq": "contrib-loop-20260926-231240:19605",
-    "kind": "thinking",
-    "ab": "win",
-    "ba": null
-   },
-   {
-    "run_seq": "contrib-loop-20260926-231240:19644",
-    "kind": "thinking",
+    "run_seq": "contrib-loop-w1-20261002-235753:7704",
+    "kind": "tool_use:Edit",
     "ab": null,
     "ba": null
    },
    {
-    "run_seq": "contrib-loop-20260926-231240:20303",
-    "kind": "thinking",
+    "run_seq": "contrib-loop-w1-20261003-052604:2105",
+    "kind": "tool_use:Edit",
     "ab": null,
     "ba": null
    },
    {
-    "run_seq": "contrib-loop-20260926-231240:7568",
-    "kind": "tool_result",
+    "run_seq": "contrib-loop-w1-20261003-112945:13615",
+    "kind": "tool_use:Edit",
     "ab": null,
     "ba": null
    },
    {
-    "run_seq": "contrib-loop-20260926-231240:16656",
-    "kind": "tool_result",
+    "run_seq": "contrib-loop-w1-20261003-200734:4246",
+    "kind": "tool_use:Edit",
     "ab": null,
     "ba": null
    },
    {
-    "run_seq": "contrib-loop-20260926-231240:20932",
-    "kind": "tool_result",
-    "ab": null,
-    "ba": null
-   },
-   {
-    "run_seq": "contrib-loop-20260926-231240:21194",
-    "kind": "tool_result",
-    "ab": null,
-    "ba": null
-   },
-   {
-    "run_seq": "contrib-loop-20260926-231240:22704",
-    "kind": "tool_result",
-    "ab": null,
-    "ba": null
-   },
-   {
-    "run_seq": "contrib-loop-20260926-231240:23388",
-    "kind": "tool_result",
-    "ab": null,
-    "ba": null
-   },
-   {
-    "run_seq": "contrib-loop-20260926-231240:41705",
-    "kind": "tool_result",
+    "run_seq": "contrib-loop-w1-20261002-235753:188",
+    "kind": "tool_use:Read",
     "ab": null,
     "ba": null
    }
   ]
  },
  "spec_vs_target": {
-  "n_prompts": 46,
-  "n_verdicts": 81,
-  "wins": 36,
-  "ties": 1,
-  "losses": 44,
-  "win_rate": 0.4444444444444444,
+  "n_prompts": 44,
+  "n_verdicts": 79,
+  "wins": 34,
+  "ties": 2,
+  "losses": 43,
+  "win_rate": 0.43037974683544306,
   "win_ci95": [
-   0.3411955242755319,
-   0.5527242630705089
+   0.32693823359163393,
+   0.5402780111661755
   ],
-  "loss_rate": 0.5432098765432098,
+  "loss_rate": 0.5443037974683544,
   "loss_ci95": [
-   0.4352401581386749,
-   0.6472666739255153
+   0.43498332849961774,
+   0.6495154248363216
   ],
-  "order_bias_disagreement": 0.08695652173913043,
+  "order_bias_disagreement": 0.18181818181818182,
   "per_prompt": [
    {
-    "run_seq": "contrib-loop-20260926-231240:77976",
+    "run_seq": "contrib-loop-w1-20261002-235753:73194",
     "kind": "code",
+    "ab": "loss",
+    "ba": "loss"
+   },
+   {
+    "run_seq": "contrib-loop-w1-20261003-112945:61475",
+    "kind": "code",
+    "ab": "win",
+    "ba": "win"
+   },
+   {
+    "run_seq": "contrib-loop-w2-20261003-052804:40142",
+    "kind": "code",
+    "ab": "win",
+    "ba": "win"
+   },
+   {
+    "run_seq": "contrib-loop-w2-20261003-183100:45309",
+    "kind": "code",
+    "ab": "loss",
+    "ba": "loss"
+   },
+   {
+    "run_seq": "contrib-loop-w1-20261002-235753:4917",
+    "kind": "text",
+    "ab": "win",
+    "ba": "win"
+   },
+   {
+    "run_seq": "contrib-loop-w1-20261003-052604:571",
+    "kind": "text",
+    "ab": "loss",
+    "ba": "loss"
+   },
+   {
+    "run_seq": "contrib-loop-w1-20261003-112945:520",
+    "kind": "text",
+    "ab": "loss",
+    "ba": "loss"
+   },
+   {
+    "run_seq": "contrib-loop-w1-20261003-200734:3954",
+    "kind": "text",
+    "ab": "win",
+    "ba": "win"
+   },
+   {
+    "run_seq": "contrib-loop-w1-20261002-235753:206",
+    "kind": "thinking",
+    "ab": "tie",
+    "ba": "win"
+   },
+   {
+    "run_seq": "contrib-loop-w1-20261003-052604:237",
+    "kind": "thinking",
+    "ab": "win",
+    "ba": "win"
+   },
+   {
+    "run_seq": "contrib-loop-w1-20261003-112945:646",
+    "kind": "thinking",
+    "ab": "loss",
+    "ba": "loss"
+   },
+   {
+    "run_seq": "contrib-loop-w1-20261003-200734:348",
+    "kind": "thinking",
+    "ab": "win",
+    "ba": "win"
+   },
+   {
+    "run_seq": "contrib-loop-w1-20261002-235753:208",
+    "kind": "tool_result",
+    "ab": "win",
+    "ba": "win"
+   },
+   {
+    "run_seq": "contrib-loop-w1-20261003-052604:188",
+    "kind": "tool_result",
     "ab": null,
     "ba": null
    },
    {
-    "run_seq": "contrib-loop-20260926-231240:167",
-    "kind": "text",
+    "run_seq": "contrib-loop-w1-20261003-112945:343",
+    "kind": "tool_result",
     "ab": "loss",
     "ba": "loss"
    },
    {
-    "run_seq": "contrib-loop-20260926-231240:2921",
-    "kind": "text",
-    "ab": "win",
-    "ba": "win"
-   },
-   {
-    "run_seq": "contrib-loop-20260926-231240:2979",
-    "kind": "text",
-    "ab": "win",
-    "ba": "win"
-   },
-   {
-    "run_seq": "contrib-loop-20260926-231240:7564",
-    "kind": "text",
-    "ab": "loss",
-    "ba": "loss"
-   },
-   {
-    "run_seq": "contrib-loop-20260926-231240:7723",
-    "kind": "text",
-    "ab": "win",
-    "ba": "win"
-   },
-   {
-    "run_seq": "contrib-loop-20260926-231240:16654",
-    "kind": "text",
-    "ab": "win",
-    "ba": "win"
-   },
-   {
-    "run_seq": "contrib-loop-20260926-231240:16763",
-    "kind": "text",
-    "ab": "loss",
-    "ba": "loss"
-   },
-   {
-    "run_seq": "contrib-loop-20260926-231240:58",
-    "kind": "thinking",
-    "ab": "loss",
-    "ba": "loss"
-   },
-   {
-    "run_seq": "contrib-loop-20260926-231240:166",
-    "kind": "thinking",
-    "ab": "win",
-    "ba": "win"
-   },
-   {
-    "run_seq": "contrib-loop-20260926-231240:2978",
-    "kind": "thinking",
-    "ab": "win",
-    "ba": "win"
-   },
-   {
-    "run_seq": "contrib-loop-20260926-231240:16762",
-    "kind": "thinking",
-    "ab": "loss",
-    "ba": "loss"
-   },
-   {
-    "run_seq": "contrib-loop-20260926-231240:19605",
-    "kind": "thinking",
-    "ab": "loss",
-    "ba": "loss"
-   },
-   {
-    "run_seq": "contrib-loop-20260926-231240:19644",
-    "kind": "thinking",
-    "ab": "loss",
-    "ba": "loss"
-   },
-   {
-    "run_seq": "contrib-loop-20260926-231240:20303",
-    "kind": "thinking",
-    "ab": "win",
-    "ba": "win"
-   },
-   {
-    "run_seq": "contrib-loop-20260926-231240:7568",
+    "run_seq": "contrib-loop-w1-20261003-200734:444",
     "kind": "tool_result",
     "ab": null,
+    "ba": null
+   },
+   {
+    "run_seq": "contrib-loop-w1-20261002-235753:207",
+    "kind": "tool_use:Bash",
+    "ab": "loss",
     "ba": "loss"
    },
    {
-    "run_seq": "contrib-loop-20260926-231240:16656",
-    "kind": "tool_result",
+    "run_seq": "contrib-loop-w1-20261003-052604:187",
+    "kind": "tool_use:Bash",
+    "ab": "loss",
+    "ba": "loss"
+   },
+   {
+    "run_seq": "contrib-loop-w1-20261003-112945:341",
+    "kind": "tool_use:Bash",
+    "ab": "loss",
+    "ba": null
+   },
+   {
+    "run_seq": "contrib-loop-w1-20261003-200734:219",
+    "kind": "tool_use:Bash",
+    "ab": "loss",
+    "ba": "loss"
+   },
+   {
+    "run_seq": "contrib-loop-w1-20261002-235753:7704",
+    "kind": "tool_use:Edit",
     "ab": "win",
-    "ba": "win"
-   },
-   {
-    "run_seq": "contrib-loop-20260926-231240:20932",
-    "kind": "tool_result",
-    "ab": "loss",
-    "ba": "loss"
-   },
-   {
-    "run_seq": "contrib-loop-20260926-231240:21194",
-    "kind": "tool_result",
-    "ab": "loss",
     "ba": "tie"
    },
    {
-    "run_seq": "contrib-loop-20260926-231240:22704",
-    "kind": "tool_result",
-    "ab": null,
-    "ba": null
-   },
-   {
-    "run_seq": "contrib-loop-20260926-231240:23388",
-    "kind": "tool_result",
-    "ab": "loss",
-    "ba": "win"
-   },
-   {
-    "run_seq": "contrib-loop-20260926-231240:41705",
-    "kind": "tool_result",
-    "ab": "loss",
-    "ba": "loss"
-   },
-   {
-    "run_seq": "contrib-loop-20260926-231240:168",
-    "kind": "tool_use:Bash",
-    "ab": "win",
-    "ba": "win"
-   },
-   {
-    "run_seq": "contrib-loop-20260926-231240:170",
-    "kind": "tool_use:Bash",
-    "ab": null,
-    "ba": null
-   },
-   {
-    "run_seq": "contrib-loop-20260926-231240:2922",
-    "kind": "tool_use:Bash",
-    "ab": "loss",
-    "ba": "loss"
-   },
-   {
-    "run_seq": "contrib-loop-20260926-231240:2924",
-    "kind": "tool_use:Bash",
-    "ab": "win",
-    "ba": "win"
-   },
-   {
-    "run_seq": "contrib-loop-20260926-231240:7566",
-    "kind": "tool_use:Bash",
-    "ab": "loss",
-    "ba": "loss"
-   },
-   {
-    "run_seq": "contrib-loop-20260926-231240:19646",
-    "kind": "tool_use:Bash",
-    "ab": null,
-    "ba": "loss"
-   },
-   {
-    "run_seq": "contrib-loop-20260926-231240:20304",
-    "kind": "tool_use:Bash",
-    "ab": "win",
-    "ba": "win"
-   },
-   {
-    "run_seq": "contrib-loop-20260926-231240:16657",
-    "kind": "tool_use:Edit",
-    "ab": null,
-    "ba": null
-   },
-   {
-    "run_seq": "contrib-loop-20260926-231240:41727",
+    "run_seq": "contrib-loop-w1-20261003-052604:2105",
     "kind": "tool_use:Edit",
     "ab": "loss",
     "ba": "loss"
    },
    {
-    "run_seq": "contrib-loop-20260926-231240:41729",
+    "run_seq": "contrib-loop-w1-20261003-112945:13615",
     "kind": "tool_use:Edit",
     "ab": "loss",
     "ba": "loss"
    },
    {
-    "run_seq": "contrib-loop-20260926-231240:44526",
+    "run_seq": "contrib-loop-w1-20261003-200734:4246",
     "kind": "tool_use:Edit",
     "ab": "loss",
     "ba": "loss"
    },
    {
-    "run_seq": "contrib-loop-20260926-231240:67030",
-    "kind": "tool_use:Edit",
-    "ab": null,
-    "ba": "loss"
-   },
-   {
-    "run_seq": "contrib-loop-20260926-231240:74013",
-    "kind": "tool_use:Edit",
-    "ab": null,
-    "ba": "win"
-   },
-   {
-    "run_seq": "contrib-loop-20260926-231240:75330",
-    "kind": "tool_use:Edit",
-    "ab": "loss",
-    "ba": "win"
-   },
-   {
-    "run_seq": "contrib-loop-20260926-231240:48230",
-    "kind": "tool_use:Read",
-    "ab": "loss",
-    "ba": "win"
-   },
-   {
-    "run_seq": "contrib-loop-20260926-231240:66970",
+    "run_seq": "contrib-loop-w1-20261002-235753:188",
     "kind": "tool_use:Read",
     "ab": "win",
     "ba": "win"
    },
    {
-    "run_seq": "contrib-loop-20260926-231240:72719",
-    "kind": "tool_use:Read",
-    "ab": "loss",
-    "ba": "loss"
-   },
-   {
-    "run_seq": "contrib-loop-20260926-231240:73980",
+    "run_seq": "contrib-loop-w1-20261003-052604:6704",
     "kind": "tool_use:Read",
     "ab": "win",
     "ba": "win"
    },
    {
-    "run_seq": "contrib-loop-20260926-231240:73987",
-    "kind": "tool_use:Read",
-    "ab": "loss",
-    "ba": "loss"
-   },
-   {
-    "run_seq": "contrib-loop-20260926-231240:74199",
-    "kind": "tool_use:Read",
-    "ab": "loss",
-    "ba": "loss"
-   },
-   {
-    "run_seq": "contrib-loop-20260926-231240:74226",
+    "run_seq": "contrib-loop-w1-20261003-112945:7953",
     "kind": "tool_use:Read",
     "ab": "win",
     "ba": "win"
    },
    {
-    "run_seq": "contrib-loop-20260926-231240:74997",
-    "kind": "tool_use:SendMessage",
-    "ab": null,
+    "run_seq": "contrib-loop-w1-20261003-200734:4109",
+    "kind": "tool_use:Read",
+    "ab": "win",
     "ba": "loss"
    },
    {
-    "run_seq": "contrib-loop-20260926-231240:75025",
-    "kind": "tool_use:SendMessage",
+    "run_seq": "draftlab-w1-20260930-145410:269922",
+    "kind": "tool_use:Skill",
+    "ab": "loss",
+    "ba": "win"
+   },
+   {
+    "run_seq": "contrib-loop-w1-20261003-112945:52177",
+    "kind": "tool_use:TaskStop",
+    "ab": "loss",
+    "ba": "win"
+   },
+   {
+    "run_seq": "contrib-loop-w1-20261003-112945:61297",
+    "kind": "tool_use:TaskStop",
     "ab": "win",
     "ba": "win"
    },
    {
-    "run_seq": "contrib-loop-20260926-231240:41704",
+    "run_seq": "draftlab-w1-20260930-145410:39056",
+    "kind": "tool_use:TaskStop",
+    "ab": "win",
+    "ba": "win"
+   },
+   {
+    "run_seq": "draftlab-w2-20260930-145410:31214",
+    "kind": "tool_use:TaskStop",
+    "ab": "loss",
+    "ba": "loss"
+   },
+   {
+    "run_seq": "contrib-loop-w2-20261003-013026:84214",
     "kind": "tool_use:Write",
     "ab": "loss",
     "ba": "loss"
+   },
+   {
+    "run_seq": "draftlab-w2-20260930-145410:61530",
+    "kind": "tool_use:Write",
+    "ab": null,
+    "ba": null
+   },
+   {
+    "run_seq": "draftlab-w2-20260930-145410:61531",
+    "kind": "tool_use:Write",
+    "ab": "win",
+    "ba": "win"
+   },
+   {
+    "run_seq": "draftlab-w2-20260930-145410:74834",
+    "kind": "tool_use:Write",
+    "ab": "loss",
+    "ba": "loss"
+   },
+   {
+    "run_seq": "contrib-loop-w1-20261002-235753:12583",
+    "kind": "tool_use:mcp__websearch__fetch_page",
+    "ab": null,
+    "ba": null
+   },
+   {
+    "run_seq": "contrib-loop-w1-20261003-112945:30551",
+    "kind": "tool_use:mcp__websearch__fetch_page",
+    "ab": "loss",
+    "ba": "loss"
+   },
+   {
+    "run_seq": "contrib-loop-w2-20261003-052804:157586",
+    "kind": "tool_use:mcp__websearch__fetch_page",
+    "ab": "loss",
+    "ba": "loss"
+   },
+   {
+    "run_seq": "draftlab-w2-20260930-145410:61129",
+    "kind": "tool_use:mcp__websearch__fetch_page",
+    "ab": "loss",
+    "ba": "loss"
+   },
+   {
+    "run_seq": "contrib-loop-w1-20261003-200734:14557",
+    "kind": "tool_use:mcp__websearch__web_search",
+    "ab": "loss",
+    "ba": "win"
+   },
+   {
+    "run_seq": "draftlab-w2-20260930-145410:61101",
+    "kind": "tool_use:mcp__websearch__web_search",
+    "ab": "win",
+    "ba": "loss"
+   },
+   {
+    "run_seq": "draftlab-w2-20260930-145410:79360",
+    "kind": "tool_use:mcp__websearch__web_search",
+    "ab": "loss",
+    "ba": "win"
    }
   ]
  }

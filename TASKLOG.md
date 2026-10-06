@@ -140,3 +140,6 @@
 - Goal: Sweep 0.5B (fixed engine)
 - Approach: compute job dl-sweep05 ran XLA_FLAGS=--xla_cpu_multi_thread_eigen=true .venv/bin/python -m draftlab.sweep --num-cpus 12 --cpus-per-cell 4 (exit 0)
 - Blockers: none
+## Judge (held-out)
+- Goal: Judge (held-out)
+- Approach: compute job dl-judge ran rm -f data/judge_outputs.json && .venv/bin/python -m draftlab.eval.judge (exit 0)

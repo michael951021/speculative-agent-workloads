@@ -97,7 +97,7 @@
 
 ## Corrections (2026-10-06)
 > why: an audit found the T>0 engine was not lossless, ran 2 target forwards per step, bootstrap CIs were ~100x too narrow, and serve ignored EOS (fixed in 1e9f5d3..5f98414); every number that came from them must be re-measured on the fixed engine and a hold-out split before the report can claim it. Compute steps are jobs (run: `CMD`, lib/jobs.py), not agent tasks.
-- [ ] **Sweep 0.5B (fixed engine)** — resumes from results/sweep.parquet + sidecars; held-out prompts. (id: dl-sweep05) (after: -) (run: `XLA_FLAGS=--xla_cpu_multi_thread_eigen=true .venv/bin/python -m draftlab.sweep --num-cpus 12 --cpus-per-cell 4`) (mem: 40) (cpus: 12) (timeout: 12h)
+- [x] **Sweep 0.5B (fixed engine)** — resumes from results/sweep.parquet + sidecars; held-out prompts. (id: dl-sweep05) (after: -) (run: `XLA_FLAGS=--xla_cpu_multi_thread_eigen=true .venv/bin/python -m draftlab.sweep --num-cpus 12 --cpus-per-cell 4`) (mem: 40) (cpus: 12) (timeout: 12h)
   why: tokens/step and acceptance per drafter × k × T on the corrected engine.
 - [ ] **Sweep 1.5B** — the target the alpha numbers use, drafters 3x smaller than it. (id: dl-sweep15) (after: dl-sweep05) (run: `XLA_FLAGS=--xla_cpu_multi_thread_eigen=true .venv/bin/python -m draftlab.sweep --target models/qwen2.5-1.5b-instruct --drafters ngram lora lora_dpo --out results/sweep_1.5b.parquet --num-cpus 12 --cpus-per-cell 6`) (mem: 44) (cpus: 12) (timeout: 12h)
   why: the 0.5B sweep pairs drafters with a same-size target, so it cannot show a speedup.

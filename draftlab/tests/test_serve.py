@@ -43,7 +43,7 @@ def test_nonstream_usage(client):
     j = client.post("/v1/chat/completions", json=_body()).json()
     assert j["object"] == "chat.completion"
     ch = j["choices"][0]
-    assert ch["finish_reason"] == "stop"
+    assert ch["finish_reason"] == "length"  # toy tokenizer has no EOS
     assert ch["message"]["role"] == "assistant"
     assert len(ch["message"]["content"]) == 32
     u = j["usage"]
@@ -64,7 +64,7 @@ def test_stream_chunks_and_usage(client):
     assert len(content) == 32
     assert all(c["choices"][0]["finish_reason"] is None for c in chunks[:-1])
     last = chunks[-1]
-    assert last["choices"][0]["finish_reason"] == "stop"
+    assert last["choices"][0]["finish_reason"] == "length"
     assert last["choices"][0]["delta"] == {}
     # deterministic (seed 0, T=0): stream must equal the non-stream result
     ns = client.post("/v1/chat/completions", json=_body()).json()
@@ -97,3 +97,36 @@ def test_missing_fields_400(client):
 
 def test_unknown_model_404(client):
     assert client.post("/v1/chat/completions", json=_body(model="nope")).status_code == 404
+
+
+def test_eos_stops_generation():
+    """A token in tokenizer.eos_ids ends the completion (excluded, finish 'stop')."""
+    cfg = M.Qwen2Cfg.from_hf(tiny_config())
+    params = M.init_params(cfg, jax.random.PRNGKey(0))
+    tok = ToyTokenizer()
+    c = TestClient(create_app({"tiny": Engine("tiny", cfg, params, tok)}))
+    full = c.post("/v1/chat/completions", json=_body(model="tiny+none")).json()
+    text = full["choices"][0]["message"]["content"]
+    # ToyTokenizer.decode maps id -> chr(33 + id % 90); mark the 4th token's ids as EOS
+    stop_ch = text[3]
+    tok.eos_ids = frozenset(i for i in range(tok.vocab_size) if chr(33 + i % 90) == stop_ch)
+    cut = text.index(stop_ch)
+    for stream in (False, True):
+        r = c.post("/v1/chat/completions", json=_body(model="tiny+none", stream=stream))
+        if stream:
+            chunks = _sse_chunks(r)
+            content = "".join(ch["choices"][0]["delta"].get("content", "") for ch in chunks)
+            fin, usage = chunks[-1]["choices"][0]["finish_reason"], chunks[-1]["usage"]
+        else:
+            j = r.json()
+            content, fin, usage = j["choices"][0]["message"]["content"], j["choices"][0][
+                "finish_reason"], j["usage"]
+        assert content == text[:cut] and fin == "stop"
+        assert usage["completion_tokens"] == cut
+
+
+def test_none_drafter_drafts_nothing(client):
+    j = client.post("/v1/chat/completions", json=_body(model="tiny+none")).json()
+    assert j["usage"]["draft_tokens"] == 0 and j["usage"]["completion_tokens"] == 32
+    spec = client.post("/v1/chat/completions", json=_body()).json()
+    assert j["choices"][0]["message"]["content"] == spec["choices"][0]["message"]["content"]

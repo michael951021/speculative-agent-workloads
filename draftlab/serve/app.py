@@ -1,7 +1,9 @@
 """OpenAI-compatible FastAPI server over the draftlab spec-decoding engine.
 
 Model names select base + drafter + k: ``<base>`` (default ngram, k=5) or
-``<base>+<drafter>-k<K>`` (e.g. ``qwen0.5b+ngram-k4``). ``usage`` adds
+``<base>+<drafter>-k<K>`` (e.g. ``qwen0.5b+ngram-k4``); ``<base>+none`` decodes
+without drafting. Generation stops at the tokenizer's EOS (finish_reason
+"stop") or at max_tokens ("length"). ``usage`` adds
 ``draft_tokens`` (drafts proposed) and ``accepted_tokens`` (drafts accepted).
 """
 
@@ -20,7 +22,7 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
 from draftlab.jaxlm import model as M
-from draftlab.jaxlm.spec import ModelDrafter, NGramDrafter, SpecDecoder
+from draftlab.jaxlm.spec import ModelDrafter, NGramDrafter, NullDrafter, SpecDecoder
 
 DEFAULT_K = 5
 DEFAULT_DRAFTER = "ngram"
@@ -42,6 +44,10 @@ class HFChatTokenizer:
         from transformers import AutoTokenizer
 
         self.tok = AutoTokenizer.from_pretrained(path)
+        ids = {self.tok.eos_token_id}
+        ids |= {self.tok.convert_tokens_to_ids(t) for t in ("<|im_end|>", "<|endoftext|>")
+                if t in self.tok.get_vocab()}
+        self.eos_ids = frozenset(i for i in ids if i is not None)
 
     def apply_chat_template(self, messages: list[dict]) -> str:
         out = self.tok.apply_chat_template(messages, add_generation_prompt=True, tokenize=False)
@@ -58,6 +64,7 @@ class ToyTokenizer:
     """Vocab-512 stand-in tokenizer for tiny-config tests."""
 
     vocab_size = 512
+    eos_ids: frozenset[int] = frozenset()
 
     def apply_chat_template(self, messages: list[dict]) -> str:
         parts = [f"{m['role']}: {m['content']}" for m in messages]
@@ -98,6 +105,8 @@ def parse_engine_spec(model: str) -> tuple[str, str, int]:
 
 
 def make_drafter(kind: str, engine: Engine, max_len: int):
+    if kind == "none":
+        return NullDrafter()
     if kind == "ngram":
         return NGramDrafter(vocab_size=engine.cfg.vocab_size, max_n=4)
     if kind == "model":
@@ -156,7 +165,7 @@ def create_app(engines: dict[str, Engine]) -> FastAPI:
             base, drafter, k = parse_engine_spec(body.model)
         except ValueError:
             return _err(request, 400, f"bad model name {body.model!r}", "invalid_model_name")
-        if drafter not in ("ngram", "model"):
+        if drafter not in ("ngram", "model", "none"):
             return _err(request, 400, f"unknown drafter {drafter!r}", "invalid_drafter")
         engine = engines.get(base)
         if engine is None:
@@ -181,28 +190,43 @@ def create_app(engines: dict[str, Engine]) -> FastAPI:
         cid = _completion_id()
         created = int(time.time())
 
+        eos = getattr(engine.tokenizer, "eos_ids", frozenset())
+
+        def tokens():
+            """(token, new_step_stats_or_None) until EOS (excluded) or max_tokens."""
+            last_st = None
+            for tok, st in decoder.generate_stream(prompt_ids, body.max_tokens):
+                if tok in eos:
+                    return
+                yield tok, (st if st is not last_st else None)
+                last_st = st
+
         if not body.stream:
-            toks, stats = decoder.generate(prompt_ids, body.max_tokens)
-            content = engine.tokenizer.decode(toks)
-            usage = _usage(len(prompt_ids), len(toks),
-                           sum(s.drafted for s in stats), sum(s.accepted for s in stats))
+            toks: list[int] = []
+            draft_tokens = accepted_tokens = 0
+            for tok, st in tokens():
+                toks.append(tok)
+                if st is not None:
+                    draft_tokens += st.drafted
+                    accepted_tokens += st.accepted
+            finish = "length" if len(toks) == body.max_tokens else "stop"
+            usage = _usage(len(prompt_ids), len(toks), draft_tokens, accepted_tokens)
             return {
                 "id": cid, "object": "chat.completion", "created": created,
                 "model": body.model,
-                "choices": [{"index": 0, "message": {"role": "assistant", "content": content},
-                             "finish_reason": "stop", "logprobs": None}],
+                "choices": [{"index": 0, "message": {"role": "assistant",
+                                                     "content": engine.tokenizer.decode(toks)},
+                             "finish_reason": finish, "logprobs": None}],
                 "usage": usage,
             }
 
         def gen():
             draft_tokens = accepted_tokens = 0
             completion_tokens = 0
-            last_st = None
-            for tok, st in decoder.generate_stream(prompt_ids, body.max_tokens):
-                if st is not last_st:  # one StepStats per target-call step
+            for tok, st in tokens():
+                if st is not None:  # one StepStats per target-call step
                     draft_tokens += st.drafted
                     accepted_tokens += st.accepted
-                    last_st = st
                 completion_tokens += 1
                 delta: dict[str, Any] = {"role": "assistant",
                                          "content": engine.tokenizer.decode([tok])}
@@ -214,10 +238,11 @@ def create_app(engines: dict[str, Engine]) -> FastAPI:
                 yield f"data: {json.dumps(chunk)}\n\n"
             usage = _usage(len(prompt_ids), completion_tokens,
                            draft_tokens, accepted_tokens)
+            finish = "length" if completion_tokens == body.max_tokens else "stop"
             final = {
                 "id": cid, "object": "chat.completion.chunk", "created": created,
                 "model": body.model,
-                "choices": [{"index": 0, "delta": {}, "finish_reason": "stop"}],
+                "choices": [{"index": 0, "delta": {}, "finish_reason": finish}],
                 "usage": usage,
             }
             yield f"data: {json.dumps(final)}\n\n"

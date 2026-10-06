@@ -136,3 +136,7 @@
 - Goal: REPORT.md: question, corpus, method, headline table (drafter × kind α, measured speedups), figures (matplotlib PNGs in results/fig/), judge result, what failed and why, GPU results if present
 - Approach: REPORT.md and README.md written and committed (44cfa02). REPORT.md covers question, corpus, method, headline tables (α by drafter×kind, measured sweep speedups for both temps), 4 matplotlib figures, judge result, what-failed-and-why, GPU section, and reproduce steps. README.md has the mermaid architecture diagram, a quickstart with CLI flags verified against argparse, and a 14-row skills map (JAX, PyTorch/FSDP, LoRA/QLoRA, DPO, Triton, Ray, Go, Prometheus/Grafana, Kubernetes/Helm, Terraform/GKE, React/TS, LLM-as-judge, OpenAI API, Docker). Reused attempt 1's committed infrastructure (ticket, c
 - Blockers: none
+## Judge (held-out)
+- Goal: Judge (held-out)
+- Approach: compute job dl-judge ran rm -f data/judge_outputs.json && .venv/bin/python -m draftlab.eval.judge (exit 0)
+- Blockers: none

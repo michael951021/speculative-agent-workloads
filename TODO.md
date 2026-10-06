@@ -101,7 +101,7 @@
   why: tokens/step and acceptance per drafter × k × T on the corrected engine.
 - [ ] **Sweep 1.5B** — the target the alpha numbers use, drafters 3x smaller than it. (id: dl-sweep15) (after: dl-sweep05) (run: `XLA_FLAGS=--xla_cpu_multi_thread_eigen=true .venv/bin/python -m draftlab.sweep --target models/qwen2.5-1.5b-instruct --drafters ngram lora lora_dpo --out results/sweep_1.5b.parquet --num-cpus 12 --cpus-per-cell 6`) (mem: 44) (cpus: 12) (timeout: 12h)
   why: the 0.5B sweep pairs drafters with a same-size target, so it cannot show a speedup.
-- [ ] **Judge (held-out)** — regenerates outputs on the fixed engine (old ones came from the lossy T>0 path), ≤150 judge calls through the model proxy. (id: dl-judge) (after: -) (run: `rm -f data/judge_outputs.json && .venv/bin/python -m draftlab.eval.judge`) (mem: 12) (cpus: 4) (timeout: 6h)
+- [x] **Judge (held-out)** — regenerates outputs on the fixed engine (old ones came from the lossy T>0 path), ≤150 judge calls through the model proxy. (id: dl-judge) (after: -) (run: `rm -f data/judge_outputs.json && .venv/bin/python -m draftlab.eval.judge`) (mem: 12) (cpus: 4) (timeout: 6h)
   why: spec output must be judged no worse than target output, now that spec is really lossless.
 - [ ] **Speedup bench** — interleaved head-to-head wall clock vs no drafter, alone on the CPU budget. (id: dl-bench) (after: dl-sweep15) (run: `XLA_FLAGS=--xla_cpu_multi_thread_eigen=true .venv/bin/python tools/bench_speedup.py`) (mem: 24) (cpus: 16) (timeout: 6h)
   why: the only speedup numbers REPORT.md may state; sweep wall times are indicative only.

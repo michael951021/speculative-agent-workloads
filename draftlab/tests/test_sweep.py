@@ -29,6 +29,7 @@ def _args(out, **over):
         "num_cpus": 4,
         "cpus_per_cell": 2,
         "out": str(out),
+        "split": "heldout",
         "target": str(sweep.MODELS / "qwen2.5-0.5b-instruct"),
     }
     a.update(over)
@@ -77,7 +78,9 @@ def test_prompt_level_resume_and_sidecar_recovery(tmp_path):
     # A killed run leaves its finished prompts in sidecars; startup folds them in,
     # and fully covered cells are skipped without running Ray.
     out2 = tmp_path / "s2.parquet"
-    prompts = sweep.load_prompts("val", 2, 128)
+    # Same split + max_tokens as _args: i is the prompt-list position, so the
+    # sidecar only covers the cell if it was made from the same prompt list.
+    prompts = sweep.load_prompts("heldout", 2, 64)
     rows = []
     for d, k, nd in (("ngram", 1, 1), ("none", 0, 0)):
         rows += [{"drafter": d, "k": k, "temp": 0.0, "kind": p["kind"], "run": p["run"],

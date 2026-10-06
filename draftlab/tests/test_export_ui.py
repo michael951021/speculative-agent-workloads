@@ -14,6 +14,16 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 DATA = ROOT / "web" / "public" / "data"
+CORPUS = ROOT / "data" / "corpus"
+REPLAY_TARGET = ROOT / "models" / "qwen2.5-1.5b-instruct"
+
+# Model-based replay check reads gitignored inputs (see test_alpha_known.py style).
+needs_replay_inputs = pytest.mark.skipif(
+    not (CORPUS / "val.parquet").exists()
+    or not (REPLAY_TARGET / "config.json").exists()
+    or not (ROOT / "ckpt" / "dpo").is_dir(),
+    reason="data/corpus, models/ or ckpt/dpo not fetched",
+)
 
 DRAFTERS = {"ngram", "lora", "dpo", "tiny"}
 KS = {1, 2, 4, 8}
@@ -160,7 +170,10 @@ def test_replays_near_alpha_reference(files):
     ref = json.loads((ROOT / "results" / "alpha" / "dpo.json").read_text())
     r = files["replays"]
     tol = 0.15
-    for kind in sorted({b["kind"] for b in r["blocks"]}):
+    # dpo.json predates the code kind split: compare only kinds the reference has.
+    kinds = {b["kind"] for b in r["blocks"]} & set(ref["by_kind"])
+    assert kinds
+    for kind in sorted(kinds):
         a, g = [], []
         for b in r["blocks"]:
             if b["kind"] != kind:
@@ -181,6 +194,7 @@ def test_replays_near_alpha_reference(files):
         )
 
 
+@needs_replay_inputs
 def test_replays_match_alpha_pipeline(files):
     """Known answer (model-based): rescore the 30 stored blocks with
     draftlab.eval.alpha.evaluate — the exact pipeline that produced

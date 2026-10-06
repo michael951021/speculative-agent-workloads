@@ -1,8 +1,21 @@
 import json
+from pathlib import Path
 
 import pandas as pd
+import pytest
 
 from draftlab import sweep
+
+ROOT = Path(__file__).resolve().parents[2]
+CORPUS = ROOT / "data" / "corpus"
+
+# Both tests run sweep.main (heldout split) / load_prompts("val") with the
+# 0.5b-instruct target, all gitignored inputs.
+needs_corpus_and_model = pytest.mark.skipif(
+    not all((CORPUS / f"{s}.parquet").exists() for s in ("heldout", "val"))
+    or not (ROOT / "models" / "qwen2.5-0.5b-instruct" / "config.json").exists(),
+    reason="data/corpus and models/ not fetched",
+)
 
 
 def _args(out, **over):
@@ -22,6 +35,7 @@ def _args(out, **over):
     return sweep.to_argv(a)
 
 
+@needs_corpus_and_model
 def test_two_cell_ray_sweep(tmp_path):
     out = tmp_path / "sweep.parquet"
     res = sweep.main(_args(out))
@@ -44,6 +58,7 @@ def test_two_cell_ray_sweep(tmp_path):
     assert len(pd.read_parquet(out)) == len(df)
 
 
+@needs_corpus_and_model
 def test_prompt_level_resume_and_sidecar_recovery(tmp_path):
     out = tmp_path / "sweep.parquet"
     res = sweep.main(_args(out, drafters=["ngram"]))

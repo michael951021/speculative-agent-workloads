@@ -1,0 +1,1 @@
+{"drafter": "lora", "k": 8, "temp": 0.0, "kind": "code", "run": "contrib-loop-w1-20261002-235753", "seq": 73194, "i": 0, "prompt_len": 118, "n_steps": 11, "n_draft": 82, "n_acc": 22, "n_emit": 32, "wall_s": 88.25274636701215, "n_gen": 32, "max_tokens": 128, "target": "qwen2.5-0.5b-instruct"}

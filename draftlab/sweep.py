@@ -1,7 +1,10 @@
 """Ray sweep: measured acceptance and wall-clock speed of drafters, JAX engine.
 
-Grid drafter x k x temperature over val prompts (per kind), target = 0.5B-instruct
-JAX. Resumable at prompt granularity: workers append each finished prompt to a
+Grid drafter x k x temperature over held-out prompts (per kind, round-robin
+across runs), target = 0.5B-instruct JAX by default (--target for 1.5B). Wall
+times come from cells running in parallel on a shared CPU: use them as
+indicative only; tools/bench_speedup.py measures speedups head to head.
+Resumable at prompt granularity: workers append each finished prompt to a
 sidecar JSONL as it completes; the driver folds sidecars into the output parquet
 on every cell finish and on startup, so a kill loses at most one in-flight
 prompt. Rows are per-prompt; aggregate (accept_rate, tpc, tok/s) on read.
@@ -25,6 +28,7 @@ RESULTS = ROOT / "results"
 DATA = ROOT / "data" / "corpus"
 
 DRAFTERS = ["ngram", "tiny", "base", "lora", "lora_dpo"]
+N_PER_KIND, N_GEN, SEED = 12, 32, 12345  # sweep defaults; tools/ import these
 LORA_BASE = MODELS / "qwen2.5-0.5b"  # lora/dpo adapters were built on base, not instruct
 ATTN_W = {"q_proj": "q_w", "k_proj": "k_w", "v_proj": "v_w", "o_proj": "o_w"}
 MLP_W = {"gate_proj": "gate_w", "up_proj": "up_w", "down_proj": "down_w"}
@@ -36,7 +40,7 @@ KEY_COLS = ["drafter", "k", "temp", "i"]
 
 
 class NullDrafter:
-    """No drafting: plain autoregressive target decoding (SpecDecoder k=0 path)."""
+    """No drafting: plain autoregressive target decoding (same as spec.NullDrafter)."""
 
     def propose(self, ctx, k):
         return [], []
@@ -45,26 +49,37 @@ class NullDrafter:
         pass
 
 
-def load_prompts(split: str = "val", n_per_kind: int = 100, max_tokens: int = 128,
+def load_prompts(split: str = "heldout", n_per_kind: int = N_PER_KIND, max_tokens: int = 128,
                  target_dir: str | Path = MODELS / "qwen2.5-0.5b-instruct",
                  include_text: bool = False) -> list[dict]:
-    """First n_per_kind blocks (by run, seq) per kind, n_tokens <= max_tokens."""
+    """Up to n_per_kind blocks per kind with n_tokens <= max_tokens, taken
+    round-robin across runs (in (run, seq) order within a run) so no single
+    session dominates a kind."""
     import pyarrow.parquet as pq
     from transformers import AutoTokenizer
 
     from draftlab.eval.alpha import kind_label
 
     t = pq.read_table(DATA / f"{split}.parquet").to_pydict()
-    by_kind: dict[str, list[tuple[str, int, str]]] = {}
+    by_kind: dict[str, dict[str, list[tuple[int, str]]]] = {}
     for i in range(len(t["run"])):
         if t["n_tokens"][i] > max_tokens:
             continue
-        by_kind.setdefault(kind_label(t["kind"][i], t["tool"][i]), []).append(
-            (t["run"][i], t["seq"][i], t["text"][i]))
+        kind = kind_label(t["kind"][i], t["tool"][i])
+        by_kind.setdefault(kind, {}).setdefault(t["run"][i], []).append(
+            (t["seq"][i], t["text"][i]))
     tok = AutoTokenizer.from_pretrained(target_dir)
     prompts: list[dict] = []
     for kind in sorted(by_kind):
-        for run, seq, text in sorted(by_kind[kind])[:n_per_kind]:
+        runs = {r: sorted(v) for r, v in sorted(by_kind[kind].items())}
+        picked: list[tuple[str, int, str]] = []
+        depth = 0
+        while len(picked) < n_per_kind and any(depth < len(v) for v in runs.values()):
+            for r, v in runs.items():
+                if depth < len(v) and len(picked) < n_per_kind:
+                    picked.append((r, *v[depth]))
+            depth += 1
+        for run, seq, text in sorted(picked):
             d = {"kind": kind, "run": run, "seq": seq,
                  "ids": tok.encode(text, add_special_tokens=False)}
             if include_text:
@@ -199,14 +214,14 @@ def main(argv: list[str] | None = None) -> dict:
     ap.add_argument("--drafters", nargs="+", default=DRAFTERS, choices=DRAFTERS)
     ap.add_argument("--ks", nargs="+", type=int, default=[1, 2, 4, 8])
     ap.add_argument("--temps", nargs="+", type=float, default=[0.0, 0.7])
-    ap.add_argument("--n-per-kind", type=int, default=100)
-    ap.add_argument("--n-gen", type=int, default=16)
+    ap.add_argument("--n-per-kind", type=int, default=N_PER_KIND)
+    ap.add_argument("--n-gen", type=int, default=N_GEN)
     ap.add_argument("--max-tokens", type=int, default=128)
     ap.add_argument("--num-cpus", type=int, default=16)
     ap.add_argument("--cpus-per-cell", type=int, default=4)
     ap.add_argument("--max-cells", type=int, default=0, help="cap cells this run (0 = all)")
-    ap.add_argument("--seed", type=int, default=12345)
-    ap.add_argument("--split", default="val")
+    ap.add_argument("--seed", type=int, default=SEED)
+    ap.add_argument("--split", default="heldout")
     ap.add_argument("--target", default=str(MODELS / "qwen2.5-0.5b-instruct"))
     ap.add_argument("--out", default=str(RESULTS / "sweep.parquet"))
     args = ap.parse_args(argv)

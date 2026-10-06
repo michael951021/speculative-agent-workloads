@@ -1,9 +1,6 @@
 """Independent reference for the T=0.7 acceptance arithmetic (batch 3).
 
-The batch-3 sweep shows sampled-temperature acceptance ABOVE T=0 for
-model drafters (structural: at T=0 a non-argmax match is always rejected,
-at T=0.7 it accepts with prob P7/q in (0,1)). To rule out an engine bug in
-the T>0 path, cross-check the ngram k=1 T=0.7 cell: rerun the same prompts
+Cross-check the engine's T>0 accept path on the ngram k=1 T=0.7 cell: rerun the same prompts
 through SpecDecoder (same seed -> same trajectory) and compute per-draft
 expected acceptance BY HAND from raw target logits, p7 = softmax(lg/0.7),
 q one-hot (ngram) => E[accept] = p7[d]. No engine acceptance code is reused.
@@ -32,16 +29,17 @@ import pandas as pd  # noqa: E402
 
 from draftlab.jaxlm import model as M  # noqa: E402
 from draftlab.jaxlm import spec as S  # noqa: E402
-from draftlab.sweep import MODELS, load_prompts  # noqa: E402
+from draftlab.sweep import DRAFTERS, MODELS, N_GEN, SEED, load_prompts  # noqa: E402
 
 TARGET = str(MODELS / "qwen2.5-0.5b-instruct")
-N_GEN, K, TEMP = 16, 1, 0.7
-SEED_BASE = 12345  # ngram di=0, k=1 ki=0, --temps 0.7 => ti=0
+K, TEMP = 1, 0.7
+# sweep cell seed = SEED + 100*di + 10*ki + ti with default --temps 0 0.7 (ti=1)
+SEED_BASE = SEED + 100 * DRAFTERS.index("ngram") + 0 + 1
 
 
 def main() -> int:
     tcfg, tparams = M.load_safetensors(TARGET)
-    prompts = load_prompts("val", 100, 128, TARGET)
+    prompts = load_prompts(max_tokens=128, target_dir=TARGET)
     max_len = max(len(p["ids"]) for p in prompts) + N_GEN + 8
 
     sum_e = sum_m = 0.0

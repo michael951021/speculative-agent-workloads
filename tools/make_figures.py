@@ -49,63 +49,47 @@ plt.rcParams.update(
 )
 
 
+ALPHA_ORDER = ["ngram", "tiny", "lora", "dpo"]  # results/alpha/<name>.json
+ALPHA_COLOR = {"ngram": COLOR["ngram"], "tiny": COLOR["tiny"], "lora": COLOR["lora"],
+               "dpo": COLOR["lora_dpo"]}
+ALPHA_LABEL = {"ngram": "ngram", "tiny": "tiny (43M)", "lora": "LoRA 0.5B", "dpo": "LoRA+DPO 0.5B"}
+SWEEP_15 = RES / "sweep_1.5b.parquet"
+
+
 def alpha_metric(name: str) -> dict:
-    return json.loads((RES / f"alpha_sweep_{name}.json").read_text())
+    return json.loads((RES / "alpha" / f"{name}.json").read_text())
 
 
-def sweep_frame() -> pl.DataFrame:
-    df = pl.read_parquet(RES / "sweep.parquet")
-    none_ts = {
-        t: float(
-            df.filter((pl.col("drafter") == "none") & (pl.col("temp") == t)).select(
-                (pl.sum("n_emit") / pl.sum("wall_s")).alias("v")
-            )[0, 0]
-        )
-        for t in (0.0, 0.7)
-    }
-    agg = (
-        df.filter(pl.col("drafter") != "none")
+def sweep_agg(path: Path) -> pl.DataFrame:
+    return (
+        pl.read_parquet(path)
+        .filter(pl.col("drafter") != "none")
         .group_by(["drafter", "k", "temp"])
-        .agg(
-            acc=pl.sum("n_acc") / pl.sum("n_draft"),
-            tpc=pl.sum("n_emit") / pl.sum("n_steps"),
-            tok_s=pl.sum("n_emit") / pl.sum("wall_s"),
-        )
+        .agg(acc=pl.sum("n_acc") / pl.sum("n_draft"), tpc=pl.sum("n_emit") / pl.sum("n_steps"))
     )
-    return agg, none_ts
 
 
 def fig_alpha_by_kind() -> None:
-    """Grouped bars: metric alpha (target 0.5B-Instruct, val) per drafter x kind."""
-    kinds = [
-        "code",
-        "text",
-        "thinking",
-        "tool_result",
-        "tool_use:Bash",
-        "tool_use:Edit",
-        "tool_use:Read",
-        "tool_use:WebFetch",
-        "tool_use:Write",
-    ]
-    data = {d: [alpha_metric(d)["by_kind"][k]["alpha"] for k in kinds] for d in ORDER}
+    """Grouped bars + run-bootstrap 95% CIs: alpha vs the 1.5B target, held-out runs."""
+    data = {d: alpha_metric(d) for d in ALPHA_ORDER}
+    kinds = [k for k in sorted(data["ngram"]["by_kind"])
+             if all(k in data[d]["by_kind"] and data[d]["by_kind"][k]["n_tokens"] >= 500
+                    for d in ALPHA_ORDER)][:10]
     x = range(len(kinds))
-    w = 0.8 / len(ORDER)
+    w = 0.8 / len(ALPHA_ORDER)
     fig, ax = plt.subplots(figsize=(9.5, 4.2))
-    for j, d in enumerate(ORDER):
-        ax.bar(
-            [i + (j - 1.5) * w for i in x],
-            data[d],
-            width=w * 0.92,
-            color=COLOR[d],
-            label=LABEL[d],
-            zorder=3,
-        )
+    for j, d in enumerate(ALPHA_ORDER):
+        bk = data[d]["by_kind"]
+        ys = [bk[k]["alpha"] for k in kinds]
+        err = [[y - bk[k]["alpha_ci95"][0] for k, y in zip(kinds, ys, strict=True)],
+               [bk[k]["alpha_ci95"][1] - y for k, y in zip(kinds, ys, strict=True)]]
+        ax.bar([i + (j - 1.5) * w for i in x], ys, width=w * 0.92, color=ALPHA_COLOR[d],
+               label=ALPHA_LABEL[d], zorder=3, yerr=err, error_kw={"lw": 0.8, "ecolor": "#555"})
     ax.set_xticks(list(x), [k.replace("tool_use:", "tu:") for k in kinds], rotation=30, ha="right")
     ax.set_ylabel("alpha (expected acceptance)")
-    ax.set_title(
-        "Drafter quality: alpha by content kind (metric, target Qwen2.5-0.5B-Instruct, val split)"
-    )
+    n_runs = data["ngram"]["n_runs"]
+    ax.set_title(f"Drafter quality by content kind: alpha vs Qwen2.5-1.5B-Instruct "
+                 f"({n_runs} held-out runs, 95% run-bootstrap CI)")
     ax.grid(axis="y", color="#ddd", lw=0.6, zorder=0)
     ax.legend(frameon=False, ncol=2)
     fig.tight_layout()
@@ -114,77 +98,59 @@ def fig_alpha_by_kind() -> None:
 
 
 def fig_tpc_vs_k() -> None:
-    """Tokens per target call vs k: metric (left) and measured engine (right)."""
+    """Tokens per target call vs k, 1.5B target: metric (left), measured engine (right)."""
     ks = [1, 2, 3, 4, 5, 6, 7, 8]
     fig, (a1, a2) = plt.subplots(1, 2, figsize=(9.5, 4.2), sharey=True)
-    for d in ORDER:
-        a1.plot(
-            ks,
-            [alpha_metric(d)["overall"]["tokens_per_call"][str(k)] for k in ks],
-            color=COLOR[d],
-            lw=2,
-            marker="o",
-            ms=4,
-            label=LABEL[d],
-        )
+    for d in ALPHA_ORDER:
+        a1.plot(ks, [alpha_metric(d)["overall"]["tokens_per_call"][str(k)] for k in ks],
+                color=ALPHA_COLOR[d], lw=2, marker="o", ms=4, label=ALPHA_LABEL[d])
     a1.set_xlabel("draft length k")
     a1.set_ylabel("tokens per target call")
-    a1.set_title("Metric (teacher-forced, val)")
+    a1.set_title("Metric (teacher-forced, held-out)")
     a1.grid(color="#ddd", lw=0.6)
     a1.legend(frameon=False, fontsize=8)
-    agg, _ = sweep_frame()
-    for d in ORDER:
+    agg = sweep_agg(SWEEP_15)
+    for d in ["ngram", "lora", "lora_dpo"]:
         for t, ls in ((0.0, "-"), (0.7, "--")):
             r = agg.filter((pl.col("drafter") == d) & (pl.col("temp") == t)).sort("k")
-            a2.plot(
-                r["k"],
-                r["tpc"],
-                color=COLOR[d],
-                lw=2,
-                ls=ls,
-                label=LABEL[d] if t == 0.0 else None,
-                marker="o" if t == 0.0 else None,
-                ms=4,
-            )
+            a2.plot(r["k"], r["tpc"], color=COLOR[d], lw=2, ls=ls,
+                    label=LABEL[d] if t == 0.0 else None, marker="o" if t == 0.0 else None, ms=4)
     a2.axhline(1.0, color="#888", lw=1, ls=":")
     a2.set_xlabel("draft length k")
-    a2.set_title("Measured engine (target 0.5B-Instruct; solid T=0, dashed T=0.7)")
+    a2.set_title("Measured engine (generated text; solid T=0, dashed T=0.7)")
     a2.grid(color="#ddd", lw=0.6)
+    a2.legend(frameon=False, fontsize=8)
     fig.tight_layout()
     fig.savefig(FIG / "tpc_vs_k.png", dpi=150)
     plt.close(fig)
 
 
 def fig_speedup() -> None:
-    """Measured speedup vs no-drafting, by k, both temperatures."""
-    agg, none_ts = sweep_frame()
-    fig, axes = plt.subplots(1, 2, figsize=(9.5, 4.0), sharey=True)
-    for ax, t in zip(axes, (0.0, 0.7), strict=True):
-        for d in ORDER:
-            r = agg.filter((pl.col("drafter") == d) & (pl.col("temp") == t)).sort("k")
-            sp = [v / none_ts[t] for v in r["tok_s"]]
-            ax.plot(r["k"], sp, color=COLOR[d], lw=2, marker="o", ms=4, label=LABEL[d])
-            if d == "ngram":  # direct labels on the best drafter (relief for low-contrast colors)
-                for x, y in zip(r["k"], sp, strict=True):
-                    ax.annotate(
-                        f"{y:.2f}",
-                        (x, y),
-                        textcoords="offset points",
-                        xytext=(0, 6),
-                        ha="center",
-                        fontsize=7,
-                    )
-        ax.axhline(1.0, color="#888", lw=1, ls=":")
-        ax.set_xlabel("draft length k")
-        ax.set_title(f"Temperature T={t}")
-        ax.grid(color="#ddd", lw=0.6)
-    axes[0].set_ylabel("tok/s vs no drafting (speedup)")
-    axes[0].legend(frameon=False, fontsize=8, loc="center left")
-    fig.suptitle(
-        "Measured speedup vs no drafting, Qwen2.5-0.5B-Instruct on CPU (393 val prompts x 16 gen)",
-        fontsize=10,
-        y=1.02,
-    )
+    """Head-to-head CPU speedup vs no drafting (tools/bench_speedup.py), rep range as bars."""
+    b = json.loads((RES / "speedup_bench.json").read_text())
+    labels, ys, lo, hi, cols = [], [], [], [], []
+    for target, t in b["targets"].items():
+        for c in t["configs"].values():
+            if c["drafter"] == "none":
+                continue
+            short = target.replace("qwen2.5-", "").replace("-instruct", "")
+            labels.append(f"{short} target\n{c['drafter']} k={c['k']} T={c['temp']}")
+            ys.append(c["speedup"])
+            lo.append(c["speedup"] - c["speedup_range"][0])
+            hi.append(c["speedup_range"][1] - c["speedup"])
+            cols.append(COLOR["ngram" if c["drafter"] == "ngram" else "lora"])
+    fig, ax = plt.subplots(figsize=(9.5, 4.0))
+    ax.bar(range(len(ys)), ys, color=cols, yerr=[lo, hi], zorder=3,
+           error_kw={"lw": 0.8, "ecolor": "#555"})
+    for i, y in enumerate(ys):
+        ax.annotate(f"{y:.2f}x", (i, y), textcoords="offset points", xytext=(0, 6),
+                    ha="center", fontsize=8)
+    ax.axhline(1.0, color="#888", lw=1, ls=":")
+    ax.set_xticks(range(len(ys)), labels, fontsize=8)
+    ax.set_ylabel("speedup vs no drafting")
+    ax.set_title(f"Measured CPU speedup, head to head ({b['reps']} interleaved reps, "
+                 f"{b['n_gen']} tokens/prompt; bars = rep range)")
+    ax.grid(axis="y", color="#ddd", lw=0.6, zorder=0)
     fig.tight_layout()
     fig.savefig(FIG / "speedup.png", dpi=150, bbox_inches="tight")
     plt.close(fig)

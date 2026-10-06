@@ -192,6 +192,48 @@ def build(raw_path: Path = RAW_PATH, out_dir: Path = OUT_DIR, tok=None) -> dict[
     return counts
 
 
+HELDOUT_RAW = ROOT / "data/raw/heldout_turns.jsonl"
+
+
+def build_heldout(raw_path: Path = HELDOUT_RAW, out_dir: Path = OUT_DIR, tok=None) -> int:
+    """Temporal hold-out: runs exported after the corpus (tools/export_traces.py
+    --since) -> data/corpus/heldout.parquet. Drops runs already in a split and
+    blocks whose (kind, text) occurs in any split, so no drafter saw them."""
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+
+    if tok is None:
+        from transformers import AutoTokenizer
+
+        tok = AutoTokenizer.from_pretrained(TOKENIZER_DIR)
+    old_runs: set[str] = set()
+    seen: set[tuple[str, str]] = set()
+    for name in ("train", "val", "test"):
+        t = pq.read_table(out_dir / f"{name}.parquet", columns=["run", "kind", "text"]).to_pydict()
+        old_runs.update(t["run"])
+        seen.update(zip(t["kind"], t["text"], strict=True))
+    rs = []
+    for r in expand(load_raw(raw_path)):
+        if r["run"] in old_runs:
+            continue
+        ids = tok.encode(r["text"])
+        if len(ids) < MIN_TOKENS:
+            continue
+        text = tok.decode(ids[:MAX_TOKENS]) if len(ids) > MAX_TOKENS else r["text"]
+        key = (r["kind"], text)
+        if key in seen:
+            continue
+        seen.add(key)
+        rs.append({**r, "text": text, "n_tokens": min(len(ids), MAX_TOKENS)})
+    if not rs:
+        raise RuntimeError(f"no new blocks in {raw_path}")
+    cols = ["run", "project", "seq", "role", "kind", "tool", "text", "n_tokens"]
+    pq.write_table(pa.table({c: [r[c] for r in rs] for c in cols}), out_dir / "heldout.parquet")
+    print(f"heldout: {len(rs)} blocks, {len({r['run'] for r in rs})} runs "
+          f"-> {out_dir / 'heldout.parquet'}")
+    return len(rs)
+
+
 STATS_SQL = Path(__file__).resolve().parent / "stats.sql"
 RESULTS_DIR = ROOT / "results"
 

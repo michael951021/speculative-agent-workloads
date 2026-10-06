@@ -1,7 +1,7 @@
 """LLM-as-judge lossless check.
 
 Blind pairwise judging (both orders) of outputs generated at T=0.7 on
-test-split prompts: target-only vs speculative (merged LoRA drafter) vs
+held-out prompts (--split): target-only vs speculative (merged LoRA drafter) vs
 drafter-alone. Judge = OpenAI-compatible endpoint at $OLLAMA_BASE_URL
 (openai SDK), JSON verdicts, rubric in the system prompt. API calls capped
 (--max-calls, default 150) and cached in data/judge_cache/. Writes
@@ -341,9 +341,10 @@ def generate_outputs(prompts: list[dict], target_dir: Path, drafter_ckpt: Path,
 
 def main(argv: list[str] | None = None) -> None:
     ap = argparse.ArgumentParser(prog="python -m draftlab.eval.judge")
-    ap.add_argument("--n-per-kind", type=int, default=7,
-                    help="test-split prompts per kind (default -> ~49 prompts, "
-                         "148 judge calls <= 150 cap)")
+    ap.add_argument("--n-per-kind", type=int, default=4,
+                    help="prompts per kind (default -> ~45 held-out prompts; 2 orders x "
+                         "(target + drafter-alone pairs) stays near the 150-call cap)")
+    ap.add_argument("--split", default="heldout")
     ap.add_argument("--n-gen", type=int, default=16)
     ap.add_argument("--max-tokens", type=int, default=128)
     ap.add_argument("--k", type=int, default=4)
@@ -371,7 +372,7 @@ def main(argv: list[str] | None = None) -> None:
 
     from draftlab.sweep import load_prompts
 
-    prompts = load_prompts("test", args.n_per_kind, args.max_tokens,
+    prompts = load_prompts(args.split, args.n_per_kind, args.max_tokens,
                            args.target, include_text=True)
     outputs_file = Path(args.outputs)
     meta = {}

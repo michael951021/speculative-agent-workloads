@@ -232,8 +232,9 @@ def build_summary(alpha: dict[str, dict], sweep_summary: dict, replays_path: Pat
 
 def select_replay_blocks(alpha_results: dict[str, dict], n_kinds: int = REPLAY_N_KINDS,
                          per_kind: int = REPLAY_BLOCKS_PER_KIND) -> list[dict]:
-    """Top-n_kinds kinds by n_tokens in the best drafter's alpha file; within the
-    same 400-block pool, round-robin over runs, `per_kind` blocks each."""
+    """Top-n_kinds kinds by n_tokens in the best drafter's alpha file; from the
+    val split's 400-block pool (always val: replays publish block text, and
+    val text was reviewed for release), round-robin over runs, `per_kind` each."""
     from draftlab.eval.alpha import load_blocks
 
     best = alpha_results[best_drafter(alpha_results)]
@@ -335,7 +336,7 @@ def build_replays(alpha_results: dict[str, dict], max_blocks: int) -> dict:
         "schema_version": SCHEMA_VERSION,
         "generated_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "target": best["target"],
-        "split": best["split"],
+        "split": "val",
         "ctx_budget": ctx_budget,
         "accept_rule": "greedy spec-accept: proposed and argmax q == argmax p (target)",
         "metric": "p/q = model prob of the next corpus token; alpha = sum_x min(p(x), q(x)) "

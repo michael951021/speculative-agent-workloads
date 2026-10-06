@@ -2,6 +2,9 @@
 into data/raw/agent_turns.jsonl — one record per content block the model produced or received.
 Run from the host (the sandbox cannot see ../../logs):
     python3 tools/export_traces.py [--max-mb 400]
+Temporal hold-out (runs started on/after a date, some projects skipped):
+    python3 tools/export_traces.py --since 20260930 --skip-projects apply \
+        --out data/raw/heldout_turns.jsonl
 """
 
 import argparse
@@ -44,14 +47,21 @@ def blocks(line):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--max-mb", type=float, default=400)
+    ap.add_argument("--since", default="", help="only runs started on/after YYYYMMDD")
+    ap.add_argument("--skip-projects", default="", help="comma-separated project names")
+    ap.add_argument("--out", default="data/raw/agent_turns.jsonl")
     a = ap.parse_args()
-    out = os.path.join(ROOT, "data/raw/agent_turns.jsonl")
+    skip = {x for x in a.skip_projects.split(",") if x}
+    out = os.path.join(ROOT, a.out)
     n, size = 0, 0
     with open(out, "w") as f:
         paths = glob.glob(os.path.join(ROOT, "../../logs/*.jsonl"))
         for path in sorted(paths, key=os.path.getmtime, reverse=True):
             run = os.path.basename(path)[:-6]
             project = run.rsplit("-", 2)[0]
+            started = run.rsplit("-", 2)[-2] if run.count("-") >= 2 else ""
+            if (a.since and started < a.since) or re.sub(r"-w\d+$", "", project) in skip:
+                continue
             for i, line in enumerate(open(path, errors="replace")):
                 try:
                     for role, kind, text in blocks(line):

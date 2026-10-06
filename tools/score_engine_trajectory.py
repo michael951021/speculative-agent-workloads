@@ -31,7 +31,7 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 CKPT = ROOT / "ckpt"
 MODELS = ROOT / "models"
-N_GEN = 16
+N_GEN = 32  # == draftlab.sweep.N_GEN
 
 
 def gen_trajectories(prompts: list[dict]) -> dict[int, list[int]]:

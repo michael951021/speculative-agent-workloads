@@ -3,11 +3,10 @@
 Drafter protocol: ``propose(ctx, k) -> (tokens, probs)`` — up to k draft
 tokens plus a (V,) float32 draft distribution for each; ``rollback(n_kept)``
 undoes draft-side state (KV cache) added for the drafted suffix beyond the
-n_kept drafts that were committed. The engine scores all m drafted tokens plus
-the bonus position with one target call; accepts while u < p/q, then either
-resamples from max(0, p - q) at the first rejection or draws the bonus from p.
-Target-cache rollback is truncating the positional cache's `len`; a
-fully-accepted step decodes the bonus in.
+n_kept drafts that were committed. The engine scores the pending token plus all m drafted
+tokens with one target call; accepts while u < p/q, then either resamples
+from max(0, p - q) at the first rejection or draws the bonus from p.
+Target-cache rollback is truncating the positional cache's `len`.
 """
 
 from __future__ import annotations
@@ -83,49 +82,77 @@ class NGramDrafter:
         pass
 
 
-class ModelDrafter:
-    """A second JAX Qwen2 proposes its own greedy continuation.
+class NullDrafter:
+    """No drafting: plain autoregressive target decoding."""
 
-    Keeps its own KV cache, extended from committed tokens; a partial
-    acceptance restores the pre-draft snapshot so the committed suffix is
-    re-decoded at the next propose.
+    def propose(self, ctx: list[int], k: int) -> tuple[list[int], list[np.ndarray]]:
+        return [], []
+
+    def rollback(self, n_kept: int) -> None:
+        pass
+
+
+class ModelDrafter:
+    """A second JAX Qwen2 proposes its own continuation.
+
+    T=0: argmax drafts with one-hot q. T>0: drafts sampled from
+    softmax(logits/T) and q is exactly that distribution, so accept/reject is
+    lossless (SpecDecoder sets T and the seed via `configure`). Keeps its own
+    KV cache; rollback truncates it to the committed drafts (no re-decode).
+    The last draft is never decoded here: on full acceptance the next propose
+    decodes it together with the bonus token.
     """
 
-    def __init__(self, dcfg: M.Qwen2Cfg, dparams: dict, max_len: int) -> None:
+    def __init__(self, dcfg: M.Qwen2Cfg, dparams: dict, max_len: int,
+                 temperature: float = 0.0, seed: int = 0) -> None:
         self.dcfg = dcfg
         self.dparams = dparams
         self.cache = M.empty_cache(dcfg, max_len)
         self._last = 0
-        self._undo: tuple[dict, int] | None = None
+        self._undo: tuple[int, int] | None = None
+        self.configure(temperature, seed)
+
+    def configure(self, temperature: float, seed: int) -> None:
+        self.temperature = temperature
+        self._rng = np.random.default_rng(seed)
+
+    def _pick(self, row) -> tuple[int, np.ndarray]:
+        if self.temperature == 0.0:
+            t = int(np.argmax(np.asarray(row)))
+            q = np.zeros(row.shape[-1], np.float32)
+            q[t] = 1.0
+            return t, q
+        q = np.asarray(jax.nn.softmax(row.astype(jnp.float32) / self.temperature), np.float64)
+        q /= q.sum()
+        t = int(self._rng.choice(q.size, p=q))
+        return t, q.astype(np.float32)
 
     def propose(self, ctx: list[int], k: int) -> tuple[list[int], list[np.ndarray]]:
-        # ctx grows by >=1 committed token between proposes (first call: prompt),
-        # so extending the cache to len(ctx) gives the dist over the FIRST draft
-        # token on its last row; each draft then decodes the previous one.
+        # extending the cache to len(ctx) gives the dist over the FIRST draft on
+        # its last row; drafts 1..k-1 each decode the previous draft
         if len(ctx) <= self._last:
             raise RuntimeError("propose called without new committed tokens")
         lg, self.cache = M.decode(self.dcfg, self.dparams, self.cache, ctx[self._last :])
         self._last = len(ctx)
-        self._undo = (self.cache, self._last, k)
         toks: list[int] = []
         probs: list[np.ndarray] = []
-        for _ in range(k):
-            p = np.asarray(jax.nn.softmax(lg[-1]), np.float32)
-            t = int(np.argmax(p))
+        for j in range(k):
+            t, q = self._pick(lg[-1])
             toks.append(t)
-            probs.append(p)
-            lg, self.cache = M.decode(self.dcfg, self.dparams, self.cache, [t])
+            probs.append(q)
+            if j < k - 1:
+                lg, self.cache = M.decode(self.dcfg, self.dparams, self.cache, [t])
+        self._undo = (self._last, len(toks))
         return toks, probs
 
     def rollback(self, n_kept: int) -> None:
         if self._undo is None:
             return
-        cache, last, m = self._undo
+        last, m = self._undo
         self._undo = None
-        if n_kept == m:  # all drafts committed; the cache already holds them
-            self._last = last + m  # only the bonus is new; extend from after the drafts
-            return
-        self.cache, self._last = cache, last
+        keep = min(n_kept, m - 1)  # cached drafts that were committed
+        self._last = last + keep
+        self.cache = {"k": self.cache["k"], "v": self.cache["v"], "len": jnp.int32(self._last)}
 
 
 def _categorical(rng, p) -> int:
@@ -144,10 +171,11 @@ class StepStats:
 class SpecDecoder:
     """Speculative sampling over one jitted target model.
 
-    temperature > 0 scales the TARGET sampling distribution (softmax(lg/T));
-    draft probs stay unscaled. Accept/reject + residual max(0, p - q) is
-    lossless for any draft q, so output still follows exactly the target's
-    T-scaled distribution.
+    temperature > 0 samples the target's softmax(lg/T); the drafter is
+    configured to draft at the same T and report its true q, so accept/reject
+    + residual max(0, p - q) is lossless. One target forward per step: the
+    cache holds every committed token but the newest (`pend`), and each step
+    decodes [pend] + drafts, so row j scores draft j and row m is the bonus.
     """
 
     def __init__(
@@ -167,6 +195,8 @@ class SpecDecoder:
         self.k = k
         self.temperature = temperature
         self.rng = jax.random.PRNGKey(seed)
+        if hasattr(drafter, "configure"):
+            drafter.configure(temperature, seed + 1)
 
     def _steps(self, prompt: list[int], n_tokens: int):
         """Core loop; yields (emitted_tokens, StepStats) per target-call step."""
@@ -175,10 +205,9 @@ class SpecDecoder:
         T = self.temperature if not T0 else 1.0
         rng = self.rng
         ctx = list(prompt)
-        pre_lg, cache = M.prefill(cfg, params, ctx, self.max_len)
-        prev_lg = pre_lg[-1]  # dist over position L (first generated token)
+        _, cache = M.prefill(cfg, params, ctx, self.max_len)
+        cache = {"k": cache["k"], "v": cache["v"], "len": jnp.int32(len(ctx) - 1)}
         out: list[int] = []
-        stats: list[StepStats] = []
         while len(out) < n_tokens:
             rem = n_tokens - len(out)
             t0 = time.perf_counter()
@@ -189,63 +218,41 @@ class SpecDecoder:
             if k:
                 dtoks, dprobs = drafter.propose(ctx, k)
             m = len(dtoks)
-            if m == 0:  # no draft: draw from the held last row, then one decode
-                if T0:
-                    tok = int(np.argmax(np.asarray(prev_lg)))
-                else:
-                    tok = _categorical(step_rng, jax.nn.softmax(prev_lg / T))
-                lg, cache = M.decode(cfg, params, cache, [tok])
-                prev_lg = lg[-1]
-                emitted, A = [tok], 0
+            rows, cache2 = M.decode(cfg, params, cache, [ctx[-1]] + dtoks)
+            if T0:
+                A = 0
+                while A < m and dtoks[A] == int(np.argmax(np.asarray(rows[A]))):
+                    A += 1
+                bonus = int(np.argmax(np.asarray(rows[A])))
             else:
-                # one target call over the m drafts: row r is the dist over the
-                # token at position L+r+1, i.e. draft r+1... so draft j's dist is
-                # prev (j=0) or row j-1, and row m-1 is the bonus dist
-                scored, cache2 = M.decode(cfg, params, cache, dtoks)
-                Pd = [prev_lg if j == 0 else scored[j - 1] for j in range(m)]
-                if T0:
-                    A = 0
-                    while A < m and dtoks[A] == int(np.argmax(np.asarray(Pd[A]))):
+                A = 0
+                for i, q in enumerate(dprobs):
+                    p_i = np.asarray(jax.nn.softmax(rows[i] / T), np.float32)
+                    u = float(jax.random.uniform(step_rng))
+                    step_rng = jax.random.fold_in(step_rng, i + 1)
+                    if u * q[dtoks[i]] < p_i[dtoks[i]]:
                         A += 1
-                    bonus = int(np.argmax(np.asarray(Pd[A] if A < m else scored[m - 1])))
-                else:
-                    P = [np.asarray(jax.nn.softmax(row / T), np.float32) for row in Pd]
-                    A = 0
-                    for i, q in enumerate(dprobs):
-                        u = float(jax.random.uniform(step_rng))
-                        step_rng = jax.random.fold_in(step_rng, i + 1)
-                        if u * q[dtoks[i]] < P[i][dtoks[i]]:
-                            A += 1
-                        else:
-                            break
-                    if A == m:
-                        bonus = _categorical(step_rng, jax.nn.softmax(scored[m - 1] / T))
                     else:
-                        resid = np.maximum(0.0, P[A] - dprobs[A])
-                        bonus = _categorical(step_rng, resid / resid.sum())
-                emitted = dtoks[:A] + [bonus]
-                E = len(emitted) if A < m else min(rem, m + 1)
-                emitted = emitted[:E]
-                # Roll back the target cache to the A committed drafts, then
-                # commit the bonus (its key/value only exists after this decode;
-                # it was not part of the scoring call).
-                trunc = {"k": cache2["k"], "v": cache2["v"], "len": jnp.int32(len(ctx) + A)}
-                prev2, cache_b = M.decode(cfg, params, trunc, [bonus])
-                if A == m and rem >= m + 1:
-                    cache, prev_lg = cache_b, prev2[-1]
-                else:
-                    cache = {"k": cache_b["k"], "v": cache_b["v"], "len": jnp.int32(len(ctx) + E)}
-                    prev_lg = prev2[-1] if len(out) + E < n_tokens else None
+                        resid = np.maximum(0.0, p_i - q)
+                        break
+                if A == m:
+                    bonus = _categorical(step_rng, jax.nn.softmax(rows[m] / T))
+                elif resid.sum() > 0:
+                    bonus = _categorical(step_rng, resid / resid.sum())
+                else:  # p == q on the draft's support: residual is p itself
+                    bonus = _categorical(step_rng, p_i)
+            emitted = (dtoks[:A] + [bonus])[:rem]
+            # keep [pend] + the A accepted drafts; the bonus becomes the new pend
+            cache = {"k": cache2["k"], "v": cache2["v"], "len": jnp.int32(len(ctx) + A)}
             drafter.rollback(A)
             ctx.extend(emitted)
             out.extend(emitted)
             dt_ms = (time.perf_counter() - t0) * 1e3
             st = StepStats(m, A, [x < A for x in range(m)], dt_ms)
-            stats.append(st)
             yield emitted, st
         self.rng = rng
         self.last_ctx = ctx  # prompt + generated
-        self.last_cache = cache
+        self.last_cache = cache  # holds last_ctx[:-1] (the newest token is pending)
 
     def generate(self, prompt: list[int], n_tokens: int) -> tuple[list[int], list[StepStats]]:
         """Sample `n_tokens` tokens after `prompt`. Returns (tokens, per-step stats)."""

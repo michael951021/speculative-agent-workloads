@@ -117,8 +117,8 @@ def test_rollback_cache_equals_fresh_prefill(kind):
     full = prompt + out
     _, ref_cache = M.prefill(cfg, params, full, max_len)
     c = dec.last_cache
-    assert int(c["len"]) == len(full)
-    n = len(full)
+    n = len(full) - 1  # the newest token is pending (decoded by the next step)
+    assert int(c["len"]) == n
     for key in ("k", "v"):
         diff = float(abs(np.asarray(c[key])[:, :, :n] - np.asarray(ref_cache[key])[:, :, :n]).max())
         assert diff < 1e-5, f"{key}: max abs diff vs fresh prefill {diff:.2e}"
@@ -166,13 +166,13 @@ def test_model_drafter_full_accept_steps_keep_cache_in_sync():
     out, st = dec.generate(prompt, 20)
     assert out == _greedy(cfg, params, prompt, 20)
     assert all(s.drafted == 1 and s.accepted == 1 for s in st)  # strict, no rejections
-    # The drafter ends one token behind the final bonus: its cache must equal a
-    # fresh prefill of that prefix (a desynced rollback re-decodes already
-    # cached drafts and the KV diverges from the first duplicated slot on).
+    # The drafter's cache must equal a fresh prefill of the committed prefix it
+    # claims to hold (a desynced rollback re-decodes cached drafts and the KV
+    # diverges from the first duplicated slot on).
     full = prompt + out
-    n = len(full) - 1
     d = dec.drafter
-    assert int(d.cache["len"]) == n and d._last == n
+    n = d._last
+    assert int(d.cache["len"]) == n and 0 < n < len(full)
     _, ref = M.prefill(d.dcfg, d.dparams, full[:n], 84)
     for key in ("k", "v"):
         diff = float(abs(np.asarray(d.cache[key])[:, :, :n] - np.asarray(ref[key])[:, :, :n]).max())
@@ -197,3 +197,79 @@ def test_model_drafter_first_proposal_position():
     lg2, _ = M.step(cfg, params, M.empty_cache(cfg, 64),
                     jax.numpy.asarray(prompt + [toks[0]], jax.numpy.int32))
     assert toks[1] == int(np.argmax(np.asarray(lg2[-1])))
+
+
+def _probs(cfg, params, ids, T=1.0):
+    lg, _ = M.step(cfg, params, M.empty_cache(cfg, len(ids) + 1),
+                   jax.numpy.asarray(ids, jax.numpy.int32))
+    return np.asarray(jax.nn.softmax(lg[-1].astype(np.float64) / T), np.float64)
+
+
+def test_model_drafter_lossless_second_token_chi_square():
+    """T=0.8, model drafter != target, k=3: the marginal of the SECOND emitted
+    token equals sum_x p(x) p(y|x) exactly (covers draft rows, rejection +
+    residual, and the pending-token cache layout across steps)."""
+    cfg, params = _tiny16(1)
+    dcfg, dparams = _tiny16(42)
+    T = 0.8
+    prompt = [i % 7 for i in range(20)]
+    p1 = _probs(cfg, params, prompt, T)
+    exp_p = sum(p1[x] * _probs(cfg, params, prompt + [x], T) for x in range(cfg.vocab_size))
+    N = 6000
+    obs = np.zeros(cfg.vocab_size, np.int64)
+    acc = drafted = 0
+    for i in range(N):
+        dec = SpecDecoder(cfg, params, ModelDrafter(dcfg, dparams, len(prompt) + 8),
+                          max_len=len(prompt) + 8, k=3, temperature=T, seed=i)
+        out, st = dec.generate(prompt, 2)
+        obs[out[1]] += 1
+        acc += sum(s.accepted for s in st)
+        drafted += sum(s.drafted for s in st)
+    assert 0 < acc < drafted, "need both accepts and rejects"
+    exp = N * exp_p
+    chi2 = float(((obs - exp) ** 2 / exp).sum())
+    pval = float(stats.chi2.sf(chi2, df=cfg.vocab_size - 1))
+    assert pval > 0.01, f"chi2={chi2:.1f}, p={pval:.4g} (second-token marginal shifted)"
+
+
+def test_identity_drafter_at_temperature_chi_square():
+    """Regression: argmax drafts + soft q made drafter==target accept the argmax
+    at T<1 every time (output collapsed to greedy). The first token must follow
+    softmax(lg/0.7) when the drafter is the target itself."""
+    cfg, params = _tiny16(1)
+    prompt = [i % 7 for i in range(32)]
+    pT = _probs(cfg, params, prompt, 0.7)
+    N = 4000
+    obs = np.zeros(cfg.vocab_size, np.int64)
+    for i in range(N):
+        dec = SpecDecoder(cfg, params, ModelDrafter(cfg, params, len(prompt) + 8),
+                          max_len=len(prompt) + 8, k=2, temperature=0.7, seed=i)
+        out, st = dec.generate(prompt, 1)
+        obs[out[0]] += 1
+    exp = N * pT
+    chi2 = float(((obs - exp) ** 2 / exp).sum())
+    pval = float(stats.chi2.sf(chi2, df=cfg.vocab_size - 1))
+    assert pval > 0.01, f"chi2={chi2:.1f}, p={pval:.4g} (identity drafter not sampling at T)"
+
+
+@pytest.mark.parametrize("kind", ["ngram", "model", "none"])
+def test_one_target_forward_per_step(kind, monkeypatch):
+    from draftlab.jaxlm import spec as S
+
+    cfg, params = _tiny16(2)
+    calls = []
+    real = M.decode
+
+    def counting(c, p, cache, ids):
+        if p is params:
+            calls.append(len(ids))
+        return real(c, p, cache, ids)
+
+    monkeypatch.setattr(S.M, "decode", counting)
+    prompt = [i % 7 for i in range(30)]
+    d = S.NullDrafter() if kind == "none" else _make_drafter(kind, cfg, 80)
+    dec = SpecDecoder(cfg, params, d, max_len=80, k=3, temperature=1.0, seed=1)
+    out, st = dec.generate(prompt, 25)
+    assert len(out) == 25
+    assert len(calls) == len(st)
+    assert [c - 1 for c in calls] == [s.drafted for s in st]

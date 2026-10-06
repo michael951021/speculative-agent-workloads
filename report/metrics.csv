@@ -1,0 +1,179 @@
+experiment,target,scope,drafter,k,temperature,metric,value,ci95_low,ci95_high,n_tokens,n_runs,n_prompts,status
+heldout_alpha,qwen2.5-1.5b-instruct,overall,ngram,,1 (unscaled softmax),alpha,0.3228337810341852,0.30735509975170394,0.3389067423903147,56990,14,700,complete
+heldout_alpha,qwen2.5-1.5b-instruct,overall,ngram,,1 (unscaled softmax),greedy,0.3586079104310954,0.34289353105576914,0.3749171097568578,56990,14,700,complete
+heldout_alpha,qwen2.5-1.5b-instruct,overall,ngram,,1 (unscaled softmax),coverage,0.7390326137456411,,,56990,14,700,complete
+heldout_alpha,qwen2.5-1.5b-instruct,text,ngram,,1 (unscaled softmax),alpha,0.1982511106400509,0.1355513236669709,0.2680912574881537,2149,14,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,text,ngram,,1 (unscaled softmax),greedy,0.25085455433619164,0.18184626379693256,0.3320039823811917,2149,14,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,text,ngram,,1 (unscaled softmax),coverage,0.6830241361320813,,,2149,14,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,thinking,ngram,,1 (unscaled softmax),alpha,0.16315060336126905,0.14604828480535592,0.18161853483039972,18273,13,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,thinking,ngram,,1 (unscaled softmax),greedy,0.2069900771540762,0.18798770717984223,0.22603239380280907,18273,13,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,thinking,ngram,,1 (unscaled softmax),coverage,0.6599578703779622,,,18273,13,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_result,ngram,,1 (unscaled softmax),alpha,0.2733356887349496,0.23862487117513964,0.30830895950741805,12634,13,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_result,ngram,,1 (unscaled softmax),greedy,0.3049667908620116,0.26946849809148615,0.33951874015158273,12634,13,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_result,ngram,,1 (unscaled softmax),coverage,0.7167333409230844,,,12634,13,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_use:Bash,ngram,,1 (unscaled softmax),alpha,0.47687491729722464,0.45825466595951214,0.495545585735289,22279,13,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_use:Bash,ngram,,1 (unscaled softmax),greedy,0.5075922436026107,0.49017361840407264,0.5250583674960697,22279,13,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_use:Bash,ngram,,1 (unscaled softmax),coverage,0.8148643618677642,,,22279,13,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_use:Edit,ngram,,1 (unscaled softmax),alpha,0.5691141042758421,0.5394123442495616,0.6140749936848018,1348,4,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_use:Edit,ngram,,1 (unscaled softmax),greedy,0.5940391981717801,0.5627062706270627,0.6416184971098265,1348,4,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_use:Edit,ngram,,1 (unscaled softmax),coverage,0.8491998285110385,,,1348,4,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_use:Read,ngram,,1 (unscaled softmax),alpha,0.5601281141481335,0.44978788069316317,0.6095507748921712,307,5,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_use:Read,ngram,,1 (unscaled softmax),greedy,0.590541593760969,0.48214285714285715,0.6409287089132365,307,5,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_use:Read,ngram,,1 (unscaled softmax),coverage,0.8279115312792408,,,307,5,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,overall,lora,,1 (unscaled softmax),alpha,0.7119553246441913,0.7060653965165569,0.7187037139746982,56990,14,700,complete
+heldout_alpha,qwen2.5-1.5b-instruct,overall,lora,,1 (unscaled softmax),greedy,0.6964866788394445,0.6876688232440973,0.7066849905385792,56990,14,700,complete
+heldout_alpha,qwen2.5-1.5b-instruct,overall,lora,,1 (unscaled softmax),coverage,0.9997529910530587,,,56990,14,700,complete
+heldout_alpha,qwen2.5-1.5b-instruct,text,lora,,1 (unscaled softmax),alpha,0.6276326415029997,0.6018315624022902,0.6599639904563732,2149,14,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,text,lora,,1 (unscaled softmax),greedy,0.5980695029317894,0.5514963665559943,0.6484443906244225,2149,14,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,text,lora,,1 (unscaled softmax),coverage,0.9994822235620533,,,2149,14,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,thinking,lora,,1 (unscaled softmax),alpha,0.643343326326918,0.6350077978544963,0.6523788573812551,18273,13,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,thinking,lora,,1 (unscaled softmax),greedy,0.6024165373901444,0.5907617455783141,0.6151699253802015,18273,13,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,thinking,lora,,1 (unscaled softmax),coverage,0.9995620564667069,,,18273,13,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_result,lora,,1 (unscaled softmax),alpha,0.7198316064705366,0.7050683331260383,0.7329903393833369,12634,13,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_result,lora,,1 (unscaled softmax),greedy,0.6842574475730602,0.6637609694313117,0.706651033561046,12634,13,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_result,lora,,1 (unscaled softmax),coverage,1.0,,,12634,13,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_use:Bash,lora,,1 (unscaled softmax),alpha,0.7643614106661357,0.755879682702107,0.773354422285809,22279,13,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_use:Bash,lora,,1 (unscaled softmax),greedy,0.7801231107770051,0.7708455078923272,0.7897636960751325,22279,13,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_use:Bash,lora,,1 (unscaled softmax),coverage,0.9997771291712927,,,22279,13,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_use:Edit,lora,,1 (unscaled softmax),alpha,0.8166142276453451,0.7707801748853211,0.8321928982673487,1348,4,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_use:Edit,lora,,1 (unscaled softmax),greedy,0.8267077782991393,0.777262180974478,0.8477508650519031,1348,4,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_use:Edit,lora,,1 (unscaled softmax),coverage,1.0,,,1348,4,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_use:Read,lora,,1 (unscaled softmax),alpha,0.7738909607981079,0.6622245371842584,0.8300352668762208,307,5,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_use:Read,lora,,1 (unscaled softmax),greedy,0.8141464947575233,0.7089201877934272,0.8866666666666667,307,5,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_use:Read,lora,,1 (unscaled softmax),coverage,1.0,,,307,5,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,overall,dpo,,1 (unscaled softmax),alpha,0.7134852706768697,0.7077544247823708,0.7200690497397886,56990,14,700,complete
+heldout_alpha,qwen2.5-1.5b-instruct,overall,dpo,,1 (unscaled softmax),greedy,0.6983847108234288,0.6896355959689505,0.7085801146057011,56990,14,700,complete
+heldout_alpha,qwen2.5-1.5b-instruct,overall,dpo,,1 (unscaled softmax),coverage,0.9997529910530587,,,56990,14,700,complete
+heldout_alpha,qwen2.5-1.5b-instruct,text,dpo,,1 (unscaled softmax),alpha,0.6311233088911604,0.6059977564449807,0.662529121495991,2149,14,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,text,dpo,,1 (unscaled softmax),greedy,0.6021032141996941,0.5558846361549885,0.6522144585977174,2149,14,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,text,dpo,,1 (unscaled softmax),coverage,0.9994822235620533,,,2149,14,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,thinking,dpo,,1 (unscaled softmax),alpha,0.6471807193201664,0.6391782189380361,0.6559414588011091,18273,13,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,thinking,dpo,,1 (unscaled softmax),greedy,0.6054579417719492,0.5940024635701882,0.6175141001690242,18273,13,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,thinking,dpo,,1 (unscaled softmax),coverage,0.9995620564667069,,,18273,13,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_result,dpo,,1 (unscaled softmax),alpha,0.7205968754961638,0.7060116095755292,0.7336151190169511,12634,13,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_result,dpo,,1 (unscaled softmax),greedy,0.6861187710441516,0.6654813256063669,0.7085833985738273,12634,13,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_result,dpo,,1 (unscaled softmax),coverage,1.0,,,12634,13,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_use:Bash,dpo,,1 (unscaled softmax),alpha,0.7643802996267969,0.7559024672197435,0.7735147461558912,22279,13,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_use:Bash,dpo,,1 (unscaled softmax),greedy,0.780841186008442,0.7710364356291656,0.7907989729156423,22279,13,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_use:Bash,dpo,,1 (unscaled softmax),coverage,0.9997771291712927,,,22279,13,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_use:Edit,dpo,,1 (unscaled softmax),alpha,0.8164570018282697,0.7711859046866041,0.8314936977736689,1348,4,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_use:Edit,dpo,,1 (unscaled softmax),greedy,0.830579853724664,0.7865429234338747,0.8522088353413655,1348,4,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_use:Edit,dpo,,1 (unscaled softmax),coverage,1.0,,,1348,4,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_use:Read,dpo,,1 (unscaled softmax),alpha,0.7744123127833636,0.6647791822417444,0.8302326583862305,307,5,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_use:Read,dpo,,1 (unscaled softmax),greedy,0.8141464947575233,0.7089201877934272,0.8866666666666667,307,5,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_use:Read,dpo,,1 (unscaled softmax),coverage,1.0,,,307,5,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,overall,tiny,,1 (unscaled softmax),alpha,0.011431486292284255,0.010874165725538603,0.012014273193847305,56990,14,700,complete
+heldout_alpha,qwen2.5-1.5b-instruct,overall,tiny,,1 (unscaled softmax),greedy,0.13834779932707034,0.1260590977818676,0.1516096974149861,56990,14,700,complete
+heldout_alpha,qwen2.5-1.5b-instruct,overall,tiny,,1 (unscaled softmax),coverage,0.9997529910530587,,,56990,14,700,complete
+heldout_alpha,qwen2.5-1.5b-instruct,text,tiny,,1 (unscaled softmax),alpha,0.01912194914772695,0.015882715946445344,0.02169430201659077,2149,14,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,text,tiny,,1 (unscaled softmax),greedy,0.07716248426427014,0.05828483799937087,0.09863345533057742,2149,14,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,text,tiny,,1 (unscaled softmax),coverage,0.9994822235620533,,,2149,14,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,thinking,tiny,,1 (unscaled softmax),alpha,0.01615645693465084,0.015402953287721663,0.017036519738140004,18273,13,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,thinking,tiny,,1 (unscaled softmax),greedy,0.09750761886363711,0.08418682161884006,0.11039220021417093,18273,13,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,thinking,tiny,,1 (unscaled softmax),coverage,0.9995620564667069,,,18273,13,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_result,tiny,,1 (unscaled softmax),alpha,0.012197036006695592,0.011416043983428869,0.012907069732168635,12634,13,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_result,tiny,,1 (unscaled softmax),greedy,0.1052809889884423,0.0832186136794605,0.13041066753288938,12634,13,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_result,tiny,,1 (unscaled softmax),coverage,1.0,,,12634,13,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_use:Bash,tiny,,1 (unscaled softmax),alpha,0.0067919091107881595,0.006293704694370764,0.007307287095732287,22279,13,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_use:Bash,tiny,,1 (unscaled softmax),greedy,0.19767504555744822,0.18356875295968844,0.21111423056393047,22279,13,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_use:Bash,tiny,,1 (unscaled softmax),coverage,0.9997771291712927,,,22279,13,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_use:Edit,tiny,,1 (unscaled softmax),alpha,0.006283106295016248,0.005931027088210992,0.006991421475129969,1348,4,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_use:Edit,tiny,,1 (unscaled softmax),greedy,0.13452674053641045,0.11180124223602485,0.20069204152249134,1348,4,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_use:Edit,tiny,,1 (unscaled softmax),coverage,1.0,,,1348,4,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_use:Read,tiny,,1 (unscaled softmax),alpha,0.004577397789147002,0.0033199163595042623,0.007152924141963991,307,5,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_use:Read,tiny,,1 (unscaled softmax),greedy,0.1769388524897556,0.1349206349206349,0.19718309859154928,307,5,,complete
+heldout_alpha,qwen2.5-1.5b-instruct,tool_use:Read,tiny,,1 (unscaled softmax),coverage,1.0,,,307,5,,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,ngram,1,0.0,accept,0.49135802469135803,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,ngram,1,0.0,tpc,1.1836603409456417,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,ngram,1,0.7,accept,0.4303904923599321,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,ngram,1,0.7,tpc,1.1528822055137844,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,ngram,2,0.0,accept,0.36748436748436747,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,ngram,2,0.0,tpc,1.2457684495599188,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,ngram,2,0.7,accept,0.31204188481675393,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,ngram,2,0.7,tpc,1.184041184041184,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,ngram,4,0.0,accept,0.2549356223175966,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,ngram,4,0.0,tpc,1.3017332861690838,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,ngram,4,0.7,accept,0.2618233618233618,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,ngram,4,0.7,tpc,1.3185238265854533,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,ngram,8,0.0,accept,0.15858301605694422,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,ngram,8,0.0,tpc,1.329479768786127,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,ngram,8,0.7,accept,0.120241489183297,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,ngram,8,0.7,tpc,1.2307692307692308,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,tiny,1,0.0,accept,0.0825014679976512,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,tiny,1,0.0,tpc,1.080446271285966,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,tiny,1,0.7,accept,0.006562756357670222,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,tiny,1,0.7,tpc,1.0062893081761006,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,tiny,2,0.0,accept,0.04868857401266204,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,tiny,2,0.0,tpc,1.092961092961093,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,tiny,2,0.7,accept,0.0038937560839938812,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,tiny,2,0.7,tpc,1.0073911853271285,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,tiny,4,0.0,accept,0.026305518694871594,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,tiny,4,0.0,tpc,1.097852028639618,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,tiny,4,0.7,accept,0.00107357572287432,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,tiny,4,0.7,tpc,1.004092769440655,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,tiny,8,0.0,accept,0.01426069552164123,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,tiny,8,0.0,tpc,1.099163679808841,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,tiny,8,0.7,accept,0.0007276626709049826,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,tiny,8,0.7,tpc,1.0046410046410046,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,base,1,0.0,accept,1.0,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,base,1,0.0,tpc,2.0,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,base,1,0.7,accept,1.0,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,base,1,0.7,tpc,2.0,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,base,2,0.0,accept,1.0,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,base,2,0.0,tpc,2.909090909090909,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,base,2,0.7,accept,1.0,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,base,2,0.7,tpc,2.909090909090909,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,base,4,0.0,accept,1.0,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,base,4,0.0,tpc,4.571428571428571,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,base,4,0.7,accept,1.0,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,base,4,0.7,tpc,4.571428571428571,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,base,8,0.0,accept,1.0,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,base,8,0.0,tpc,8.0,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,base,8,0.7,accept,1.0,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,base,8,0.7,tpc,8.0,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,lora,1,0.0,accept,0.6263066202090593,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,lora,1,0.0,tpc,1.602787456445993,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,lora,1,0.7,accept,0.6625166740773677,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,lora,1,0.7,tpc,1.6362827923521566,,,3680,13,115,complete
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,lora,2,0.0,accept,0.4978737324174027,,,3008,13,94,partial
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,lora,2,0.0,tpc,1.9481865284974094,,,3008,13,94,partial
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,lora,2,0.7,accept,0.4830188679245283,,,256,4,8,partial
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,lora,2,0.7,tpc,1.9248120300751879,,,256,4,8,partial
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,lora,4,0.0,accept,0.4074668807707748,,,1632,13,51,partial
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,lora,4,0.0,tpc,2.5185185185185186,,,1632,13,51,partial
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,lora,4,0.7,accept,0.40238568588469187,,,1632,13,51,partial
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,lora,4,0.7,tpc,2.4992343032159265,,,1632,13,51,partial
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,lora,8,0.0,accept,0.2682926829268293,,,32,1,1,partial
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,lora,8,0.0,tpc,2.909090909090909,,,32,1,1,partial
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,lora,8,0.7,accept,0.29000653167864143,,,640,10,20,partial
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,lora,8,0.7,tpc,3.0331753554502368,,,640,10,20,partial
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,lora_dpo,1,0.0,accept,0.6921212121212121,,,1376,13,43,partial
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,lora_dpo,1,0.0,tpc,1.667878787878788,,,1376,13,43,partial
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,lora_dpo,1,0.7,accept,0.6478494623655914,,,608,10,19,partial
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,lora_dpo,1,0.7,tpc,1.6344086021505377,,,608,10,19,partial
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,lora_dpo,2,0.0,accept,,,,0,0,0,pending
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,lora_dpo,2,0.0,tpc,,,,0,0,0,pending
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,lora_dpo,2,0.7,accept,,,,0,0,0,pending
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,lora_dpo,2,0.7,tpc,,,,0,0,0,pending
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,lora_dpo,4,0.0,accept,,,,0,0,0,pending
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,lora_dpo,4,0.0,tpc,,,,0,0,0,pending
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,lora_dpo,4,0.7,accept,,,,0,0,0,pending
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,lora_dpo,4,0.7,tpc,,,,0,0,0,pending
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,lora_dpo,8,0.0,accept,,,,0,0,0,pending
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,lora_dpo,8,0.0,tpc,,,,0,0,0,pending
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,lora_dpo,8,0.7,accept,,,,0,0,0,pending
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,lora_dpo,8,0.7,tpc,,,,0,0,0,pending
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,none,0,0.0,accept,,,,0,0,0,pending
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,none,0,0.0,tpc,,,,0,0,0,pending
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,none,0,0.7,accept,,,,0,0,0,pending
+corrected_sweep,qwen2.5-0.5b-instruct,generated continuations,none,0,0.7,tpc,,,,0,0,0,pending
+judge,qwen2.5-0.5b-instruct,spec_vs_target,lora_dpo,4,0.7,win_rate,0.43037974683544306,0.32693823359163393,0.5402780111661755,,,44,complete
+judge,qwen2.5-0.5b-instruct,spec_vs_target,lora_dpo,4,0.7,loss_rate,0.5443037974683544,0.43498332849961774,0.6495154248363216,,,44,complete
+judge,qwen2.5-0.5b-instruct,spec_vs_target,lora_dpo,4,0.7,wins,34,,,,,44,complete
+judge,qwen2.5-0.5b-instruct,spec_vs_target,lora_dpo,4,0.7,ties,2,,,,,44,complete
+judge,qwen2.5-0.5b-instruct,spec_vs_target,lora_dpo,4,0.7,losses,43,,,,,44,complete
+judge,qwen2.5-0.5b-instruct,spec_vs_drafter_alone,lora_dpo,4,0.7,win_rate,0.6551724137931034,0.47345103949857975,0.8005928156337425,,,25,complete
+judge,qwen2.5-0.5b-instruct,spec_vs_drafter_alone,lora_dpo,4,0.7,loss_rate,0.3448275862068966,0.19940718436625743,0.5265489605014202,,,25,complete
+judge,qwen2.5-0.5b-instruct,spec_vs_drafter_alone,lora_dpo,4,0.7,wins,19,,,,,25,complete
+judge,qwen2.5-0.5b-instruct,spec_vs_drafter_alone,lora_dpo,4,0.7,ties,0,,,,,25,complete
+judge,qwen2.5-0.5b-instruct,spec_vs_drafter_alone,lora_dpo,4,0.7,losses,10,,,,,25,complete

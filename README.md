@@ -8,6 +8,13 @@ LLM-as-judge quality check, deploy configs, and a React explorer — to answer: 
 agent tokens could a draft model have guessed, per kind of content, and what speedup does
 that buy?** Results and figures: [`REPORT.md`](REPORT.md), `results/`.
 
+## Engineering report
+
+The [interactive report](report/index.html) and [printable PDF](report/Draftlab-report.pdf)
+cover the system, held-out results and lessons from six fixes in the commit history.
+This October 6 snapshot includes the evaluation corrections and marks incomplete
+benchmarks as pending. Aggregate evidence and CSV downloads are included in the report.
+
 ## Architecture
 
 ```mermaid

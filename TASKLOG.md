@@ -143,3 +143,8 @@
 ## Judge (held-out)
 - Goal: Judge (held-out)
 - Approach: compute job dl-judge ran rm -f data/judge_outputs.json && .venv/bin/python -m draftlab.eval.judge (exit 0)
+
+## dl-cifix — Tests skip without data
+- Goal: in a clean clone (no data/, models/), 4 tests crash with FileNotFoundError data/corpus/heldout.parquet instead of skipping: test_export_ui.py::test_replays_near_alpha_reference, ::test_replays_match_alpha_pipeline, test_sweep.py::test_two_cell_ray_sweep, ::test_prompt_level_resume_and_sidecar_recove
+- Approach: The 4 clean-clone-crashing tests now skip when gitignored inputs (data/corpus, models/, ckpt/) are absent, and all 4 still pass in /work. Acceptance: fresh clone → `pytest -q draftlab/tests/test_export_ui.py draftlab/tests/test_sweep.py` = 7 passed, 3 skipped, exit 0 (re-verified after the master merge); /work full retest of both files = 10 passed, exit 0. (1) Added module-level skipif guards matching the existing test_alpha_known.py style — test_sweep.py skips both tests without heldout+val parquet or qwen2.5-0.5b-instruct; test_export_ui.py skips test_replays_match_alpha_pipeline without val
+- Blockers: none.

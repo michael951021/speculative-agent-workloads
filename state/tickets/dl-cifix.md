@@ -19,6 +19,12 @@ Reproduced in `/tmp/cc` (fresh clone): 4 failed, 6 passed. Causes:
   (heldout, pre-code-split) has no `code` row while committed `web/public/data/replays.json` has
   5 code blocks. Fails in /work too, not just CI. Existing guard style: `test_alpha_known.py`
   module-level `skipif(not HAS_MODEL)`.
+- Once the guards landed, `test_prompt_level_resume_and_sidecar_recovery` exposed a PRE-EXISTING
+  /work failure: its sidecar came from `load_prompts("val", 2, 128)` but `sweep.main` loads the
+  heldout split (default since 5f98414) with max_tokens 64; `i` is the prompt-list position, so
+  the val i-set (0..15) no longer covered heldout's (0..20) → cells reran. CI had masked it with
+  the FileNotFoundError. Fixed by pinning split='heldout' in `_args` and building the sidecar
+  from `load_prompts("heldout", 2, 64)`.
 
 ## Done when
 `rm -rf /tmp/cc && git clone -q . /tmp/cc && cd /tmp/cc && /work/.venv/bin/python -m pytest -q

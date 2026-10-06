@@ -9,8 +9,8 @@ from draftlab import sweep
 ROOT = Path(__file__).resolve().parents[2]
 CORPUS = ROOT / "data" / "corpus"
 
-# Both tests run sweep.main (heldout split) / load_prompts("val") with the
-# 0.5b-instruct target, all gitignored inputs.
+# Both tests run sweep.main (heldout split) with the 0.5b-instruct target,
+# all gitignored inputs.
 needs_corpus_and_model = pytest.mark.skipif(
     not all((CORPUS / f"{s}.parquet").exists() for s in ("heldout", "val"))
     or not (ROOT / "models" / "qwen2.5-0.5b-instruct" / "config.json").exists(),

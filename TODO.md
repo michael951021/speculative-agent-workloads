@@ -103,7 +103,7 @@
   why: the 0.5B sweep pairs drafters with a same-size target, so it cannot show a speedup.
 - [x] **Judge (held-out)** — regenerates outputs on the fixed engine (old ones came from the lossy T>0 path), ≤150 judge calls through the model proxy. (id: dl-judge) (after: -) (run: `rm -f data/judge_outputs.json && .venv/bin/python -m speculative_agent_workloads.eval.judge`) (mem: 12) (cpus: 4) (timeout: 6h)
   why: spec output must be judged no worse than target output, now that spec is really lossless.
-- [ ] **Speedup bench** — interleaved head-to-head wall clock vs no drafter, alone on the CPU budget. (id: dl-bench) (after: dl-sweep15) (run: `XLA_FLAGS=--xla_cpu_multi_thread_eigen=true .venv/bin/python tools/bench_speedup.py`) (mem: 24) (cpus: 16) (timeout: 6h)
+- [x] **Speedup bench** — interleaved head-to-head wall clock vs no drafter, alone on the CPU budget. (id: dl-bench) (after: dl-sweep15) (run: `XLA_FLAGS=--xla_cpu_multi_thread_eigen=true .venv/bin/python tools/bench_speedup.py`) (mem: 24) (cpus: 16) (timeout: 6h)
   why: the only speedup numbers REPORT.md may state; sweep wall times are indicative only.
 - [ ] **Engine checks** — ngram T=0.7 reference and engine-vs-metric trajectory on the fixed engine. (id: dl-engchk) (after: dl-bench) (run: `.venv/bin/python tools/check_ngram_t07_ref.py && .venv/bin/python tools/score_engine_trajectory.py`) (mem: 16) (cpus: 8) (timeout: 4h)
   why: CLAUDE.md known answer "engine vs metric" must hold before any engine number is reported.

@@ -156,3 +156,7 @@
 - Goal: Sweep 1.5B
 - Approach: compute job dl-sweep15 ran XLA_FLAGS=--xla_cpu_multi_thread_eigen=true .venv/bin/python -m draftlab.sweep --target models/qwen2.5-1.5b-instruct --drafters ngram lora lora_dpo --out results/sweep_1.5b.parquet --num-cpus 12 --cpus-per-cell 6 (exit 0)
 - Blockers: none
+## Speedup bench
+- Goal: Speedup bench
+- Approach: compute job dl-bench ran XLA_FLAGS=--xla_cpu_multi_thread_eigen=true .venv/bin/python tools/bench_speedup.py (exit 0)
+- Blockers: none

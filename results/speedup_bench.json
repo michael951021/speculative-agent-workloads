@@ -1,0 +1,121 @@
+{
+ "n_gen": 32,
+ "reps": 3,
+ "split": "heldout",
+ "targets": {
+  "qwen2.5-0.5b-instruct": {
+   "n_prompts": 34,
+   "configs": {
+    "none-k0-T0.0": {
+     "drafter": "none",
+     "k": 0,
+     "temp": 0.0,
+     "tok_s": 6.468127143691767,
+     "speedup": 1.0,
+     "speedup_range": [
+      1.0,
+      1.0
+     ],
+     "accept": null,
+     "tokens_per_step": 1.0
+    },
+    "ngram-k8-T0.0": {
+     "drafter": "ngram",
+     "k": 8,
+     "temp": 0.0,
+     "tok_s": 8.921351712034534,
+     "speedup": 1.379502393443176,
+     "speedup_range": [
+      1.3458432886571874,
+      1.4114028167094474
+     ],
+     "accept": 0.1319406267179769,
+     "tokens_per_step": 1.2636469221835076
+    }
+   }
+  },
+  "qwen2.5-1.5b-instruct": {
+   "n_prompts": 34,
+   "configs": {
+    "none-k0-T0.0": {
+     "drafter": "none",
+     "k": 0,
+     "temp": 0.0,
+     "tok_s": 1.8956518925974004,
+     "speedup": 1.0,
+     "speedup_range": [
+      1.0,
+      1.0
+     ],
+     "accept": null,
+     "tokens_per_step": 1.0
+    },
+    "none-k0-T0.7": {
+     "drafter": "none",
+     "k": 0,
+     "temp": 0.7,
+     "tok_s": 1.9057134350915916,
+     "speedup": 1.0,
+     "speedup_range": [
+      1.0,
+      1.0
+     ],
+     "accept": null,
+     "tokens_per_step": 1.0
+    },
+    "ngram-k8-T0.0": {
+     "drafter": "ngram",
+     "k": 8,
+     "temp": 0.0,
+     "tok_s": 2.8517164927845156,
+     "speedup": 1.5043965821017489,
+     "speedup_range": [
+      1.4805747222831538,
+      1.528289067185279
+     ],
+     "accept": 0.20202020202020202,
+     "tokens_per_step": 1.3583021223470662
+    },
+    "lora-k2-T0.0": {
+     "drafter": "lora",
+     "k": 2,
+     "temp": 0.0,
+     "tok_s": 2.9910824885614775,
+     "speedup": 1.5778284196363135,
+     "speedup_range": [
+      1.5152860041965732,
+      1.6486706997871459
+     ],
+     "accept": 0.4547826086956522,
+     "tokens_per_step": 1.8630136986301369
+    },
+    "lora-k4-T0.0": {
+     "drafter": "lora",
+     "k": 4,
+     "temp": 0.0,
+     "tok_s": 2.377117354072172,
+     "speedup": 1.2540596042957057,
+     "speedup_range": [
+      1.2232887952018365,
+      1.2730506953511629
+     ],
+     "accept": 0.30915637860082307,
+     "tokens_per_step": 2.141732283464567
+    },
+    "lora-k4-T0.7": {
+     "drafter": "lora",
+     "k": 4,
+     "temp": 0.7,
+     "tok_s": 2.62495480894201,
+     "speedup": 1.3775725616627084,
+     "speedup_range": [
+      1.357323023346777,
+      1.4104220976095836
+     ],
+     "accept": 0.37400228050171036,
+     "tokens_per_step": 2.391208791208791
+    }
+   }
+  }
+ }
+}

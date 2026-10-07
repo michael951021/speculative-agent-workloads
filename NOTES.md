@@ -1,4 +1,4 @@
-# speculative-agent-workloads — current state
+# draftlab — current state
 
 ## Toolchain (id: boot, dl-cifix)
 - make bootstrap; make check = ruff+pytest (others SKIP if absent); capture.py: no VAR=x prefixes (use env), won't reuse an existing log path.
@@ -39,7 +39,7 @@
 - Gotchas: ~30-37 min/cell; bg bash dies at 30-min default → Bash timeout ≥7200000 + capture ≥2h; dpo ckpt = ckpt/dpo.
 
 ## Helm / kind (id: helm, kind)
-- deploy/helm/speculative-agent-workloads: gateway HPA (ext metric), engine CPU, optional vLLM, ServMon/NP; check.sh = lint + template | kubeconform -strict. kind e2e.sh HOST-only: build→kind→helm→curl 200→accepted>0.
+- deploy/helm/draftlab: gateway HPA (ext metric), engine CPU, optional vLLM, ServMon/NP; check.sh = lint + template | kubeconform -strict. kind e2e.sh HOST-only: build→kind→helm→curl 200→accepted>0.
 
 ## Terraform (id: tf)
 - deploy/terraform root→gke: VPC, GKE (WI, private, BA ENFORCE), g2+L4 pool; validate+tflint exit 0.

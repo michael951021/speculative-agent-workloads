@@ -168,3 +168,7 @@
 - Goal: Engine checks
 - Approach: compute job dl-engchk ran .venv/bin/python tools/check_ngram_t07_ref.py && .venv/bin/python tools/score_engine_trajectory.py (exit 0)
 - Blockers: none
+## Figures + UI data
+- Goal: Figures + UI data
+- Approach: compute job dl-figs ran .venv/bin/python tools/make_figures.py && .venv/bin/python -m speculative_agent_workloads.export_ui --no-replays (exit 0)
+- Blockers: none

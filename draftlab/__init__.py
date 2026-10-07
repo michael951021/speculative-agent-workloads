@@ -1,1 +1,2 @@
-"""draftlab: speculative decoding measured on this machine's own agent traffic."""
+"""Compatibility imports for jobs launched before the project rename."""
+from speculative_agent_workloads import __path__ as __path__

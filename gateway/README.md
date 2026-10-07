@@ -1,7 +1,7 @@
 # gateway
 
 OpenAI-compatible reverse proxy in front of the draft backends
-(engine `python -m draftlab.serve`, llama-server, vLLM). Go stdlib +
+(engine `python -m speculative_agent_workloads.serve`, llama-server, vLLM). Go stdlib +
 prometheus/client_golang + slog.
 
 ## Run
@@ -24,11 +24,11 @@ go build -o gw .
   SSE passthrough flushes per read; `usage` (incl. `draft_tokens` /
   `accepted_tokens`) is pulled from the response for metrics.
 - `GET /v1/models` — merged model list from all backends.
-- `GET /metrics` — `draftlab_requests_total{key,model,status}`,
-  `draftlab_ttft_seconds`, `draftlab_request_latency_seconds`,
-  `draftlab_output_tokens_per_second`, `draftlab_draft_tokens_total`,
-  `draftlab_accepted_tokens_total`, `draftlab_backend_up`,
-  `draftlab_breaker_state`, `draftlab_rate_limited_total`.
+- `GET /metrics` — `speculative_agent_workloads_requests_total{key,model,status}`,
+  `speculative_agent_workloads_ttft_seconds`, `speculative_agent_workloads_request_latency_seconds`,
+  `speculative_agent_workloads_output_tokens_per_second`, `speculative_agent_workloads_draft_tokens_total`,
+  `speculative_agent_workloads_accepted_tokens_total`, `speculative_agent_workloads_backend_up`,
+  `speculative_agent_workloads_breaker_state`, `speculative_agent_workloads_rate_limited_total`.
 - `GET /healthz` — per-backend up + breaker state.
 - `/ui` — static file server for `web/dist`.
 

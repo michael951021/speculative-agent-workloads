@@ -1,0 +1,11 @@
+apiVersion: v2
+name: speculative-agent-workloads
+description: speculative-agent-workloads speculative-decoding stack — gateway, JAX engine, optional vLLM with trained drafter
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - speculative-decoding
+  - llm
+maintainers:
+  - name: speculative-agent-workloads

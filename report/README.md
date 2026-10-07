@@ -1,7 +1,7 @@
-# Draftlab engineering report
+# Speculative Decoding for Agent Workloads engineering report
 
 Open [index.html](index.html) for the interactive report or
-[Draftlab-report.pdf](Draftlab-report.pdf) for the printable edition.
+[speculative-agent-workloads-report.pdf](speculative-agent-workloads-report.pdf) for the printable edition.
 
 The report covers the system, decoding algorithm, held-out measurements,
 training curves, corrected partial sweep, judge rerun and six fixes from the
@@ -19,7 +19,7 @@ Rebuild from the project root, using a Python environment with PyArrow:
 
 ```bash
 python tools/build_presentation.py
-python tools/build_presentation.py --publish ../../reports/draftlab-report.html
+python tools/build_presentation.py --publish ../../reports/speculative-agent-workloads-report.html
 ```
 
 The builder reads stored artifacts without running experiments. It includes

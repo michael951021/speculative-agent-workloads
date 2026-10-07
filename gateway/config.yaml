@@ -10,7 +10,7 @@ breaker:
 
 backends:
   - name: engine
-    url: "http://127.0.0.1:8100"   # draftlab engine (python -m draftlab.serve)
+    url: "http://127.0.0.1:8100"   # speculative-agent-workloads engine (python -m speculative_agent_workloads.serve)
     models:
       - "qwen0.5b"
       - "qwen0.5b+ngram-k4"
@@ -23,6 +23,6 @@ backends:
 
 keys:
   - name: dev
-    sha256: "3ae7e24f3d8c3c9e92f4b814f23f1feb99c2376b455da81f563d0da6ccc709f9" # sk-draftlab-dev
+    sha256: "e57ba8275edf954332ba434f037f031ed47aa50afc35511ba0f5d48761c3fb5f" # sk-speculative-agent-workloads-dev
     rate: 10            # sustained requests/sec
     burst: 20

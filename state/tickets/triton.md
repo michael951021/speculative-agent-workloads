@@ -13,10 +13,10 @@ torch reference to fp32 1e-5? Refutation: any elementwise mismatch > 1e-5, wrong
 or residual row not summing to 1.
 
 ## Evidence
-- `draftlab/eval/alpha.py:44` alpha_and_greedy (numpy ref); `draftlab/jaxlm/spec.py` accept
+- `speculative_agent_workloads/eval/alpha.py:44` alpha_and_greedy (numpy ref); `speculative_agent_workloads/jaxlm/spec.py` accept
   convention: `u·q[t] < p[t]`, residual `max(0, p−q)` (strict → 0/0 rejects; kernel uses
   `p > u·q`, same).
-- Repro: `.venv/bin/python -m pytest draftlab/tests/test_verify_kernel.py -q` with
+- Repro: `.venv/bin/python -m pytest speculative_agent_workloads/tests/test_verify_kernel.py -q` with
   TRITON_INTERPRET=1, V=1000 random logits vs torch reference (test file is the check; run
   before kernel exists → collection error = expected failure).
 
@@ -38,8 +38,8 @@ timing claims in sandbox. If triton 3.8 interpret mode can't express the 2-pass 
 after 2 attempts with new evidence, stop and split (e.g. separate M/S + value kernels).
 
 ## Plan
-1. This ticket. 2. `draftlab/kernels/{__init__.py,verify.py}` (2 jit kernels + torch refs +
-   wrappers). 3. `draftlab/tests/test_verify_kernel.py`; run, debug. 4. `bench.py`.
+1. This ticket. 2. `speculative_agent_workloads/kernels/{__init__.py,verify.py}` (2 jit kernels + torch refs +
+   wrappers). 3. `speculative_agent_workloads/tests/test_verify_kernel.py`; run, debug. 4. `bench.py`.
    5. Hook `alpha_and_greedy` on CUDA. 6. ruff + pytest, NOTES.md, commit.
 
 ## Result (2026-09-30)

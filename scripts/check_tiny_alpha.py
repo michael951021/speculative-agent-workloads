@@ -1,9 +1,10 @@
 """Known-answer cross-check for the tiny.json re-run (id: alphafix).
 
-Hand-computed alpha (pure transformers logits, no draftlab metric code) vs the
+Hand-computed alpha (pure transformers logits, no speculative-agent-workloads metric code) vs the
 pipeline (JAX 1.5B target + HFDrafter tiny export + alpha_and_greedy) on 4 real
 val blocks (2 empty-ctx, 2 non-empty-ctx). Target-row alignment is anchored by
 """
+
 from __future__ import annotations
 
 import sys
@@ -12,7 +13,7 @@ import numpy as np
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from draftlab.eval.alpha import (
+from speculative_agent_workloads.eval.alpha import (
     TARGET_DIR,
     HFDrafter,
     JaxModel,

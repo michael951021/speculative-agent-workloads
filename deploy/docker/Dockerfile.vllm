@@ -1,13 +1,13 @@
 # syntax=docker/dockerfile:1
-# draftlab vLLM: upstream base + drafter adapter mount (no code baked in).
+# speculative-agent-workloads vLLM: upstream base + drafter adapter mount (no code baked in).
 # Build (context = repo root):
-#   docker build -f deploy/docker/Dockerfile.vllm -t draftlab/vllm .
+#   docker build -f deploy/docker/Dockerfile.vllm -t speculative-agent-workloads/vllm .
 # Run: mount the trained drafter (PVC) at /drafter and set DRAFTER_PATH=/drafter
 # and VLLM_MODEL=Qwen/Qwen2.5-7B-Instruct; DRAFTER_K sets num_speculative_tokens.
 # external base; tag pinned inline (v0.11.2, verified on hub 2026-09-30)
 FROM vllm/vllm-openai:v0.11.2
-COPY deploy/docker/vllm-entrypoint.sh /usr/local/bin/draftlab-vllm.sh
-RUN chmod +x /usr/local/bin/draftlab-vllm.sh
+COPY deploy/docker/vllm-entrypoint.sh /usr/local/bin/speculative-agent-workloads-vllm.sh
+RUN chmod +x /usr/local/bin/speculative-agent-workloads-vllm.sh
 ENV DRAFTER_PATH=/drafter
 EXPOSE 8000
-ENTRYPOINT ["/usr/local/bin/draftlab-vllm.sh"]
+ENTRYPOINT ["/usr/local/bin/speculative-agent-workloads-vllm.sh"]

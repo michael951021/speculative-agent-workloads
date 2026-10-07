@@ -19,13 +19,13 @@ train pairs doesn't increase (DPO objective not working).
   Outputs: .agent-evidence/dpo-*.log; pairs cache data/pairs/dpo.jsonl.
 
 ## Done when
-1. `.venv/bin/python -m pytest draftlab/tests/test_dpo.py -q` passes (fake-log builder, toy
+1. `.venv/bin/python -m pytest speculative_agent_workloads/tests/test_dpo.py -q` passes (fake-log builder, toy
    marginal chi2, tiny DPO run decreases loss).
-2. Default run `python -m draftlab.drafters.dpo` (<30 min): spec run collects 2000 pairs,
+2. Default run `python -m speculative_agent_workloads.drafters.dpo` (<30 min): spec run collects 2000 pairs,
    DPOTrainer β=0.1 trains on them, saves ckpt/dpo, writes results/dpo.json with before
    (from lora.json) + after (from results/alpha/dpo.json when present) per-kind α + CIs,
    pair stats, DPO loss curve, train-pair margin before/after.
-3. After-eval `python -m draftlab.eval.alpha --drafter hf --draft-model ckpt/dpo --out
+3. After-eval `python -m speculative_agent_workloads.eval.alpha --drafter hf --draft-model ckpt/dpo --out
    results/alpha/dpo.json`; merged into results/dpo.json.
 Known-answer checks: fake log (exact pairs); toy chi2 (spec-sampling marginal == target p);
 train-pair margin (logπc−logπr) after > before. Pre-written plausible range: after α ∈

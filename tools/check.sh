@@ -22,13 +22,13 @@ if [ ! -x "$PY" ]; then
   exit 1
 fi
 
-if [ -d draftlab ]; then
+if [ -d speculative_agent_workloads ]; then
   section "python: ruff"
   check ruff "$PY" -m ruff check .
   section "python: pytest"
   check pytest "$PY" -m pytest -q
 else
-  skip "python" draftlab
+  skip "python" speculative_agent_workloads
 fi
 
 if [ -d gateway ]; then
@@ -49,15 +49,15 @@ fi
 
 if [ -d deploy/helm ]; then
   section "helm: lint + kubeconform (cpu + gpu)"
-  check helm-lint helm lint deploy/helm/draftlab
-  (cd deploy/helm/draftlab && \
+  check helm-lint helm lint deploy/helm/speculative-agent-workloads
+  (cd deploy/helm/speculative-agent-workloads && \
     for extra in "" "-f values-gpu.yaml"; do
-      helm template draftlab . $extra \
+      helm template speculative-agent-workloads . $extra \
         | "$ROOT/.tools/bin/kubeconform" -strict -summary \
           -schema-location default \
           -schema-location "crd-schemas/{{ .ResourceKind }}{{ .KindSuffix }}.json" || exit 1
     done) || { echo "FAIL kubeconform" >&2; fail=1; }
-  check grafana-sync diff -q deploy/helm/draftlab/grafana/draftlab.json deploy/grafana/draftlab.json
+  check grafana-sync diff -q deploy/helm/speculative-agent-workloads/grafana/speculative-agent-workloads.json deploy/grafana/speculative-agent-workloads.json
 else
   skip "helm" deploy/helm
 fi

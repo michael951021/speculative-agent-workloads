@@ -15,7 +15,7 @@ variable "region" {
 variable "cluster_name" {
   description = "Name of the GKE Standard cluster."
   type        = string
-  default     = "draftlab-gke"
+  default     = "speculative-agent-workloads-gke"
 }
 
 variable "node_pool_name" {
@@ -27,13 +27,13 @@ variable "node_pool_name" {
 variable "vpc_name" {
   description = "VPC network name."
   type        = string
-  default     = "draftlab-vpc"
+  default     = "speculative-agent-workloads-vpc"
 }
 
 variable "subnet_name" {
   description = "Subnet in the VPC that the cluster's pods/services draw IPs from."
   type        = string
-  default     = "draftlab-subnet"
+  default     = "speculative-agent-workloads-subnet"
 }
 
 variable "subnet_cidr" {
@@ -81,7 +81,7 @@ variable "gpu_node_max" {
 variable "gpu_taint_key" {
   description = "Taint key applied to GPU nodes so non-GPU pods stay off them."
   type        = string
-  default     = "draftlab.io/gpu"
+  default     = "speculative-agent-workloads.io/gpu"
 }
 
 variable "gpu_taint_value" {
@@ -93,11 +93,11 @@ variable "gpu_taint_value" {
 variable "service_account_id" {
   description = "ID for the Workload Identity service account (lowercase, <=28 chars)."
   type        = string
-  default     = "draftlab-wi"
+  default     = "speculative-agent-workloads-wi"
 }
 
 variable "registry_repo_id" {
   description = "Artifact Registry repository id for container images."
   type        = string
-  default     = "draftlab"
+  default     = "speculative-agent-workloads"
 }

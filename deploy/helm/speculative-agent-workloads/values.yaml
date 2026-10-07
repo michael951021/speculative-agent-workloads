@@ -1,0 +1,94 @@
+# Base profile: cpu-only. For GPU serving use: helm install ... -f values-gpu.yaml
+profile: cpu
+
+image:
+  gateway:
+    repository: speculative-agent-workloads/gateway
+    tag: latest
+    pullPolicy: IfNotPresent
+  engine:
+    repository: speculative-agent-workloads/engine
+    tag: latest
+    pullPolicy: IfNotPresent
+  vllm:
+    repository: vllm/vllm-openai
+    tag: v0.11.2
+    pullPolicy: IfNotPresent
+
+gateway:
+  replicas: 2
+  # API keys. `sha256` = hex sha256 of the raw key (the gateway authenticates
+  # by hash); `key` = the raw key, stored in the Secret for clients.
+  # Compute: python3 -c 'import hashlib,sys;print(hashlib.sha256(sys.argv[1].encode()).hexdigest())' "$KEY"
+  apiKeys:
+    - name: dev
+      key: change-me
+      sha256: "e2186dbdb1bb4193608605e84f33208765b5693b55edd4f730a719a100eeea6f"
+      rate: 10
+      burst: 20
+  # The config Secret is mounted at /etc/speculative-agent-workloads/config.yaml.
+  config:
+    listen: ":8200"
+    retries: 1
+    healthCheckInterval: 5s
+    breaker:
+      failures: 5
+      halfOpenAfter: 2s
+  resources: {}
+  hpa:
+    # Scales on tokens accepted via the gateway; the external metric
+    # speculative_agent_workloads_accepted_tokens_per_second must be exposed by prometheus-adapter
+    # (rule in README.md).
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 8
+    targetAverageValue: 50
+
+engine:
+  replicas: 1
+  model: qwen2.5-0.5b-instruct
+  alias: qwen0.5b
+  port: 8100
+  # Shared model weights, mounted at /app/models.
+  modelVolume:
+    type: pvc   # pvc | hostPath
+    name: speculative-agent-workloads-models
+    hostPath: /data/models
+  env:
+    OMP_NUM_THREADS: "16"
+    XLA_FLAGS: "--xla_cpu_multi_thread_eigen=true"
+  resources:
+    requests:
+      cpu: "2"
+      memory: 4Gi
+
+# vLLM target with the trained drafter (gpu profile).
+vllm:
+  enabled: false
+  replicas: 1
+  model: Qwen/Qwen2.5-7B-Instruct
+  drafterPvc: speculative-agent-workloads-drafter   # PVC holding adapter_config.json + weights
+  drafterPath: /drafter
+  drafterK: 4
+  port: 8000
+  tolerations: []
+  nodeSelector: {}
+  resources:
+    limits:
+      nvidia.com/gpu: 1
+
+observability:
+  serviceMonitor:
+    enabled: true
+    interval: 15s
+  grafanaDashboard:
+    enabled: true
+
+networkPolicy:
+  enabled: true
+  # Namespace whose pods (ingress controller) may hit gateway:8200.
+  ingressNamespace: ingress-nginx
+
+pdb:
+  enabled: true
+  minAvailable: 1

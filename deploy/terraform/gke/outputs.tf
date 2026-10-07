@@ -27,11 +27,11 @@ output "workload_identity_namespace" {
 
 output "workload_identity_sa_email" {
   description = "GCP SA email to put in the iam.gke.io/gcp-service-account annotation."
-  value       = google_service_account.draftlab.email
+  value       = google_service_account.speculative_agent_workloads.email
 }
 
 output "registry_repository" {
-  description = "Artifact Registry docker push base (e.g. us-central1-docker.pkg.dev/<project>/draftlab)."
+  description = "Artifact Registry docker push base (e.g. us-central1-docker.pkg.dev/<project>/speculative-agent-workloads)."
   value       = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.docker.repository_id}"
 }
 

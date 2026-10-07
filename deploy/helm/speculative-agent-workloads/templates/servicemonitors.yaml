@@ -1,0 +1,37 @@
+{{- if .Values.observability.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "speculative-agent-workloads.fullname" . }}-gateway
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "speculative-agent-workloads.labels" . | nindent 4 }}
+    app.kubernetes.io/component: gateway
+spec:
+  selector:
+    {{- include "speculative-agent-workloads.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: gateway
+  endpoints:
+    - port: http
+      interval: {{ .Values.observability.serviceMonitor.interval }}
+      path: /metrics
+{{- if .Values.vllm.enabled }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "speculative-agent-workloads.fullname" . }}-vllm
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "speculative-agent-workloads.labels" . | nindent 4 }}
+    app.kubernetes.io/component: vllm
+spec:
+  selector:
+    {{- include "speculative-agent-workloads.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: vllm
+  endpoints:
+    - port: http
+      interval: {{ .Values.observability.serviceMonitor.interval }}
+      path: /metrics
+{{- end }}
+{{- end }}

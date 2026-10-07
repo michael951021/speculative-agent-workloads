@@ -13,18 +13,18 @@ a rate clearly above its win rate (>25% losses, pre-written), or drafter-alone i
 indistinguishable from spec (win ≈ loss, <15pp gap) — record as finding, not fix.
 
 ## Evidence
-- Engine: draftlab/jaxlm/spec.py SpecDecoder (temp sampling verified lossless by design:
+- Engine: speculative_agent_workloads/jaxlm/spec.py SpecDecoder (temp sampling verified lossless by design:
   accept u·q<p, residual max(0,p−q)); sweep.py load_prompts + merge_adapter for lora_dpo
   (best drafter, α 0.7319 > lora 0.7306, CIs disjoint per dpo ticket).
 - Judge: $OLLAMA_BASE_URL (llama.cpp OpenAI /v1, model "qwen-agent", 27B Q8), probed:
   ~1s/call, returns valid JSON on request.
 - Smallest check (no models): fake OpenAI server + synthetic outputs in
-  draftlab/tests/test_judge.py; planted verdicts give exact known outcomes.
+  speculative_agent_workloads/tests/test_judge.py; planted verdicts give exact known outcomes.
   Saved: test output + real-run log .agent-evidence/judge-real.log.
 
 ## Done when
-- `pytest draftlab/tests/test_judge.py` passes (fake server; known answers below).
-- `python -m draftlab.eval.judge` runs on real inputs (test split, 0.5b-instruct target,
+- `pytest speculative_agent_workloads/tests/test_judge.py` passes (fake server; known answers below).
+- `python -m speculative_agent_workloads.eval.judge` runs on real inputs (test split, 0.5b-instruct target,
   lora_dpo drafter, T=0.7, n_gen=16) and writes results/judge.json with win/tie/loss +
   Wilson CIs per comparison, order-bias (cross-order disagreement) per comparison,
   ≤150 API calls, cache in data/judge_cache/.

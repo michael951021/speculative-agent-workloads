@@ -12,8 +12,8 @@ from transformers by > atol 2e-3 on 3 prompts, or greedy sequences diverging wit
 ## Evidence
 - Start: `models/qwen2.5-0.5b/` (safetensors, bf16; q/k/v_proj have bias, no lm_head → tied
   embeddings, GQA 14 heads / 2 kv heads, head_dim 64, rope_theta 1e6, 24 layers, d=896).
-- `draftlab/models.py:tiny_config()` = 2-layer d=64 vocab-512 config for fast tests.
-- Check: `pytest draftlab/tests/test_jaxmodel.py` (0.5B f32 vs transformers f32, 3 prompts;
+- `speculative_agent_workloads/models.py:tiny_config()` = 2-layer d=64 vocab-512 config for fast tests.
+- Check: `pytest speculative_agent_workloads/tests/test_jaxmodel.py` (0.5B f32 vs transformers f32, 3 prompts;
   32 greedy tokens; tiny_config wall time). Log: `.agent-evidence/jaxmodel.log`.
 - Observed: transformers 5.17.0, jax 0.11.2, flax 0.12.10 (NNX) in .venv; all 3 models share
   vocab 151936. Guess: f32-vs-f32 parity within 2e-3 (bf16 weights upcast, ~24 layers of f32 math).
@@ -32,9 +32,9 @@ from transformers by > atol 2e-3 on 3 prompts, or greedy sequences diverging wit
   `load_safetensors` upcasts bf16->f32 before the numpy conversion.
 
 ## Done when
-- `draftlab/jaxlm/model.py` exposes a Qwen2 model + preallocated KV cache and jit-compiled
+- `speculative_agent_workloads/jaxlm/model.py` exposes a Qwen2 model + preallocated KV cache and jit-compiled
   `prefill` / `decode` (multi-token) steps.
-- `pytest draftlab/tests/test_jaxmodel.py` green: logits atol 2e-3 (3 prompts, f32 both sides),
+- `pytest speculative_agent_workloads/tests/test_jaxmodel.py` green: logits atol 2e-3 (3 prompts, f32 both sides),
   32 greedy tokens identical to transformers, tiny_config prefill+decode wall < 5 s.
 - `make check` green (ruff + pytest).
 

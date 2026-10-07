@@ -11,7 +11,7 @@ light/dark, that renders values matching `web/public/data/*.json` exactly — su
 value disagreeing with the JSON refutes it?
 
 ## Evidence
-- Data: `web/public/data/{summary,alpha,sweep,replays}.json` (schema v1, from `draftlab/export_ui.py`).
+- Data: `web/public/data/{summary,alpha,sweep,replays}.json` (schema v1, from `speculative_agent_workloads/export_ui.py`).
 - Gateway already strips `/ui` prefix to a static dir (gateway/proxy.go:55,67); helm sets
   `ui_dir: /app/web/dist`.
 - Acceptance: `cd web && npm run build && npx vitest run` — tests read the REAL JSON files and

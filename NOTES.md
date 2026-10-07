@@ -1,7 +1,8 @@
-# draftlab — current state
+# Speculative Decoding for Agent Workloads — current state
 
-## Toolchain (id: boot)
-- make bootstrap; make check = ruff+pytest (others SKIP if absent); capture.py: no VAR=x prefixes.
+## Toolchain (id: boot, dl-cifix)
+- make bootstrap; make check = ruff+pytest (others SKIP if absent); capture.py: no VAR=x prefixes (use env), won't reuse an existing log path.
+- CI clone (no data/models/ckpt): 4 data tests skipif-guarded (sweep: heldout+val+0.5b-instr; replay: val+1.5b-instr+ckpt/dpo); near_alpha_reference: only dpo.json kinds (no code). Clone 7p/3s; all 4 pass in /work.
 
 ## Models / Corpus (id: models, corpus)
 - models.py fetch → models/{0.5b,1.5b-instruct,0.5b-instruct}; tiny 2L d=64 V=512; data build → corpus parquet (code split, dedupe, trunc 4096); 45257/667/566.
@@ -38,7 +39,7 @@
 - Gotchas: ~30-37 min/cell; bg bash dies at 30-min default → Bash timeout ≥7200000 + capture ≥2h; dpo ckpt = ckpt/dpo.
 
 ## Helm / kind (id: helm, kind)
-- deploy/helm/draftlab: gateway HPA (ext metric), engine CPU, optional vLLM, ServMon/NP; check.sh = lint + template | kubeconform -strict. kind e2e.sh HOST-only: build→kind→helm→curl 200→accepted>0.
+- deploy/helm/speculative-agent-workloads: gateway HPA (ext metric), engine CPU, optional vLLM, ServMon/NP; check.sh = lint + template | kubeconform -strict. kind e2e.sh HOST-only: build→kind→helm→curl 200→accepted>0.
 
 ## Terraform (id: tf)
 - deploy/terraform root→gke: VPC, GKE (WI, private, BA ENFORCE), g2+L4 pool; validate+tflint exit 0.

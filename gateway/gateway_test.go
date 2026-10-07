@@ -28,7 +28,7 @@ func (f *fake) handler() http.Handler {
 	mux.HandleFunc("GET /v1/models", func(w http.ResponseWriter, r *http.Request) {
 		data := []map[string]any{}
 		for _, m := range f.models {
-			data = append(data, map[string]any{"id": m, "object": "model", "owned_by": "draftlab"})
+			data = append(data, map[string]any{"id": m, "object": "model", "owned_by": "speculative-agent-workloads"})
 		}
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]any{"object": "list", "data": data})
@@ -249,18 +249,18 @@ func TestMetricsCounted(t *testing.T) {
 	metrics, _ := io.ReadAll(resp.Body)
 	txt := string(metrics)
 	want := []string{
-		`draftlab_requests_total{key="dev",model="m1",status="200"} 2`,
-		`draftlab_draft_tokens_total{model="m1"} 24`,
-		`draftlab_accepted_tokens_total{model="m1"} 14`,
-		`draftlab_ttft_seconds_count{model="m1"} 1`,
-		`draftlab_breaker_state{backend="b1"} 0`,
+		`speculative_agent_workloads_requests_total{key="dev",model="m1",status="200"} 2`,
+		`speculative_agent_workloads_draft_tokens_total{model="m1"} 24`,
+		`speculative_agent_workloads_accepted_tokens_total{model="m1"} 14`,
+		`speculative_agent_workloads_ttft_seconds_count{model="m1"} 1`,
+		`speculative_agent_workloads_breaker_state{backend="b1"} 0`,
 	}
 	for _, w := range want {
 		if !strings.Contains(txt, w) {
 			t.Errorf("metrics missing %q", w)
 		}
 	}
-	if !containsFloatGT(txt, "draftlab_output_tokens_per_second ", 0) {
+	if !containsFloatGT(txt, "speculative_agent_workloads_output_tokens_per_second ", 0) {
 		t.Errorf("output_tokens_per_second not > 0")
 	}
 }
@@ -316,7 +316,7 @@ func TestConfigLoad(t *testing.T) {
 	if len(cfg.Keys) == 0 || len(cfg.Backends) == 0 {
 		t.Fatal("empty config")
 	}
-	if KeyHash("sk-draftlab-dev") != cfg.Keys[0].SHA256 {
+	if KeyHash("sk-speculative-agent-workloads-dev") != cfg.Keys[0].SHA256 {
 		t.Fatal("sample key hash mismatch")
 	}
 }

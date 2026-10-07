@@ -34,7 +34,7 @@ that re-downloads/reinstalls needlessly.
 ## Plan
 1. `tools/versions.txt` pins; `tools/bootstrap.sh` (uv → 3.12 venv → torch cpu index → `-e .[all]`
    → pinned binaries into `.tools/`, hash-marked for idempotency).
-2. `pyproject.toml` (extras: jax, torch, data, serve, viz, dev, all) + `draftlab/__init__.py` + smoke test.
+2. `pyproject.toml` (extras: jax, torch, data, serve, viz, dev, all) + `speculative_agent_workloads/__init__.py` + smoke test.
 3. `Makefile` (bootstrap/check/fmt) with `tools/check.sh` doing per-directory skip logic.
 4. `.github/workflows/ci.yml`.
 5. Run `make bootstrap && make check`, import smoke; commit.

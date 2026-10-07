@@ -10,7 +10,7 @@ Can REPORT.md + README.md state the headline answers (drafter × kind α, measur
 - results/sweep_batch{2,3}_table.json (42 cells, pooled acc/tpc/tok/s/speedup vs none), results/sweep.parquet (16506 rows).
 - results/alpha_sweep_*.json (metric α per drafter×kind, target 0.5B-Instruct, val) and results/alpha/*.json (α vs 1.5B target).
 - results/judge.json (spec_vs_drafter win 0.625; spec_vs_target 0.444), results/ngram.json, distill_curve.json, dpo.json, corpus_stats.json.
-- web/public/data/*.json — reran `python -m draftlab.export_ui --no-replays` (exit 0), 0 pending cells.
+- web/public/data/*.json — reran `python -m speculative_agent_workloads.export_ui --no-replays` (exit 0), 0 pending cells.
 - Check: tools/check_report.py (recomputes headline numbers from parquet/JSON, asserts REPORT/README contain them; figures exist). Run before/after.
 
 ## Done when

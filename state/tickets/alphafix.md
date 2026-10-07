@@ -15,21 +15,21 @@ effect) and give ngram α in a plausible range? Refutation: CE ≠ HF within 1e-
 top-1 < 40%, or repeated-block ngram acceptance < 0.9.
 
 ## Evidence
-- `draftlab/eval/alpha.py:120,148` (the slices), `:31` TARGET_DIR=0.5b; TODO.md:6 names
+- `speculative_agent_workloads/eval/alpha.py:120,148` (the slices), `:31` TARGET_DIR=0.5b; TODO.md:6 names
   1.5B-Instruct as target T.
 - Known-answer tests (real models/qwen2.5-0.5b, skipif absent): per-position CE vs HF
   `labels=` loss < 1e-3; 0.5B top-1 on val blocks in [0.40, 0.70] (anchor 57.5% on 372
   tok); uniform-q α = 1 − ½Σ|p − 1/V| (independent TV identity) + hand 3-vocab case;
   repeated-block ngram acceptance = (n−1)/n, shuffled block collapses (< 0.5).
-- Full run: `python -m draftlab.eval.alpha` → results/alpha/ngram.json (1.5B target).
+- Full run: `python -m speculative_agent_workloads.eval.alpha` → results/alpha/ngram.json (1.5B target).
   Pre-run range: overall α 0.10–0.40 (α = P_target(proposal); proposal==actual at
   33% of positions, target top-1 40–70%); greedy_corpus unchanged ≈ 0.3335 ± 0.03
   (q and ids are identical to the old run — regression check); tool_use highest per kind.
 
 ## Done when
-- `pytest draftlab/tests/test_alpha.py draftlab/tests/test_alpha_known.py` passes (known
+- `pytest speculative_agent_workloads/tests/test_alpha.py speculative_agent_workloads/tests/test_alpha_known.py` passes (known
   answers on real 0.5B; skip only if models/ is absent, which it is not here).
-- `python -m draftlab.eval.alpha` (defaults) writes results/alpha/ngram.json within the
+- `python -m speculative_agent_workloads.eval.alpha` (defaults) writes results/alpha/ngram.json within the
   pre-run range; `make check` green. NOTES.md corrected (1.2% finding = the bug; tiny.json
   numbers flagged stale).
 
@@ -171,7 +171,7 @@ every drafter comparison goes through this metric. Left stale, REPORT.md would c
 a garbage number for the distilled drafter.
 
 ## Question
-Does `python -m draftlab.eval.alpha --drafter hf --draft-model ckpt/tiny/export`
+Does `python -m speculative_agent_workloads.eval.alpha --drafter hf --draft-model ckpt/tiny/export`
 (defaults: 1.5b-instruct target, 400 val blocks) with the fixed metric give a tiny
 drafter α in a plausible range, matching an independent hand-computed alpha on real
 blocks? Refutation: pipeline alpha ≠ independent reference on the same blocks, or
@@ -210,7 +210,7 @@ results/alpha/tiny.json. 5. Compare per-kind, NOTES, commit.
    ckpt/tiny/export) vs pure-transformers hand-computed alpha on 4 real val blocks
    (2 empty-ctx, 2 non-empty-ctx = the off-by-one region): worst mean|d| 3.7e-7 < 2e-3,
    exit 0 (log alphafix-a20-check.log).
-3. Full run (log alphafix-a20-run.log, 1264 s): `python -m draftlab.eval.alpha
+3. Full run (log alphafix-a20-run.log, 1264 s): `python -m speculative_agent_workloads.eval.alpha
    --drafter hf --draft-model ckpt/tiny/export --out results/alpha/tiny.json`
    (400 val blocks, 1.5b-instruct target, same 29657 tokens as ngram.json).
    Overall alpha 0.0105 (CI 0.0104-0.0105), greedy 0.1413, greedy_corpus 0.1349,

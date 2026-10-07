@@ -1,4 +1,4 @@
-# Terraform: GKE for draftlab
+# Terraform: GKE for speculative-agent-workloads
 
 GCP infrastructure as code for the cluster the `deploy/helm` gpu profile targets.
 **Never plan/apply from the sandbox** — validated only
@@ -11,7 +11,7 @@ GCP infrastructure as code for the cluster the `deploy/helm` gpu profile targets
 - `gke/` (child module): `network.tf` (VPC + regional subnet with `pods`/`services`
   secondary ranges), `cluster.tf` (GKE Standard, regional, VPC-native, Workload
   Identity on, `initial_node_count = 0` + L4 GPU node pool: `nvidia-l4`, autoscale
-  0–2, `NO_SCHEDULE` taint `draftlab.io/gpu`), `registry.tf` (Artifact Registry
+  0–2, `NO_SCHEDULE` taint `speculative-agent-workloads.io/gpu`), `registry.tf` (Artifact Registry
   docker repo, keep-last-10 cleanup), `workload_identity.tf` (GCP SA +
   `roles/artifactregistry.reader`).
 
@@ -38,15 +38,15 @@ After apply:
 | --- | --- | --- |
 | `project_id` | — | GCP project |
 | `region` | us-central1 | subnet + cluster region |
-| `cluster_name` | draftlab-gke | GKE cluster name |
-| `vpc_name` / `subnet_name` | draftlab-vpc / draftlab-subnet | network names |
+| `cluster_name` | speculative-agent-workloads-gke | GKE cluster name |
+| `vpc_name` / `subnet_name` | speculative-agent-workloads-vpc / speculative-agent-workloads-subnet | network names |
 | `subnet_cidr` / `pods_cidr` / `services_cidr` | 10.10.0.0/22, 10.128.0.0/14, 10.144.0.0/20 | IP plan |
 | `gpu_machine_type` | g2-standard-12 | smallest g2 that hosts an L4 |
 | `gpu_count` | 1 | L4s per node |
 | `gpu_node_min` / `gpu_node_max` | 0 / 2 | pool autoscaling bounds |
-| `gpu_taint_key` / `gpu_taint_value` | draftlab.io/gpu / true | NO_SCHEDULE taint |
-| `service_account_id` | draftlab-wi | Workload Identity GCP SA |
-| `registry_repo_id` | draftlab | Artifact Registry repo id |
+| `gpu_taint_key` / `gpu_taint_value` | speculative-agent-workloads.io/gpu / true | NO_SCHEDULE taint |
+| `service_account_id` | speculative-agent-workloads-wi | Workload Identity GCP SA |
+| `registry_repo_id` | speculative-agent-workloads | Artifact Registry repo id |
 
 Outputs: cluster name/location/endpoint/CA, `workload_identity_namespace` +
 `workload_identity_sa_email`, `registry_repository`, network names, pool name.

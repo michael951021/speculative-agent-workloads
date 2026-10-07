@@ -1,25 +1,25 @@
 #!/usr/bin/env bash
-# draftlab kind end-to-end demo — HOST ONLY (needs Docker; never run in the sandbox).
+# speculative-agent-workloads kind end-to-end demo — HOST ONLY (needs Docker; never run in the sandbox).
 #
 # One command: build images -> kind cluster -> load images -> helm install (cpu profile,
 # tiny model) -> port-forward -> authed chat completion -> check /metrics for accepted
 # tokens (spec decoding via the engine's default ngram drafter, k=5).
 #
 # Prereqs: docker, kind, helm, kubectl, python3 and a fetched model on disk:
-#   python -m draftlab.models fetch --name qwen2.5-0.5b-instruct
+#   python -m speculative_agent_workloads.models fetch --name qwen2.5-0.5b-instruct
 #
-# Knobs (env): DRAFTLAB_E2E_CLUSTER (default draftlab-e2e), DRAFTLAB_E2E_MODEL,
-#   DRAFTLAB_E2E_TAG (default e2e), DRAFTLAB_E2E_PORT (default 18200),
-#   DRAFTLAB_E2E_TEARDOWN=1 (uninstall release + delete cluster at the end).
+# Knobs (env): SPECULATIVE_AGENT_WORKLOADS_E2E_CLUSTER (default speculative-agent-workloads-e2e), SPECULATIVE_AGENT_WORKLOADS_E2E_MODEL,
+#   SPECULATIVE_AGENT_WORKLOADS_E2E_TAG (default e2e), SPECULATIVE_AGENT_WORKLOADS_E2E_PORT (default 18200),
+#   SPECULATIVE_AGENT_WORKLOADS_E2E_TEARDOWN=1 (uninstall release + delete cluster at the end).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-CLUSTER="${DRAFTLAB_E2E_CLUSTER:-draftlab-e2e}"
-MODEL="${DRAFTLAB_E2E_MODEL:-qwen2.5-0.5b-instruct}"
-TAG="${DRAFTLAB_E2E_TAG:-e2e}"
-PORT="${DRAFTLAB_E2E_PORT:-18200}"
-NS=draftlab
-RELEASE=draftlab
+CLUSTER="${SPECULATIVE_AGENT_WORKLOADS_E2E_CLUSTER:-speculative-agent-workloads-e2e}"
+MODEL="${SPECULATIVE_AGENT_WORKLOADS_E2E_MODEL:-qwen2.5-0.5b-instruct}"
+TAG="${SPECULATIVE_AGENT_WORKLOADS_E2E_TAG:-e2e}"
+PORT="${SPECULATIVE_AGENT_WORKLOADS_E2E_PORT:-18200}"
+NS=speculative-agent-workloads
+RELEASE=speculative-agent-workloads
 ALIAS=qwen0.5b
 NODE_MODELS_DIR=/models
 
@@ -29,7 +29,7 @@ done
 
 MODEL_DIR="$ROOT/models/$MODEL"
 if [ ! -f "$MODEL_DIR/config.json" ]; then
-  echo "missing $MODEL_DIR — run: python -m draftlab.models fetch --name $MODEL" >&2
+  echo "missing $MODEL_DIR — run: python -m speculative_agent_workloads.models fetch --name $MODEL" >&2
   exit 1
 fi
 
@@ -43,8 +43,8 @@ cleanup() {
 trap cleanup EXIT
 
 echo "==> build images (gateway, engine)"
-docker build -q -f "$ROOT/deploy/docker/Dockerfile.gateway" -t "draftlab/gateway:$TAG" "$ROOT"
-docker build -q -f "$ROOT/deploy/docker/Dockerfile.engine" -t "draftlab/engine:$TAG" "$ROOT"
+docker build -q -f "$ROOT/deploy/docker/Dockerfile.gateway" -t "speculative-agent-workloads/gateway:$TAG" "$ROOT"
+docker build -q -f "$ROOT/deploy/docker/Dockerfile.engine" -t "speculative-agent-workloads/engine:$TAG" "$ROOT"
 
 echo "==> kind cluster: $CLUSTER"
 if ! kind get clusters | grep -qx "$CLUSTER"; then
@@ -52,7 +52,7 @@ if ! kind get clusters | grep -qx "$CLUSTER"; then
 fi
 
 echo "==> load images into kind"
-kind load docker-image "draftlab/gateway:$TAG" "draftlab/engine:$TAG" --name "$CLUSTER"
+kind load docker-image "speculative-agent-workloads/gateway:$TAG" "speculative-agent-workloads/engine:$TAG" --name "$CLUSTER"
 
 # Copy the model into the kind node; the engine mounts it via a hostPath volume.
 NODE="$(kind get nodes --name "$CLUSTER" | head -n 1)"
@@ -62,7 +62,7 @@ docker cp "$MODEL_DIR" "$NODE:$NODE_MODELS_DIR/$MODEL"
 echo "==> helm install (cpu profile: 1 replica, HPA/ServiceMonitor/NP off)"
 KEY="sk-e2e-$(head -c 8 /dev/urandom | od -An -tx1 | tr -d ' \n')"
 SHA="$(python3 -c 'import hashlib,sys; print(hashlib.sha256(sys.argv[1].encode()).hexdigest())' "$KEY")"
-helm upgrade --install "$RELEASE" "$ROOT/deploy/helm/draftlab" \
+helm upgrade --install "$RELEASE" "$ROOT/deploy/helm/speculative-agent-workloads" \
   --namespace "$NS" --create-namespace \
   --set "image.gateway.tag=$TAG" --set "image.engine.tag=$TAG" \
   --set gateway.replicas=1 \
@@ -109,8 +109,8 @@ echo "$BODY" | python3 -m json.tool | head -n 30
 
 echo "==> check /metrics for accepted tokens"
 METRICS="$(curl -sS "http://127.0.0.1:$PORT/metrics")"
-ACCEPTED="$(printf '%s\n' "$METRICS" | awk '$1 ~ /^draftlab_accepted_tokens_total\{/ {s += $2} END {print s + 0}')"
-echo "draftlab_accepted_tokens_total = $ACCEPTED"
+ACCEPTED="$(printf '%s\n' "$METRICS" | awk '$1 ~ /^speculative_agent_workloads_accepted_tokens_total\{/ {s += $2} END {print s + 0}')"
+echo "speculative_agent_workloads_accepted_tokens_total = $ACCEPTED"
 if awk -v a="$ACCEPTED" 'BEGIN { exit (a > 0) ? 0 : 1 }'; then
   echo "==> e2e OK: served completion + spec-decoding accepted tokens visible in /metrics"
 else
@@ -119,7 +119,7 @@ else
 fi
 
 echo "API key: $KEY (release kept for reuse: kubectl -n $NS port-forward svc/$RELEASE-gateway $PORT:8200)"
-if [ "${DRAFTLAB_E2E_TEARDOWN:-0}" = "1" ]; then
+if [ "${SPECULATIVE_AGENT_WORKLOADS_E2E_TEARDOWN:-0}" = "1" ]; then
   cleanup
   trap - EXIT
   helm uninstall "$RELEASE" --namespace "$NS" --wait --timeout 5m

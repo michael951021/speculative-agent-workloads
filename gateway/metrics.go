@@ -24,39 +24,39 @@ func NewMetrics() *Metrics {
 	m := &Metrics{
 		Registry: reg,
 		Requests: prometheus.NewCounterVec(prometheus.CounterOpts{
-			Namespace: "draftlab", Name: "requests_total",
+			Namespace: "speculative-agent-workloads", Name: "requests_total",
 			Help: "Proxied requests by key, model and status.",
 		}, []string{"key", "model", "status"}),
 		TTFT: prometheus.NewHistogramVec(prometheus.HistogramOpts{
-			Namespace: "draftlab", Name: "ttft_seconds",
+			Namespace: "speculative-agent-workloads", Name: "ttft_seconds",
 			Help: "Time to first streamed byte.", Buckets: []float64{0.01, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 30},
 		}, []string{"model"}),
 		Latency: prometheus.NewHistogramVec(prometheus.HistogramOpts{
-			Namespace: "draftlab", Name: "request_latency_seconds",
+			Namespace: "speculative-agent-workloads", Name: "request_latency_seconds",
 			Help: "Total request latency.", Buckets: []float64{0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 30, 60, 120},
 		}, []string{"model"}),
 		OutputTokPerSec: prometheus.NewGauge(prometheus.GaugeOpts{
-			Namespace: "draftlab", Name: "output_tokens_per_second",
+			Namespace: "speculative-agent-workloads", Name: "output_tokens_per_second",
 			Help: "Completion tokens / second for the last completed request.",
 		}),
 		DraftTokens: prometheus.NewCounterVec(prometheus.CounterOpts{
-			Namespace: "draftlab", Name: "draft_tokens_total",
+			Namespace: "speculative-agent-workloads", Name: "draft_tokens_total",
 			Help: "Draft tokens proposed, from backend usage.",
 		}, []string{"model"}),
 		AcceptedTokens: prometheus.NewCounterVec(prometheus.CounterOpts{
-			Namespace: "draftlab", Name: "accepted_tokens_total",
+			Namespace: "speculative-agent-workloads", Name: "accepted_tokens_total",
 			Help: "Draft tokens accepted, from backend usage.",
 		}, []string{"model"}),
 		BackendUp: prometheus.NewGaugeVec(prometheus.GaugeOpts{
-			Namespace: "draftlab", Name: "backend_up",
+			Namespace: "speculative-agent-workloads", Name: "backend_up",
 			Help: "Backend health: 1 up, 0 down.",
 		}, []string{"backend"}),
 		BreakerState: prometheus.NewGaugeVec(prometheus.GaugeOpts{
-			Namespace: "draftlab", Name: "breaker_state",
+			Namespace: "speculative-agent-workloads", Name: "breaker_state",
 			Help: "Circuit breaker state: 0 closed, 1 open, 2 half-open.",
 		}, []string{"backend"}),
 		RateLimited: prometheus.NewCounterVec(prometheus.CounterOpts{
-			Namespace: "draftlab", Name: "rate_limited_total",
+			Namespace: "speculative-agent-workloads", Name: "rate_limited_total",
 			Help: "Requests rejected by the per-key rate limit.",
 		}, []string{"key"}),
 	}

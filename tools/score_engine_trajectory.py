@@ -82,9 +82,10 @@ def main() -> int:
 
     ok = True
     res: dict = {
-        "metric": "greedy acceptance of HF drafter at exactly the engine's T=0 draft "
-        "positions on prompt+none-trajectory (== spec trajectory); bootstrap ci95 "
-        "over prompts (mean of per-prompt accept)",
+        "metric": "greedy acceptance of HF drafter at the engine's k=1 T=0 draft positions "
+        "(simulated from per-position hits: a hit skips the bonus position) on "
+        "prompt+none-trajectory (== spec trajectory); step counts must equal the sweep's; "
+        "bootstrap ci95 over prompts (mean of per-prompt accept)",
         "target": "qwen2.5-0.5b-instruct",
         "traj_cache": str(cache.relative_to(ROOT)),
     }
@@ -111,12 +112,19 @@ def main() -> int:
                 ids = p["ids"] + traj[i]
                 q, valid = drafter.dists([], ids)
                 L = len(p["ids"])
-                n_steps = int(r["n_steps"])
-                # empty ctx: row r (r>=1) predicts ids[r]; gen[j-1] = ids[L+j-1]
-                rows = q[L : L + n_steps]
                 gen = np.asarray(traj[i])
-                m = int(np.sum((rows.argmax(axis=-1) == gen[:n_steps]) & valid[L : L + n_steps]))
-                per[i] = (m, n_steps)
+                # row L+j predicts gen[j] (row r predicts ids[r+1]... with empty ctx: q[L+j] -> gen[j])
+                hit = (q[L : L + len(gen)].argmax(axis=-1) == gen) & valid[L : L + len(gen)]
+                # k=1 at T=0: each step drafts at pos; a hit emits draft + bonus (pos += 2), a miss
+                # emits the target token (pos += 1). Draft positions are NOT the first n_steps ones:
+                # the position after every accepted draft is never drafted.
+                pos = m = steps = 0
+                while pos < len(gen):
+                    steps += 1
+                    m += int(hit[pos])
+                    pos += 2 if hit[pos] else 1
+                assert steps == int(r["n_steps"]), (i, steps, int(r["n_steps"]))
+                per[i] = (m, steps)
             vals = np.array([a / dr for a, dr in per.values()])
             rng = np.random.default_rng(0)
             boot = [vals[rng.integers(0, len(vals), len(vals))].mean() for _ in range(2000)]

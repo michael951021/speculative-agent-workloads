@@ -160,3 +160,7 @@
 - Goal: Speedup bench
 - Approach: compute job dl-bench ran XLA_FLAGS=--xla_cpu_multi_thread_eigen=true .venv/bin/python tools/bench_speedup.py (exit 0)
 - Blockers: none
+## Reinstall package after rename
+- Goal: Reinstall package after rename
+- Approach: compute job dl-venv ran uv pip install --python .venv/bin/python -e . --no-deps && .venv/bin/python -c "import speculative_agent_workloads, draftlab; print('ok')" (exit 0)
+- Blockers: none

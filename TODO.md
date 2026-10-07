@@ -105,7 +105,7 @@
   why: spec output must be judged no worse than target output, now that spec is really lossless.
 - [x] **Speedup bench** — interleaved head-to-head wall clock vs no drafter, alone on the CPU budget. (id: dl-bench) (after: dl-sweep15) (run: `XLA_FLAGS=--xla_cpu_multi_thread_eigen=true .venv/bin/python tools/bench_speedup.py`) (mem: 24) (cpus: 16) (timeout: 6h)
   why: the only speedup numbers REPORT.md may state; sweep wall times are indicative only.
-- [ ] **Reinstall package after rename** — the shared .venv still has the editable `draftlab` install; tools that import `speculative_agent_workloads` fail (dl-engchk, 2 tries). (id: dl-venv) (after: -) (run: `uv pip install --python .venv/bin/python -e . --no-deps && .venv/bin/python -c "import speculative_agent_workloads, draftlab; print('ok')"`) (mem: 4) (cpus: 2) (timeout: 20m)
+- [x] **Reinstall package after rename** — the shared .venv still has the editable `draftlab` install; tools that import `speculative_agent_workloads` fail (dl-engchk, 2 tries). (id: dl-venv) (after: -) (run: `uv pip install --python .venv/bin/python -e . --no-deps && .venv/bin/python -c "import speculative_agent_workloads, draftlab; print('ok')"`) (mem: 4) (cpus: 2) (timeout: 20m)
   why: every later job and the agent's report task import the renamed package.
 - [ ] **Engine checks** — ngram T=0.7 reference and engine-vs-metric trajectory on the fixed engine. (id: dl-engchk) (after: dl-bench, dl-venv) (run: `.venv/bin/python tools/check_ngram_t07_ref.py && .venv/bin/python tools/score_engine_trajectory.py`) (mem: 16) (cpus: 8) (timeout: 4h)
   why: CLAUDE.md known answer "engine vs metric" must hold before any engine number is reported.

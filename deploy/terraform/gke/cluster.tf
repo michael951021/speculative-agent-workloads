@@ -99,7 +99,7 @@ resource "google_container_node_pool" "gpu" {
     }
 
     labels = {
-      "draftlab.io/pool" = "gpu"
+      "speculative-agent-workloads.io/pool" = "gpu"
     }
   }
 }

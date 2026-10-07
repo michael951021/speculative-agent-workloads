@@ -1,4 +1,4 @@
-# Prometheus for the draftlab gateway (see gateway/). Local/dev scrape target.
+# Prometheus for the speculative-agent-workloads gateway (see gateway/). Local/dev scrape target.
 global:
   scrape_interval: 15s
   evaluation_interval: 15s
@@ -7,6 +7,6 @@ rule_files:
   - rules.yml
 
 scrape_configs:
-  - job_name: draftlab-gateway
+  - job_name: speculative-agent-workloads-gateway
     static_configs:
       - targets: ["127.0.0.1:8200"]

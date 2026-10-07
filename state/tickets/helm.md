@@ -2,7 +2,7 @@
 
 ## Issue
 The stack (gateway, JAX engine, optional vLLM w/ drafter) has Dockerfiles but no
-Kubernetes deployment. A user cannot run draftlab on a real cluster: no
+Kubernetes deployment. A user cannot run speculative-agent-workloads on a real cluster: no
 Deployment/Service/HPA, no secret for API keys, no GPU scheduling, no
 monitoring hooks. Needed to answer "how would this run in production".
 
@@ -16,7 +16,7 @@ schema? Refutation: any non-zero exit from lint or kubeconform.
   kubeconform, but kubeconform checks raw chart yaml (helm syntax, no
   templating) and has no ServiceMonitor schema.
 - Observed: gateway config = single YAML file (gateway/config.go: LoadConfig),
-  keys are sha256 hex; metrics `draftlab_accepted_tokens_total{model}`
+  keys are sha256 hex; metrics `speculative_agent_workloads_accepted_tokens_total{model}`
   (gateway/metrics.go); vLLM entrypoint adds `--speculative-config` when
   `$DRAFTER_PATH/adapter_config.json` exists; engine serves :8100
   (only /v1/models + /v1/chat/completions).
@@ -28,7 +28,7 @@ schema? Refutation: any non-zero exit from lint or kubeconform.
 
 ## Done when
 1. `helm lint deploy/helm` exits 0.
-2. `helm template draftlab deploy/helm/draftlab | kubeconform -strict -summary` exits 0
+2. `helm template speculative-agent-workloads deploy/helm/speculative-agent-workloads | kubeconform -strict -summary` exits 0
    (cpu profile) and same with `-f values-gpu.yaml` (gpu profile), with the
    ServiceMonitor CRD schema vendored and used (no network at check time).
 3. Both templates rendered into the manifests required: gateway
@@ -36,11 +36,11 @@ schema? Refutation: any non-zero exit from lint or kubeconform.
    engine Deployment/Service, vLLM Deployment (gpu:1, tolerations,
    --speculative-config from PVC, readiness /health)/Service (gpu profile),
    ServiceMonitor, Grafana dashboard ConfigMap (in sync with
-   deploy/grafana/draftlab.json), NetworkPolicy, PDB.
+   deploy/grafana/speculative-agent-workloads.json), NetworkPolicy, PDB.
 Known-answer check: rendered gateway Deployment must reference the engine
 Service DNS name and the Secret-mounted config; rendered HPA metric name must
 match a prometheus-adapter rule documented in README; grafana ConfigMap bytes
-== deploy/grafana/draftlab.json (diff, empty).
+== deploy/grafana/speculative-agent-workloads.json (diff, empty).
 Plausible range: not a numeric ticket; acceptance is binary pass/fail.
 
 ## Stop when

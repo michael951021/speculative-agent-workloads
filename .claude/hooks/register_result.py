@@ -8,6 +8,7 @@ message of the transcript, and on `RESULT: done` check the AGENT_TASK line in TO
 (exact text, falling back to the `(id: ...)` tag), append a TASKLOG.md entry, and commit
 both files. Idempotent; always exits 0 so it can never block a session end.
 """
+
 import json
 import os
 import re
@@ -52,6 +53,7 @@ def audit(cwd: str, session_id: str, verdict: str, task: str) -> None:
     try:
         os.makedirs(os.path.join(cwd, ".agent-evidence"), exist_ok=True)
         import datetime
+
         line = f"{datetime.datetime.now().isoformat(timespec='seconds')} sid={session_id[:8]} "
         line += f"verdict={verdict} task={task_id(task) or task_title(task)}\n"
         with open(os.path.join(cwd, ".agent-evidence", "harnessreg-stops.log"), "a") as fh:
@@ -99,8 +101,11 @@ def last_assistant_text(path: str) -> str:
             if m.get("type") != "assistant":
                 continue
             content = m.get("message", {}).get("content") or []
-            text = " ".join(b.get("text", "") for b in content
-                            if isinstance(b, dict) and b.get("type") == "text")
+            text = " ".join(
+                b.get("text", "")
+                for b in content
+                if isinstance(b, dict) and b.get("type") == "text"
+            )
             if text.strip():
                 last = text
     return last
@@ -152,10 +157,12 @@ def append_tasklog(tasklog: str, task: str, block: dict[str, str]) -> int:
     goal = task.split("**", 2)[-1].strip().lstrip("-— ").strip()
     goal = re.split(r"\.\s| (?:Done when|id:)", goal)[0].strip()
     approach = " ".join(x for x in (block.get("SUMMARY"), block.get("APPROACH")) if x)
-    entry = (f"{header}\n"
-             f"- Goal: {goal[:300]}\n"
-             f"- Approach: {approach[:600]}\n"
-             f"- Blockers: {block.get('BLOCKERS') or 'none.'}\n")
+    entry = (
+        f"{header}\n"
+        f"- Goal: {goal[:300]}\n"
+        f"- Approach: {approach[:600]}\n"
+        f"- Blockers: {block.get('BLOCKERS') or 'none.'}\n"
+    )
     with open(tasklog, "a") as fh:
         fh.write("\n" + entry)
     return 1

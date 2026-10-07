@@ -18,15 +18,15 @@ baseline is useless as a floor.
 - data/corpus/val.parquet (667 blocks, 236,985 tokens, 3 runs, kinds:
   tool_use 210, thinking 186, tool_result 161, text 101, code 9).
 - Matcher correctness check: hand-made token sequence in
-  draftlab/tests/test_ngram.py (self-match exclusion, first-occurrence rule,
+  speculative_agent_workloads/tests/test_ngram.py (self-match exclusion, first-occurrence rule,
   longest-n priority, chain lengths).
 - Run output: results/ngram.json; log .agent-evidence/ngram-run.log.
 
 ## Done when
-- `python -m draftlab.drafters.ngram` exits 0 and writes results/ngram.json with
+- `python -m speculative_agent_workloads.drafters.ngram` exits 0 and writes results/ngram.json with
   per-kind greedy acceptance, coverage, per-k mean accepted length /
   tokens-per-call, and bootstrap 95% CIs (runs resampled with replacement).
-- pytest draftlab/tests/test_ngram.py passes; `make check` green.
+- pytest speculative_agent_workloads/tests/test_ngram.py passes; `make check` green.
 
 ## Stop when
 Out of scope: any model/drafter, Triton, serve, sweep. If tokenization or
@@ -34,7 +34,7 @@ parquet reading is unavailable, stop and record. Two attempts without a
 plausible (nonzero, kind-stratified) result → record blocker and stop.
 
 ## Plan
-1. draftlab/drafters/ngram.py: NGramMatcher.proposals(ctx) + chain/accept
+1. speculative_agent_workloads/drafters/ngram.py: NGramMatcher.proposals(ctx) + chain/accept
    helpers (pure, token-list in, proposals out) — unit-testable.
 2. evaluate(): tokenize val blocks (Qwen 0.5b tokenizer, cached), context =
    prev-8 same-run blocks + own prefix; per-position proposals; per-kind ×

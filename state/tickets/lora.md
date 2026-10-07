@@ -14,10 +14,10 @@ Refuting observation: overall α < 0.7 (i.e. degraded vs control) or FSDP 2-rank
 producing identical adapter weights / non-decreasing loss.
 
 ## Evidence
-- `draftlab/eval/alpha.py` HFDrafter already loads a PEFT adapter dir (adapter_config.json).
+- `speculative_agent_workloads/eval/alpha.py` HFDrafter already loads a PEFT adapter dir (adapter_config.json).
 - `results/alpha/ngram.json` (α 0.3341 overall, 400 blocks) = baseline to beat; recorded
   untrained 0.5B control 0.7675 (NOTES, alphafix a24) = anchor.
-- Smallest check: `draftlab/tests/test_lora.py` — (1) fresh LoRA adapter is exactly
+- Smallest check: `speculative_agent_workloads/tests/test_lora.py` — (1) fresh LoRA adapter is exactly
   identity (lora_B zero ⇒ logits == base logits, max diff 0, tiny config); (2)
   `torchrun --nproc_per_node 2` tiny config, 5 steps: loss decreases and both ranks save
   bit-identical adapter weights. Run first, must fail before lora.py exists.
@@ -48,13 +48,13 @@ producing identical adapter weights / non-decreasing loss.
   which the "edit only own lines" rule forbids — left for a future run to prune.
 
 ## Done when
-1. `.venv/bin/python -m pytest draftlab/tests/test_lora.py` — all pass:
+1. `.venv/bin/python -m pytest speculative_agent_workloads/tests/test_lora.py` — all pass:
    - identity: |logits_peft − logits_base| max == 0 on tiny config;
    - torchrun 2 ranks, tiny, --fsdp, 5 steps: exit 0, last logged loss < first,
      rank0/rank1 saved lora weights allclose (exact).
-2. Default run `< 30 min`: `python -m draftlab.drafters.lora train --steps 300` →
+2. Default run `< 30 min`: `python -m speculative_agent_workloads.drafters.lora train --steps 300` →
    adapter dir `ckpt/lora/` (loadable by HFDrafter).
-3. `python -m draftlab.eval.alpha --drafter hf --draft-model ckpt/lora` →
+3. `python -m speculative_agent_workloads.eval.alpha --drafter hf --draft-model ckpt/lora` →
    `results/alpha/lora.json`; overall α in [0.7, 0.95] (plausible range written here
    before the run: untrained 0.5B control = 0.7675, Leviathan anchor 0.5–0.9).
    Known-answer checks: (a) fresh-adapter identity ⇒ α(LoRA@step0) == α(base 0.5B)
@@ -71,7 +71,7 @@ by rank 0 from base + tensors), or alpha run > 30 min (drop --blocks to 200, not
 
 ## Plan
 1. Write test_lora.py, run → fails (module missing). ✅
-2. `draftlab/drafters/lora.py`: pack train-block token stream into seq-len chunks
+2. `speculative_agent_workloads/drafters/lora.py`: pack train-block token stream into seq-len chunks
    (seeded shuffle; pad mask); LoRA r=16 alpha=32 on q/k/v/o + gate/up/down;
    `train` subcommand: [--tiny --fsdp --qlora --steps --seq-len --lr --out --seed];
    torchrun init gloo(CPU)/nccl(GPU); FSDP2 `fully_shard` (FSDP1 dropped CPU in torch

@@ -13,6 +13,7 @@ Run AFTER the sweep (shares the CPU):
   OMP_NUM_THREADS=16 XLA_FLAGS=--xla_cpu_multi_thread_eigen=true \
   .venv/bin/python tools/check_ngram_t07_ref.py
 """
+
 from __future__ import annotations
 
 import sys
@@ -27,9 +28,15 @@ sys.path.insert(0, str(ROOT))
 import jax  # noqa: E402
 import pandas as pd  # noqa: E402
 
-from draftlab.jaxlm import model as M  # noqa: E402
-from draftlab.jaxlm import spec as S  # noqa: E402
-from draftlab.sweep import DRAFTERS, MODELS, N_GEN, SEED, load_prompts  # noqa: E402
+from speculative_agent_workloads.jaxlm import model as M  # noqa: E402
+from speculative_agent_workloads.jaxlm import spec as S  # noqa: E402
+from speculative_agent_workloads.sweep import (  # noqa: E402
+    DRAFTERS,
+    MODELS,
+    N_GEN,
+    SEED,
+    load_prompts,
+)
 
 TARGET = str(MODELS / "qwen2.5-0.5b-instruct")
 K, TEMP = 1, 0.7
@@ -46,8 +53,15 @@ def main() -> int:
     per_prompt: list[tuple[float, float, int]] = []
     for p in prompts:
         seed = SEED_BASE + zlib.crc32(f"{p['run']}:{p['seq']}".encode())
-        dec = S.SpecDecoder(tcfg, tparams, S.NGramDrafter(tcfg.vocab_size),
-                            max_len, k=K, temperature=TEMP, seed=seed)
+        dec = S.SpecDecoder(
+            tcfg,
+            tparams,
+            S.NGramDrafter(tcfg.vocab_size),
+            max_len,
+            k=K,
+            temperature=TEMP,
+            seed=seed,
+        )
         out, stats = dec.generate(p["ids"], N_GEN)
         L = len(p["ids"])
         lg, _ = M.prefill(tcfg, tparams, p["ids"] + out, max_len)
@@ -83,9 +97,11 @@ def main() -> int:
     b = [d[rng.integers(0, len(d), len(d))].mean() for _ in range(2000)]
     lo, hi = (float(x) for x in np.percentile(b, [2.5, 97.5]))
 
-    print(f"ngram k=1 T=0.7: measured {a_m:.4f} vs hand-computed expected "
-          f"{a_e:.4f} over {n_draft_tot} draft positions "
-          f"({len(per_prompt)} prompts); CI95(diff) [{lo:+.4f}, {hi:+.4f}]")
+    print(
+        f"ngram k=1 T=0.7: measured {a_m:.4f} vs hand-computed expected "
+        f"{a_e:.4f} over {n_draft_tot} draft positions "
+        f"({len(per_prompt)} prompts); CI95(diff) [{lo:+.4f}, {hi:+.4f}]"
+    )
     cell = pd.read_parquet(ROOT / "results" / "sweep.parquet")
     s = cell[(cell.drafter == "ngram") & (cell.k == 1) & (cell.temp == 0.7)]
     a_cell = float(s["n_acc"].sum() / s["n_draft"].sum())

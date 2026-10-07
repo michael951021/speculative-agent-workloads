@@ -1,0 +1,28 @@
+{{- if .Values.gateway.hpa.enabled }}
+# Scales on accepted draft tokens. Requires prometheus-adapter exposing the
+# external metric (rule in README.md); without it the HPA stays at minReplicas
+# with an ExternalMetric status condition.
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "speculative-agent-workloads.fullname" . }}-gateway
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "speculative-agent-workloads.labels" . | nindent 4 }}
+    app.kubernetes.io/component: gateway
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "speculative-agent-workloads.fullname" . }}-gateway
+  minReplicas: {{ .Values.gateway.hpa.minReplicas }}
+  maxReplicas: {{ .Values.gateway.hpa.maxReplicas }}
+  metrics:
+    - type: External
+      external:
+        metric:
+          name: speculative_agent_workloads_accepted_tokens_per_second
+        target:
+          type: AverageValue
+          averageValue: "{{ .Values.gateway.hpa.targetAverageValue }}"
+{{- end }}

@@ -18,36 +18,36 @@ rule_files:
   - rules.yml
 evaluation_interval: 1m
 group_eval_order:
-  - draftlab.recordings
-  - draftlab.alerts
+  - speculative-agent-workloads.recordings
+  - speculative-agent-workloads.alerts
 
 tests:
   - name: healthy-no-alerts
     interval: 1m
     input_series:
-      - series: 'draftlab_draft_tokens_total{model="m1"}'
+      - series: 'speculative_agent_workloads_draft_tokens_total{model="m1"}'
         values: "0+60x30"
-      - series: 'draftlab_accepted_tokens_total{model="m1"}'
+      - series: 'speculative_agent_workloads_accepted_tokens_total{model="m1"}'
         values: "0+30x30"
-      - series: 'draftlab_ttft_seconds_bucket{model="m1",le="1"}'
+      - series: 'speculative_agent_workloads_ttft_seconds_bucket{model="m1",le="1"}'
         values: "0+30x30"
-      - series: 'draftlab_ttft_seconds_bucket{model="m1",le="+Inf"}'
+      - series: 'speculative_agent_workloads_ttft_seconds_bucket{model="m1",le="+Inf"}'
         values: "0+30x30"
     promql_expr_test:
-      - expr: draftlab:acceptance_ratio5m
+      - expr: speculative_agent_workloads:acceptance_ratio5m
         eval_time: 10m
         exp_samples:
-          - labels: '{__name__="draftlab:acceptance_ratio5m", model="m1"}'
+          - labels: '{__name__="speculative_agent_workloads:acceptance_ratio5m", model="m1"}'
             value: 0.5
-      - expr: draftlab:ttft_p50_seconds5m
+      - expr: speculative_agent_workloads:ttft_p50_seconds5m
         eval_time: 10m
         exp_samples:
-          - labels: '{__name__="draftlab:ttft_p50_seconds5m", model="m1"}'
+          - labels: '{__name__="speculative_agent_workloads:ttft_p50_seconds5m", model="m1"}'
             value: 0.5
-      - expr: draftlab:ttft_p95_seconds5m
+      - expr: speculative_agent_workloads:ttft_p95_seconds5m
         eval_time: 10m
         exp_samples:
-          - labels: '{__name__="draftlab:ttft_p95_seconds5m", model="m1"}'
+          - labels: '{__name__="speculative_agent_workloads:ttft_p95_seconds5m", model="m1"}'
             value: 0.95
     alert_rule_test:
       - alertname: LowDraftAcceptance
@@ -61,30 +61,30 @@ tests:
     interval: 1m
     input_series:
       # grammar: V+IxN = N+1 values from V by I at 1m spacing; segments concat
-      - series: 'draftlab_draft_tokens_total{model="m1"}'
+      - series: 'speculative_agent_workloads_draft_tokens_total{model="m1"}'
         values: "60+60x15"
       # t=0..3: 30,60,90,120 · t=4: 126 (partial step) · t=5: 126 (flat) · t=6..15: 128..146
-      - series: 'draftlab_accepted_tokens_total{model="m1"}'
+      - series: 'speculative_agent_workloads_accepted_tokens_total{model="m1"}'
         values: "30+30x3 126 126 128+2x9"
-      - series: 'draftlab_ttft_seconds_bucket{model="m1",le="1"}'
+      - series: 'speculative_agent_workloads_ttft_seconds_bucket{model="m1",le="1"}'
         values: "30+30x15"
-      - series: 'draftlab_ttft_seconds_bucket{model="m1",le="+Inf"}'
+      - series: 'speculative_agent_workloads_ttft_seconds_bucket{model="m1",le="+Inf"}'
         values: "30+30x15"
     promql_expr_test:
-      - expr: draftlab:acceptance_ratio5m
+      - expr: speculative_agent_workloads:acceptance_ratio5m
         eval_time: 4m
         exp_samples:
-          - labels: '{__name__="draftlab:acceptance_ratio5m", model="m1"}'
+          - labels: '{__name__="speculative_agent_workloads:acceptance_ratio5m", model="m1"}'
             value: 0.4
-      - expr: draftlab:acceptance_ratio5m
+      - expr: speculative_agent_workloads:acceptance_ratio5m
         eval_time: 5m
         exp_samples:
-          - labels: '{__name__="draftlab:acceptance_ratio5m", model="m1"}'
+          - labels: '{__name__="speculative_agent_workloads:acceptance_ratio5m", model="m1"}'
             value: 0.32
-      - expr: draftlab:acceptance_ratio5m
+      - expr: speculative_agent_workloads:acceptance_ratio5m
         eval_time: 10m
         exp_samples:
-          - labels: '{__name__="draftlab:acceptance_ratio5m", model="m1"}'
+          - labels: '{__name__="speculative_agent_workloads:acceptance_ratio5m", model="m1"}'
             value: 0.03333333333333333
     alert_rule_test:
       # 0.4 is not < 0.4: no violation yet at 4m
@@ -114,31 +114,31 @@ tests:
   - name: slow-ttft
     interval: 1m
     input_series:
-      - series: 'draftlab_draft_tokens_total{model="m1"}'
+      - series: 'speculative_agent_workloads_draft_tokens_total{model="m1"}'
         values: "0+60x20"
-      - series: 'draftlab_accepted_tokens_total{model="m1"}'
+      - series: 'speculative_agent_workloads_accepted_tokens_total{model="m1"}'
         values: "0+30x20"
-      - series: 'draftlab_ttft_seconds_bucket{model="m1",le="2.5"}'
+      - series: 'speculative_agent_workloads_ttft_seconds_bucket{model="m1",le="2.5"}'
         values: "0+5x20"
-      - series: 'draftlab_ttft_seconds_bucket{model="m1",le="5"}'
+      - series: 'speculative_agent_workloads_ttft_seconds_bucket{model="m1",le="5"}'
         values: "0+15x20"
-      - series: 'draftlab_ttft_seconds_bucket{model="m1",le="+Inf"}'
+      - series: 'speculative_agent_workloads_ttft_seconds_bucket{model="m1",le="+Inf"}'
         values: "0+15x20"
     promql_expr_test:
-      - expr: draftlab:acceptance_ratio5m
+      - expr: speculative_agent_workloads:acceptance_ratio5m
         eval_time: 10m
         exp_samples:
-          - labels: '{__name__="draftlab:acceptance_ratio5m", model="m1"}'
+          - labels: '{__name__="speculative_agent_workloads:acceptance_ratio5m", model="m1"}'
             value: 0.5
-      - expr: draftlab:ttft_p50_seconds5m
+      - expr: speculative_agent_workloads:ttft_p50_seconds5m
         eval_time: 10m
         exp_samples:
-          - labels: '{__name__="draftlab:ttft_p50_seconds5m", model="m1"}'
+          - labels: '{__name__="speculative_agent_workloads:ttft_p50_seconds5m", model="m1"}'
             value: 3.125
-      - expr: draftlab:ttft_p95_seconds5m
+      - expr: speculative_agent_workloads:ttft_p95_seconds5m
         eval_time: 10m
         exp_samples:
-          - labels: '{__name__="draftlab:ttft_p95_seconds5m", model="m1"}'
+          - labels: '{__name__="speculative_agent_workloads:ttft_p95_seconds5m", model="m1"}'
             value: 4.8125
     alert_rule_test:
       # violating since ts=1m (p95 4.8125 > 2); for:5m not elapsed at 5m

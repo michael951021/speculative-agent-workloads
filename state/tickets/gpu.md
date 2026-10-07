@@ -12,10 +12,10 @@ writing results/gpu/*.json? Refutation: `--dry-run` in the sandbox does GPU work
 files, or omits any of the three stages.
 
 ## Evidence
-- Components exist: `draftlab.eval.alpha --drafter ngram|hf` (auto-uses `fused_alpha` on CUDA,
+- Components exist: `speculative_agent_workloads.eval.alpha --drafter ngram|hf` (auto-uses `fused_alpha` on CUDA,
   `eval/alpha.py:63`), `deploy/docker/vllm-entrypoint.sh` spec-config pattern, gateway
   (`gateway/config.yaml` backends+keys, `/v1/chat/completions` SSE, `/metrics` with
-  draftlab_{draft,accepted}_tokens_total, ttft/latency histograms), `ckpt/lora/adapter_config.json`.
+  speculative_agent_workloads_{draft,accepted}_tokens_total, ttft/latency histograms), `ckpt/lora/adapter_config.json`.
 - Check: `bash scripts/gpu_run.sh --dry-run` (run before the script exists → expected failure: missing file).
   Output kept in `.agent-evidence/`.
 
@@ -33,7 +33,7 @@ files, or omits any of the three stages.
 
 ## Stop when
 No GPU in sandbox: real mode is not executed here. Two attempts to make `--dry-run`/bench tool work
-without new evidence → record blocker, stop. No changes to draftlab/ or gateway/ beyond a new file in
+without new evidence → record blocker, stop. No changes to speculative_agent_workloads/ or gateway/ beyond a new file in
 tools/; no deploy of anything.
 
 ## Plan

@@ -1,4 +1,6 @@
-"""Build a portable, evidence-linked Draftlab report without running experiments.
+"""Build a portable report for Speculative Decoding for Agent Workloads.
+
+Uses saved evidence without running experiments.
 
 python tools/build_presentation.py
 The output embeds its styles, charts, scripts and aggregate data. No corpus text
@@ -176,17 +178,17 @@ def build() -> dict:
     for path in [
         "ckpt/lora/adapter_config.json",
         "ckpt/dpo/adapter_config.json",
-        "draftlab/jaxlm/spec.py",
-        "draftlab/jaxlm/model.py",
-        "draftlab/eval/alpha.py",
-        "draftlab/data/corpus.py",
-        "draftlab/drafters/dpo.py",
-        "draftlab/drafters/lora.py",
-        "draftlab/drafters/distill.py",
-        "draftlab/kernels/verify.py",
-        "draftlab/eval/judge.py",
-        "draftlab/serve/app.py",
-        "draftlab/sweep.py",
+        "speculative_agent_workloads/jaxlm/spec.py",
+        "speculative_agent_workloads/jaxlm/model.py",
+        "speculative_agent_workloads/eval/alpha.py",
+        "speculative_agent_workloads/data/corpus.py",
+        "speculative_agent_workloads/drafters/dpo.py",
+        "speculative_agent_workloads/drafters/lora.py",
+        "speculative_agent_workloads/drafters/distill.py",
+        "speculative_agent_workloads/kernels/verify.py",
+        "speculative_agent_workloads/eval/judge.py",
+        "speculative_agent_workloads/serve/app.py",
+        "speculative_agent_workloads/sweep.py",
         "gateway/metrics.go",
         "TODO.md",
     ]:

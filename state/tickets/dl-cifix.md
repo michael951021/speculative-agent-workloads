@@ -28,7 +28,7 @@ Reproduced in `/tmp/cc` (fresh clone): 4 failed, 6 passed. Causes:
 
 ## Done when
 `rm -rf /tmp/cc && git clone -q . /tmp/cc && cd /tmp/cc && /work/.venv/bin/python -m pytest -q
-draftlab/tests/test_export_ui.py draftlab/tests/test_sweep.py -p no:cacheprovider` → 0 failed
+speculative_agent_workloads/tests/test_export_ui.py speculative_agent_workloads/tests/test_sweep.py -p no:cacheprovider` → 0 failed
 (with skips), and the same 4 tests pass in /work. No measured numbers, so no known-answer run
 needed; regression coverage = the skipif guards themselves (they must not skip in /work, proven by
 the /work run passing).

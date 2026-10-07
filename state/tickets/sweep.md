@@ -1,7 +1,7 @@
 # Ticket: Ray sweep (id: sweep)
 
 ## Issue
-Report needs measured (not just expected) speedups: draftlab/sweep.py runs the JAX
+Report needs measured (not just expected) speedups: speculative_agent_workloads/sweep.py runs the JAX
 SpecDecoder end-to-end over a grid of drafters/k/temperature on real val prompts,
 under Ray, resumable into results/sweep.parquet.
 
@@ -13,7 +13,7 @@ slower than no-drafter at its best k with no explanation, or measured acceptance
 outside the alpha-metric prediction CI.
 
 ## Evidence
-- Engine: draftlab/jaxlm/spec.py SpecDecoder (StepStats per step: m, A, wall_ms).
+- Engine: speculative_agent_workloads/jaxlm/spec.py SpecDecoder (StepStats per step: m, A, wall_ms).
 - Drafters: ckpt/{tiny/export (JAX HF), lora, dpo (PEFT adapters on 0.5b, r=16 α=32)},
   ngram in spec.NGramDrafter. Merge adapters into JAX params: W += (α/r)·B@A.
 - Prompts: data/corpus/val.parquet, 100 blocks/kind (kind_label), n_tokens ≤ 128.
@@ -34,14 +34,14 @@ outside the alpha-metric prediction CI.
   ≥0.99, not exactly 1.
 
 ## Done when
-- `pytest draftlab/tests/test_sweep.py` passes: 2-cell Ray local sweep writes
+- `pytest speculative_agent_workloads/tests/test_sweep.py` passes: 2-cell Ray local sweep writes
   results/sweep.parquet; base @T=0 accept_rate == 1.0; re-run skips existing cells.
 - Default full grid (40 cells + 2 baseline, 100 prompts/kind) resumable in
   results/sweep.parquet; measured numbers in NOTES.md.
 - Known answers: (a) base @T=0, k=1 accept 1.0 exact (k≥2: ≥0.99, GEMM tiling
   noise); (b) engine vs metric — measured
   accept (T=0) per drafter within alpha-metric tokens/call CI for same pair/k
-  (run draftlab.eval.alpha with target 0.5b-instruct, n_blocks=100); (c) lora+dpo
+  (run speculative_agent_workloads.eval.alpha with target 0.5b-instruct, n_blocks=100); (c) lora+dpo
   accept ≥ lora accept (CI-disjoint as in dpo ticket) at T=0.
 - Plausible range (pre-written): T=0 accept — ngram 0.3–0.45, tiny 0.01–0.1,
   base 1.0, lora 0.85–0.99, lora+dpo ≈ lora±0.02; tok/call@8 = accept-formula
@@ -55,7 +55,7 @@ full grid > 90 min → split by drafter group and note in NOTES.md).
 
 ## Plan
 1. Probe JAX 0.5b tok/s on this CPU; pick default n-gen so full grid < ~30 min/cell-batch.
-2. draftlab/sweep.py: prompt build, drafter factory (adapter merge), Ray local
+2. speculative_agent_workloads/sweep.py: prompt build, drafter factory (adapter merge), Ray local
    (num_cpus flag, cpus-per-cell), per-cell rows → parquet, resume-skip.
 3. test_sweep.py (2-cell, small budgets) — run first, red→green.
 4. Run full grid incrementally; compare with metric CIs; update NOTES.md.
@@ -82,7 +82,7 @@ mismatched positions, so acc(T=0.7) can exceed acc(T=0) — expected, not a bug.
 results/sweep.parquet (21 T=0 cells, 393 prompts each, acc T=0: ngram k1 0.4411,
 tiny k1 0.0799, base 1.0 exact, lora k1 0.5334 / k8 0.1746, lora_dpo k1 0.5405 /
 k8 0.1787). Smallest check: tools/check_sweep_batch3.py on the parquet (runs
-first, red on missing cells). Run: `python -m draftlab.sweep --drafters ngram
+first, red on missing cells). Run: `python -m speculative_agent_workloads.sweep --drafters ngram
 tiny base lora lora_dpo --ks 1 2 4 8 --temps 0.7 --num-cpus 16 --cpus-per-cell
 16` (21 cells, resumable; ~12 h total at ~14 s/prompt for 0.5B-drafter cells →
 2 h background windows, sidecars preserve per-prompt progress).
@@ -143,7 +143,7 @@ outside its pre-registered range with no engine explanation.
   stop. No code changes to the engine for this batch.
 
 ### Plan
-1. Relaunch `python -m draftlab.sweep --drafters ngram tiny base lora lora_dpo
+1. Relaunch `python -m speculative_agent_workloads.sweep --drafters ngram tiny base lora lora_dpo
    --ks 1 2 4 8 --temps 0.7 --num-cpus 16 --cpus-per-cell 16` (background,
    appends .agent-evidence/sweep-b3.log); per-prompt resume folds sidecars.
 2. Poll until 7 remaining cells done (~3.5 h; may span runs).

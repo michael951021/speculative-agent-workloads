@@ -13,7 +13,7 @@ tokens/call and speedup for k in 1..8? Refutation: alpha not 1 for T vs identica
 alpha != hand-computed 3-vocab value.
 
 ## Evidence
-- `draftlab/eval/alpha.py`: adapters with one interface `dists(ctx, ids) -> (q (T,V), valid)`
+- `speculative_agent_workloads/eval/alpha.py`: adapters with one interface `dists(ctx, ids) -> (q (T,V), valid)`
   (ngram one-hot with a fresh NGramMatcher per call — the matcher's n-gram dict is stateful
   across calls, so a persistent one would leak across blocks/runs); JAX padded prefill (safe:
   causal mask — real rows never attend to padding); HF torch. 6 tests in tests/test_alpha.py
@@ -35,7 +35,7 @@ alpha != hand-computed 3-vocab value.
   ~1.00, motivating the distill/LoRA drafter tickets.
 
 ## Done when
-`python -m draftlab.eval.alpha` (default: ngram drafter, 400 val blocks <=256 tok, ctx
+`python -m speculative_agent_workloads.eval.alpha` (default: ngram drafter, 400 val blocks <=256 tok, ctx
 <=1024 tok) writes `results/alpha/ngram.json` with per-kind alpha, alpha_ci95, greedy
 (argmax q == argmax p, the real spec-accept), greedy_corpus (argmax q == actual token),
 coverage, tokens_per_call and speedup for k=1..8 at measured c, plus overall. Tests:
@@ -50,7 +50,7 @@ no spec engine changes. Stop/split after 2 attempts without new evidence if CPU 
 400-block target pass exceeds budget (>30 min) — then shrink default --blocks and record.
 
 ## Plan
-1. `draftlab/eval/alpha.py`: pure `alpha_and_greedy(p, q, valid)` (numpy); drafter
+1. `speculative_agent_workloads/eval/alpha.py`: pure `alpha_and_greedy(p, q, valid)` (numpy); drafter
    adapters with one interface `dists(ctx, ids) -> (q (T,V), valid (T,))`: ngram one-hot
    (fresh NGramMatcher per call — no cross-block leakage), JAX padded prefill, HF torch.
    Kind labels `tool_use:<Tool>`.

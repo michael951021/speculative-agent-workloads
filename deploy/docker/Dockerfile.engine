@@ -1,14 +1,14 @@
 # syntax=docker/dockerfile:1
-# draftlab engine: JAX serve on CPU (draftlab/serve).
+# speculative-agent-workloads engine: JAX serve on CPU (speculative-agent-workloads/serve).
 # Build (context = repo root):
-#   docker build -f deploy/docker/Dockerfile.engine -t draftlab/engine .
+#   docker build -f deploy/docker/Dockerfile.engine -t speculative-agent-workloads/engine .
 # Models are NOT baked in: mount them at /app/models (PVC or
-# -v $PWD/models:/app/models) after `python -m draftlab.models fetch`.
+# -v $PWD/models:/app/models) after `python -m speculative_agent_workloads.models fetch`.
 FROM python:3.12-slim
 RUN useradd --create-home --uid 10001 --shell /usr/sbin/nologin serve
 WORKDIR /app
 COPY pyproject.toml ./
-COPY draftlab/ ./draftlab/
+COPY speculative_agent_workloads/ ./speculative_agent_workloads/
 # local package; deps come from pyproject.toml extras (repo has no lockfile)
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir '.[jax,serve]'
@@ -17,4 +17,4 @@ USER serve
 ENV OMP_NUM_THREADS=16 \
     XLA_FLAGS=--xla_cpu_multi_thread_eigen=true
 EXPOSE 8100
-CMD ["python", "-m", "draftlab.serve", "--model", "qwen2.5-0.5b-instruct", "--alias", "qwen0.5b", "--port", "8100"]
+CMD ["python", "-m", "speculative_agent_workloads.serve", "--model", "qwen2.5-0.5b-instruct", "--alias", "qwen0.5b", "--port", "8100"]

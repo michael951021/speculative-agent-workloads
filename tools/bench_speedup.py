@@ -17,9 +17,9 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from draftlab.jaxlm import model as M  # noqa: E402
-from draftlab.jaxlm import spec as S  # noqa: E402
-from draftlab.sweep import (  # noqa: E402
+from speculative_agent_workloads.jaxlm import model as M  # noqa: E402
+from speculative_agent_workloads.jaxlm import spec as S  # noqa: E402
+from speculative_agent_workloads.sweep import (  # noqa: E402
     CKPT,
     LORA_BASE,
     MODELS,
@@ -53,8 +53,15 @@ def _drafter(name, tcfg, max_len, cache):
 def _pass(tcfg, tp, prompts, drafter, k, temp, n_gen, max_len, cache):
     wall = drafted = acc = steps = toks = 0
     for p in prompts:
-        dec = S.SpecDecoder(tcfg, tp, _drafter(drafter, tcfg, max_len, cache), max_len,
-                            k=k if drafter != "none" else 0, temperature=temp, seed=p["i"])
+        dec = S.SpecDecoder(
+            tcfg,
+            tp,
+            _drafter(drafter, tcfg, max_len, cache),
+            max_len,
+            k=k if drafter != "none" else 0,
+            temperature=temp,
+            seed=p["i"],
+        )
         t0 = time.perf_counter()
         out, st = dec.generate(p["ids"], n_gen)
         wall += time.perf_counter() - t0
@@ -62,8 +69,12 @@ def _pass(tcfg, tp, prompts, drafter, k, temp, n_gen, max_len, cache):
         steps += len(st)
         drafted += sum(s.drafted for s in st)
         acc += sum(s.accepted for s in st)
-    return {"wall_s": wall, "tok_s": toks / wall, "tokens_per_step": toks / steps,
-            "accept": acc / drafted if drafted else None}
+    return {
+        "wall_s": wall,
+        "tok_s": toks / wall,
+        "tokens_per_step": toks / steps,
+        "accept": acc / drafted if drafted else None,
+    }
 
 
 def main() -> None:
@@ -98,9 +109,12 @@ def main() -> None:
             base = reps[f"none-k0-T{t}"]
             sp = [b["wall_s"] / x["wall_s"] for b, x in zip(base, reps[key], strict=True)]
             rows[key] = {
-                "drafter": d, "k": k, "temp": t,
+                "drafter": d,
+                "k": k,
+                "temp": t,
                 "tok_s": float(np.mean([x["tok_s"] for x in reps[key]])),
-                "speedup": float(np.mean(sp)), "speedup_range": [float(min(sp)), float(max(sp))],
+                "speedup": float(np.mean(sp)),
+                "speedup_range": [float(min(sp)), float(max(sp))],
                 "accept": reps[key][0]["accept"],
                 "tokens_per_step": reps[key][0]["tokens_per_step"],
             }

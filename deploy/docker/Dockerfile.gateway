@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
-# draftlab gateway: static Go binary on distroless, non-root.
+# speculative-agent-workloads gateway: static Go binary on distroless, non-root.
 # Build (context = repo root):
-#   docker build -f deploy/docker/Dockerfile.gateway -t draftlab/gateway .
+#   docker build -f deploy/docker/Dockerfile.gateway -t speculative-agent-workloads/gateway .
 # The chart mounts its own config at /app/config.yaml; the baked one is a
 # dev default (engine on 127.0.0.1:8100).
 FROM golang:1.26.8-alpine AS build

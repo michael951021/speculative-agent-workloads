@@ -24,7 +24,7 @@ GPU=${GPU:-0}
 REQUESTS=${REQUESTS:-24}
 MAX_TOKENS=${MAX_TOKENS:-128}
 CONCURRENCIES="1 4 16"
-GW_KEY=${GW_KEY:-sk-draftlab-dev}
+GW_KEY=${GW_KEY:-sk-speculative-agent-workloads-dev}
 RES=${RES:-$ROOT/results/gpu}
 VLLM_LOG=$RES/logs/vllm.log
 GW_LOG=$RES/logs/gateway.log
@@ -62,8 +62,8 @@ plan() {
 Plan (host GPU run; sandbox: --dry-run only):
   0. preflight: $([ $STOP_AGENTS -eq 1 ] && echo './agent stop; ' || echo 'expect GPUs free (run ./agent stop first); ')nvidia-smi free, vllm+go importable
   1. alpha eval, target $TARGET_DIR (fused_alpha Triton kernel on CUDA):
-       $PY -m draftlab.eval.alpha --drafter ngram  --target $TARGET_DIR --blocks 400 --max-tokens 256 --out $RES/alpha_ngram_7b.json
-       $PY -m draftlab.eval.alpha --drafter hf     --draft-model $LORA_DIR  --target $TARGET_DIR --blocks 400 --max-tokens 256 --out $RES/alpha_lora_7b.json
+       $PY -m speculative_agent_workloads.eval.alpha --drafter ngram  --target $TARGET_DIR --blocks 400 --max-tokens 256 --out $RES/alpha_ngram_7b.json
+       $PY -m speculative_agent_workloads.eval.alpha --drafter hf     --draft-model $LORA_DIR  --target $TARGET_DIR --blocks 400 --max-tokens 256 --out $RES/alpha_lora_7b.json
      expected ranges (written before the run, Leviathan 2023 + llama.cpp #10466 0.5B->7B k=4):
        ngram alpha ~0.2-0.4 (bigram anchor ~0.2; corpus has agent repetition)
        lora  alpha ~0.5-0.9 (small-drafter anchor)
@@ -84,7 +84,7 @@ plan
 echo "--- file checks ---"
 need  python-venv       "$PY"
 need  corpus-val        data/corpus/val.parquet
-need  alpha-eval        draftlab/eval/alpha.py
+need  alpha-eval        speculative_agent_workloads/eval/alpha.py
 need  bench-tool        tools/bench_gateway.py
 need  lora-adapter      "$LORA_DIR/adapter_config.json"
 need  lora-weights      "$LORA_DIR/adapter_model.safetensors"
@@ -111,7 +111,7 @@ if ! "$PY" -c "import vllm" 2>/dev/null; then
   echo "preflight: vllm not importable in $PY — installing on host is out of scope; aborting." >&2
   exit 1
 fi
-GW_BIN=$ROOT/.tools/draftlab-gateway
+GW_BIN=$ROOT/.tools/speculative-agent-workloads-gateway
 command -v go >/dev/null 2>&1 || export PATH="$ROOT/.tools/go/bin:$PATH"
 if [ ! -x "$GW_BIN" ] || [ gateway/main.go -nt "$GW_BIN" ]; then
   (cd gateway && go build -o "$GW_BIN" .) || { echo "FATAL: gateway build failed" >&2; exit 1; }
@@ -129,10 +129,10 @@ wait_http() { # wait_http <url> <timeout_s>
 }
 
 # ---- 1. alpha eval (Triton fused_alpha on CUDA) --------------------------------
-CUDA_VISIBLE_DEVICES=$GPU "$PY" -m draftlab.eval.alpha --drafter ngram \
+CUDA_VISIBLE_DEVICES=$GPU "$PY" -m speculative_agent_workloads.eval.alpha --drafter ngram \
   --target "$TARGET_DIR" --blocks 400 --max-tokens 256 \
   --out "$RES/alpha_ngram_7b.json" | tee "$RES/logs/alpha_ngram.log"
-CUDA_VISIBLE_DEVICES=$GPU "$PY" -m draftlab.eval.alpha --drafter hf \
+CUDA_VISIBLE_DEVICES=$GPU "$PY" -m speculative_agent_workloads.eval.alpha --drafter hf \
   --draft-model "$LORA_DIR" --target "$TARGET_DIR" --blocks 400 --max-tokens 256 \
   --out "$RES/alpha_lora_7b.json" | tee "$RES/logs/alpha_lora.log"
 

@@ -15,7 +15,7 @@ const TABS: { id: Tab; label: string }[] = [
 ];
 
 function initialTheme(): 'light' | 'dark' {
-  const saved = localStorage.getItem('draftlab-theme');
+  const saved = localStorage.getItem('speculative-agent-workloads-theme');
   if (saved === 'light' || saved === 'dark') return saved;
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
@@ -28,7 +28,7 @@ export default function App() {
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
-    localStorage.setItem('draftlab-theme', theme);
+    localStorage.setItem('speculative-agent-workloads-theme', theme);
   }, [theme]);
 
   useEffect(() => {
@@ -38,7 +38,7 @@ export default function App() {
   return (
     <div className="app">
       <header className="header">
-        <h1>draftlab explorer</h1>
+        <h1>speculative-agent-workloads explorer</h1>
         <p className="sub">
           speculative decoding on this machine&rsquo;s own agent traffic — how many tokens a draft
           model could have guessed, per kind of content
@@ -81,7 +81,7 @@ export default function App() {
       {data && (
         <footer className="footer">
           generated {data.summary.generated_at} · targets: alpha {data.alpha.target}, sweep{' '}
-          {data.sweep.target} · <code>python -m draftlab.export_ui</code>
+          {data.sweep.target} · <code>python -m speculative_agent_workloads.export_ui</code>
         </footer>
       )}
     </div>

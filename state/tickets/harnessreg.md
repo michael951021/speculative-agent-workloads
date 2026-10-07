@@ -31,7 +31,7 @@ matching bug.
   file stops growing; regression test appends the block 2.5 s after hook start.
 
 ## Done when
-`pytest draftlab/tests/test_register_result.py` passes: hook run against REAL transcripts
+`pytest speculative_agent_workloads/tests/test_register_result.py` passes: hook run against REAL transcripts
 (db45b037 bare block, f2542893 prose+fenced) + fixture TODO/TASKLOG in a tmp git repo flips the
 line, appends the TASKLOG entry, commits; second run no-op; `not done` and missing block no-op;
 title-edited line still matched via `(id:)`; late-flushed block (appended 2.5 s after hook

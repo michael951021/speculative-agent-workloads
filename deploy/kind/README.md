@@ -8,13 +8,13 @@ Not run in the sandbox (no Docker; CLAUDE.md rule 2). Run on the host:
 
 ```sh
 cd <repo>
-# once: python -m draftlab.models fetch --name qwen2.5-0.5b-instruct
+# once: python -m speculative_agent_workloads.models fetch --name qwen2.5-0.5b-instruct
 deploy/kind/e2e.sh
 ```
 
 ## What it checks
 
-1. `docker build` of `draftlab/gateway` and `draftlab/engine` (contexts = repo root).
+1. `docker build` of `speculative-agent-workloads/gateway` and `speculative-agent-workloads/engine` (contexts = repo root).
 2. `kind create cluster` + `kind load docker-image`.
 3. Model copied into the kind node (`docker cp`) and mounted by the engine via
    `engine.modelVolume.type=hostPath` (`/models/<model>` → container `/app/models`).
@@ -22,7 +22,7 @@ deploy/kind/e2e.sh
    Grafana-dashboard/NetworkPolicy off (none of those exist in a bare kind cluster),
    a random Bearer key (sha256 in the chart Secret).
 5. `curl /v1/chat/completions` with the key → HTTP 200.
-6. Gateway `/metrics`: `draftlab_accepted_tokens_total` sum > 0 — the engine's default
+6. Gateway `/metrics`: `speculative_agent_workloads_accepted_tokens_total` sum > 0 — the engine's default
    drafter is `ngram k=5`, and the prompt asks the model to repeat a phrase, so ngram
    acceptance on the repeated span is ~1.
 
@@ -30,11 +30,11 @@ deploy/kind/e2e.sh
 
 | Env | Default | Meaning |
 |---|---|---|
-| `DRAFTLAB_E2E_CLUSTER` | `draftlab-e2e` | kind cluster name (reused if it exists) |
-| `DRAFTLAB_E2E_MODEL` | `qwen2.5-0.5b-instruct` | model dir under `models/` |
-| `DRAFTLAB_E2E_TAG` | `e2e` | image tag for both images |
-| `DRAFTLAB_E2E_PORT` | `18200` | local port for the port-forward |
-| `DRAFTLAB_E2E_TEARDOWN` | `0` | `1` = helm uninstall + kind delete at the end |
+| `SPECULATIVE_AGENT_WORKLOADS_E2E_CLUSTER` | `speculative-agent-workloads-e2e` | kind cluster name (reused if it exists) |
+| `SPECULATIVE_AGENT_WORKLOADS_E2E_MODEL` | `qwen2.5-0.5b-instruct` | model dir under `models/` |
+| `SPECULATIVE_AGENT_WORKLOADS_E2E_TAG` | `e2e` | image tag for both images |
+| `SPECULATIVE_AGENT_WORKLOADS_E2E_PORT` | `18200` | local port for the port-forward |
+| `SPECULATIVE_AGENT_WORKLOADS_E2E_TEARDOWN` | `0` | `1` = helm uninstall + kind delete at the end |
 
 The cluster and release are kept on success so re-runs skip the slow parts; the final
 line prints the API key and a `port-forward` command for poking at it manually.

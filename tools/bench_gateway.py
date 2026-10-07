@@ -2,14 +2,16 @@
 """Load bench through the gateway: streamed chat completions at a fixed concurrency.
 
 Measures per-request TTFT/latency, total completion tokens, throughput, and the
-gateway /metrics delta (draftlab_draft_tokens_total / _accepted_tokens_total for
+gateway /metrics delta (speculative_agent_workloads_draft_tokens_total / _accepted_tokens_total for
 the model). Writes a JSON report to --out.
 
 Usage:
-  python tools/bench_gateway.py --url http://127.0.0.1:8200 --key sk-draftlab-dev \
+  python tools/bench_gateway.py --url http://127.0.0.1:8200 \
+      --key sk-speculative-agent-workloads-dev \
       --model Qwen/Qwen2.5-7B-Instruct --concurrency 4 --requests 24 --max-tokens 128 \
       --out results/gpu/bench_ngram_c4.json
 """
+
 from __future__ import annotations
 
 import argparse
@@ -75,7 +77,10 @@ def metrics_delta(url: str, key: str, model: str, before: dict, after: dict) -> 
     def val(m: dict, name: str) -> float:
         return m.get(name, {}).get(model, 0.0)
 
-    draft, acc = "draftlab_draft_tokens_total", "draftlab_accepted_tokens_total"
+    draft, acc = (
+        "speculative_agent_workloads_draft_tokens_total",
+        "speculative_agent_workloads_accepted_tokens_total",
+    )
     proposed = val(after, draft) - val(before, draft)
     accepted = val(after, acc) - val(before, acc)
     return {
@@ -120,7 +125,7 @@ def _stats(xs: list[float]) -> dict:
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--url", default="http://127.0.0.1:8200")
-    ap.add_argument("--key", default="sk-draftlab-dev")
+    ap.add_argument("--key", default="sk-speculative-agent-workloads-dev")
     ap.add_argument("--model", required=True)
     ap.add_argument("--concurrency", type=int, default=4)
     ap.add_argument("--requests", type=int, default=24)

@@ -1,4 +1,4 @@
-# draftlab — how predictable is a coding agent?
+# speculative-agent-workloads — how predictable is a coding agent?
 
 ## Question
 
@@ -9,7 +9,7 @@ speculative decoding actually buy on them?
 ## Corpus
 
 `data/raw/agent_turns.jsonl`: content blocks (thinking, text, code, tool_use, tool_result)
-from local Qwen 27B agent sessions. Built by `python -m draftlab.data build` into
+from local Qwen 27B agent sessions. Built by `python -m speculative_agent_workloads.data build` into
 `data/corpus/{train,val,test}.parquet` (deduped, fenced code split, truncated at 4096
 tokens): **train 45 257 blocks / 15.7 M tokens (26 runs), val 667 / 237 k, test 566 / 253 k**.
 Splits are by run id, so no run leaks between splits. Kind mix (val): thinking 89 k tokens,
@@ -17,25 +17,25 @@ tool_result 86 k, tool_use 48 k, text 12 k, code 0.9 k.
 
 ## Method
 
-- **alpha metric** (`draftlab/eval/alpha.py`): per position α = Σ_x min(p_target(x), q_draft(x))
+- **alpha metric** (`speculative_agent_workloads/eval/alpha.py`): per position α = Σ_x min(p_target(x), q_draft(x))
   = 1 − TV(p, q); 95% CIs by block-level bootstrap. Logits row i predicts token i+1; the
   pipeline's CE matches `transformers` `model(ids, labels=ids).loss` within 1e-3 on the same
   block, and a planted control (block repeated verbatim → ngram acceptance ≈ 1; tokens shuffled
   → acceptance collapses) confirms the measurement.
-- **Target**: Qwen2 in pure JAX (`draftlab/jaxlm/`, bf16→f32, padded KV cache); prefill parity
+- **Target**: Qwen2 in pure JAX (`speculative_agent_workloads/jaxlm/`, bf16→f32, padded KV cache); prefill parity
   with HF 1.3e-4, 32 greedy tokens identical. Two targets used: Qwen2.5-1.5B-Instruct (main)
   and Qwen2.5-0.5B-Instruct (sweep, CPU-fast).
 - **Drafters**: n-gram matcher (n=1..4, no self-match); distilled 4L/256-d JAX drafter
   (KL on top-64 + tail, val KL 3.79→2.63); 0.5B-Instruct + LoRA (PEFT r=16/α32 SFT, FSDP path
-  in `draftlab/drafters/lora.py`); DPO adapter (TRL, β=0.1) on spec-decoding pairs from the
+  in `speculative_agent_workloads/drafters/lora.py`); DPO adapter (TRL, β=0.1) on spec-decoding pairs from the
   LoRA drafter.
-- **Engine** (`draftlab/jaxlm/spec.py`): one target call scores k drafts + bonus token;
+- **Engine** (`speculative_agent_workloads/jaxlm/spec.py`): one target call scores k drafts + bonus token;
   acceptance u·q < p with residual resampling; T=0 reduces to greedy. Fused verify/alpha
-  Triton kernels in `draftlab/kernels/verify.py` (interpreted on CPU, `TRITON_INTERPRET=1`).
-- **Sweep** (`draftlab/sweep.py`, Ray local): 393 val prompts × n_gen=16 × {T=0, T=0.7} ×
+  Triton kernels in `speculative_agent_workloads/kernels/verify.py` (interpreted on CPU, `TRITON_INTERPRET=1`).
+- **Sweep** (`speculative_agent_workloads/sweep.py`, Ray local): 393 val prompts × n_gen=16 × {T=0, T=0.7} ×
   k∈{1,2,4,8} × drafters {none, ngram, tiny, base (target weights = identity drafter), lora,
   lora_dpo} → 42 cells in `results/sweep.parquet` (16 506 rows).
-- **Judge** (`draftlab/eval/judge.py`): LLM-as-judge (qwen-agent via `$OLLAMA_BASE_URL`,
+- **Judge** (`speculative_agent_workloads/eval/judge.py`): LLM-as-judge (qwen-agent via `$OLLAMA_BASE_URL`,
   openai SDK, capped calls, cached), blind A/B with both orders, rubric v1.
 
 ### Known-answer checks
@@ -45,7 +45,7 @@ tool_result 86 k, tool_use 48 k, text 12 k, code 0.9 k.
 - ngram T=0.7 k=1 sweep acceptance 0.3265 vs hand-computed E[accept] = P7[d] = 0.3295
   (`tools/check_ngram_t07_ref.py`), 95% CI contains the difference.
 - Analytic cases (q=p → α=1; q uniform → α=Σ min(p, 1/V); q=λp+(1−λ)u → α≥λ) pass in
-  `draftlab/tests/`.
+  `speculative_agent_workloads/tests/`.
 - Engine measured accepted/drafted on real prompts falls inside the alpha metric's
   predicted tokens-per-call CI for the same pair and k (`results/engine_traj_*.json`).
 
@@ -133,10 +133,10 @@ bench to `results/gpu/`. Expected anchors: ngram α 0.2–0.4, lora α 0.5–0.9
 
 ```bash
 make bootstrap
-python -m draftlab.data build          # corpus → parquet
-python -m draftlab.eval.alpha          # alpha per drafter × kind (0.5B target)
-python -m draftlab.sweep               # 42-cell Ray grid → results/sweep.parquet
-python -m draftlab.eval.judge          # LLM-as-judge (capped, cached)
-python -m draftlab.export_ui           # web/public/data/*.json
+python -m speculative_agent_workloads.data build          # corpus → parquet
+python -m speculative_agent_workloads.eval.alpha          # alpha per drafter × kind (0.5B target)
+python -m speculative_agent_workloads.sweep               # 42-cell Ray grid → results/sweep.parquet
+python -m speculative_agent_workloads.eval.judge          # LLM-as-judge (capped, cached)
+python -m speculative_agent_workloads.export_ui           # web/public/data/*.json
 python tools/check_report.py           # this report's numbers vs results/
 ```

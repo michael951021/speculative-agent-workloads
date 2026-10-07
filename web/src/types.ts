@@ -1,4 +1,4 @@
-// Shapes of web/public/data/*.json (schema v1, draftlab/export_ui.py).
+// Shapes of web/public/data/*.json (schema v1, speculative_agent_workloads/export_ui.py).
 
 export type CI = [number, number];
 

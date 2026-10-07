@@ -20,7 +20,7 @@ signal (constant across inits).
   tok/s at L=1536 on 16 threads); `eval/alpha.py` load_blocks (round-robin
   runs, ctx blocks) + JaxModel (loads config.json+safetensors, pads to
   max_len); corpus train/val splits exist.
-- Check: `draftlab/tests/test_distill.py` — (a) KL loss == 0 when student
+- Check: `speculative_agent_workloads/tests/test_distill.py` — (a) KL loss == 0 when student
   logits reproduce the teacher top-64; (b) student_hidden parity vs
   `M.step` (GQA/RoPE/padding); (c) synthetic train reduces val KL
   (memorisation leak on purpose); (d) cached npz sanity. All pass;
@@ -62,10 +62,10 @@ results/alpha/tiny.json, ckpt/tiny/export (HF layout), ckpt/tiny_tinit (control)
   drafter its ctx (model uses the block prefix).
 
 ## Done when
-`pytest draftlab/tests/test_distill.py` + `make check` pass; val KL at last
+`pytest speculative_agent_workloads/tests/test_distill.py` + `make check` pass; val KL at last
 step ≤ 0.7 × step-0 val KL (in results/distill_curve.json);
 `results/alpha/tiny.json` written by
-`python -m draftlab.eval.alpha --drafter jax --draft-model <export> --out results/alpha/tiny.json`.
+`python -m speculative_agent_workloads.eval.alpha --drafter jax --draft-model <export> --out results/alpha/tiny.json`.
 
 ## Stop when
 Scope: no server integration, no GPU, no LoRA/DPO. If val KL does not drop
@@ -74,7 +74,7 @@ flat for > 200 steps on two lr choices, record the blocker with the curve
 paths and stop/split.
 
 ## Plan
-1. `draftlab/drafters/distill.py`: `cache` (teacher top-64 over train/val
+1. `speculative_agent_workloads/drafters/distill.py`: `cache` (teacher top-64 over train/val
    blocks → data/teacher/{split}_{run}.npz) and `train` (student fwd/loss,
    Optax AdamW + warmup-cosine, orbax CheckpointManager ckpt/tiny/, curve
    → results/distill_curve.json, HF-layout safetensors export for alpha).

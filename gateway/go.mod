@@ -1,4 +1,4 @@
-module draftlab/gateway
+module speculative-agent-workloads/gateway
 
 go 1.26
 

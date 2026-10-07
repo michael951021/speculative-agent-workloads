@@ -1,0 +1,15 @@
+{{- if .Values.observability.grafanaDashboard.enabled }}
+# Picked up by the Grafana sidecar / provisioning (label grafana_dashboard).
+# Keep in sync with deploy/grafana/speculative-agent-workloads.json (checked in tools/check.sh).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "speculative-agent-workloads.fullname" . }}-grafana-dashboard
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "speculative-agent-workloads.labels" . | nindent 4 }}
+    grafana_dashboard: "1"
+data:
+  speculative-agent-workloads.json: |-
+{{ .Files.Get "grafana/speculative-agent-workloads.json" | indent 4 }}
+{{- end }}

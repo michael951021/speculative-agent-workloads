@@ -12,7 +12,7 @@ Refuting observation: 401/429/breaker/stream-order wrong in httptest, or counter
 the known usage the fake backend sends.
 
 ## Evidence
-- `draftlab/serve/app.py:231` — usage = {prompt, completion, total, draft, accepted}_tokens;
+- `speculative_agent_workloads/serve/app.py:231` — usage = {prompt, completion, total, draft, accepted}_tokens;
   streams put usage in the final data chunk before `data: [DONE]`.
 - Smallest check: `cd gateway && go test ./...` (httptest fake backends); logs in
   .agent-evidence/gateway-*.log. Observed: nothing yet (fresh dir).

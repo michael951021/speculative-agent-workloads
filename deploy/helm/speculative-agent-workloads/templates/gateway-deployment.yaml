@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "speculative-agent-workloads.fullname" . }}-gateway
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "speculative-agent-workloads.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.gateway.replicas }}
+  selector:
+    matchLabels:
+      {{- include "speculative-agent-workloads.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: gateway
+  template:
+    metadata:
+      labels:
+        {{- include "speculative-agent-workloads.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: gateway
+    spec:
+      securityContext:
+        runAsNonRoot: true
+      containers:
+        - name: gateway
+          image: "{{ .Values.image.gateway.repository }}:{{ .Values.image.gateway.tag }}"
+          imagePullPolicy: {{ .Values.image.gateway.pullPolicy }}
+          args: ["-config", "/etc/speculative-agent-workloads/config.yaml"]
+          ports:
+            - name: http
+              containerPort: 8200
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 2
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 15
+          volumeMounts:
+            - name: config
+              mountPath: /etc/speculative-agent-workloads
+              readOnly: true
+          {{- with .Values.gateway.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: config
+          secret:
+            secretName: {{ include "speculative-agent-workloads.fullname" . }}-gateway-config

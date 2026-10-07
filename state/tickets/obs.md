@@ -11,11 +11,11 @@ Can promtool validate `deploy/prometheus/{prometheus.yml,rules.yml}` and a unit-
 Refutation: promtool config/rules/test failure, or test asserting a value the rules don't produce.
 
 ## Evidence
-Observed: gateway metrics at `:8200/metrics` — `draftlab_requests_total{key,model,status}`,
-`draftlab_ttft_seconds` hist{model}, `draftlab_request_latency_seconds`, `draftlab_output_tokens_per_second`,
-`draftlab_draft_tokens_total`, `draftlab_accepted_tokens_total` (no model label → must add one for
-"acceptance by model"), `draftlab_backend_up{backend}`, `draftlab_breaker_state{backend}` (0/1/2),
-`draftlab_rate_limited_total{key}`. `tools/check.sh:75-90` has a promtool section but expects
+Observed: gateway metrics at `:8200/metrics` — `speculative_agent_workloads_requests_total{key,model,status}`,
+`speculative_agent_workloads_ttft_seconds` hist{model}, `speculative_agent_workloads_request_latency_seconds`, `speculative_agent_workloads_output_tokens_per_second`,
+`speculative_agent_workloads_draft_tokens_total`, `speculative_agent_workloads_accepted_tokens_total` (no model label → must add one for
+"acceptance by model"), `speculative_agent_workloads_backend_up{backend}`, `speculative_agent_workloads_breaker_state{backend}` (0/1/2),
+`speculative_agent_workloads_rate_limited_total{key}`. `tools/check.sh:75-90` has a promtool section but expects
 `*.rules`; ticket wants `rules.yml` → check.sh updated.
 Check: `promtool test rules deploy/prometheus` (files below); known-answer values hand-computed
 before the run: acceptance ratio 50/100 = exactly 0.5; ttft p95 with 15 obs/min (5 ≤2.5s, 10 in
@@ -28,10 +28,10 @@ pending at 5–15m).
 2. `promtool check rules deploy/prometheus/rules.yml` → OK
 3. `promtool test rules deploy/prometheus` → "Success: 0 failures" (recording values + alert
    states vs hand-computed above)
-4. `deploy/grafana/draftlab.json` parses as JSON (existing check.sh hook) and its panel queries
+4. `deploy/grafana/speculative-agent-workloads.json` parses as JSON (existing check.sh hook) and its panel queries
    use only the recording rules/metrics above
 5. `make check` green; gateway `go test ./...` green after adding `model` label to the two
-   token counters (test updated: `draftlab_draft_tokens_total{model="m1"} 24`).
+   token counters (test updated: `speculative_agent_workloads_draft_tokens_total{model="m1"} 24`).
 
 ## Stop when
 Only deploy/prometheus, deploy/grafana, tools/check.sh prometheus section, and the gateway

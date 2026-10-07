@@ -1,5 +1,5 @@
 {
- "metric": "greedy acceptance of HF drafter at exactly the engine's T=0 draft positions on prompt+none-trajectory (== spec trajectory); bootstrap ci95 over prompts (mean of per-prompt accept)",
+ "metric": "greedy acceptance of HF drafter at the engine's k=1 T=0 draft positions (simulated from per-position hits: a hit skips the bonus position) on prompt+none-trajectory (== spec trajectory); step counts must equal the sweep's; bootstrap ci95 over prompts (mean of per-prompt accept)",
  "target": "qwen2.5-0.5b-instruct",
  "traj_cache": "results/engine_traj_none.json",
  "base": {
@@ -15,21 +15,21 @@
  "lora": {
   "meas_acc": 0.6263066202090593,
   "meas_tpc": 1.602787456445993,
-  "traj_acc": 0.578397212543554,
+  "traj_acc": 0.6263066202090593,
   "traj_ci95": [
-   0.5619575394485028,
-   0.6163138969177154
+   0.6140907353293551,
+   0.6656715971320224
   ],
-  "in_ci": false
+  "in_ci": true
  },
  "lora_dpo": {
   "meas_acc": 0.631004366812227,
   "meas_tpc": 1.6069868995633187,
-  "traj_acc": 0.5825327510917031,
+  "traj_acc": 0.631004366812227,
   "traj_ci95": [
-   0.5662229745209076,
-   0.6206109065030336
+   0.6188787604910906,
+   0.6702966239232794
   ],
-  "in_ci": false
+  "in_ci": true
  }
 }

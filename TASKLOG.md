@@ -164,3 +164,7 @@
 - Goal: Reinstall package after rename
 - Approach: compute job dl-venv ran uv pip install --python .venv/bin/python -e . --no-deps && .venv/bin/python -c "import speculative_agent_workloads, draftlab; print('ok')" (exit 0)
 - Blockers: none
+## Engine checks
+- Goal: Engine checks
+- Approach: compute job dl-engchk ran .venv/bin/python tools/check_ngram_t07_ref.py && .venv/bin/python tools/score_engine_trajectory.py (exit 0)
+- Blockers: none

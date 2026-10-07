@@ -34,7 +34,7 @@ an LLM-as-judge check, deploy configs (Helm, Terraform, Grafana) and a React exp
 ## Commands
 - `make bootstrap` (uv, Python 3.12 .venv, Go/helm/kubeconform/terraform/tflint/hadolint/promtool into .tools/)
 - `make check` = ruff + pytest + go test + vitest + helm lint/kubeconform + terraform validate + hadolint + promtool
-- Python: `.venv/bin/python -m speculative-agent-workloads ...`; Go: `PATH=$PWD/.tools/go/bin:$PATH go test ./...` in gateway/
+- Python: `.venv/bin/python -m speculative_agent_workloads.<module> ...`; Go: `PATH=$PWD/.tools/go/bin:$PATH go test ./...` in gateway/
 
 ## Key definitions
 - **alpha** (expected acceptance) at a position = Σ_x min(p(x), q(x)) = 1 − TV(p, q), p target, q draft.

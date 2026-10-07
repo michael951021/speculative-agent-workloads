@@ -325,6 +325,11 @@ def csv_data(d: dict) -> str:
     return buf.getvalue()
 
 
+def current_path(path: str) -> str:
+    """Display the renamed package without altering the historical evidence."""
+    return path.replace("draftlab/", "speculative_agent_workloads/", 1)
+
+
 def render(d: dict) -> str:
     template = (ROOT / "tools/presentation.html").read_text()
     a = d["alpha"]["lora"]
@@ -333,11 +338,11 @@ def render(d: dict) -> str:
         evidence.append(
             f'<details id="commit-{key}"><summary><code>{commit["short"]}</code> '
             f'{html.escape(commit["subject"])}</summary><p class="caption">'
-            f"{commit['date']} · {html.escape(', '.join(commit['paths']))}</p>"
+            f"{commit['date']} · {html.escape(', '.join(map(current_path, commit['paths'])))}</p>"
             f"<pre><code>{html.escape(commit['diff'])}</code></pre></details>"
         )
     sources = "".join(
-        f"<tr><td><code>{html.escape(s['path'])}</code></td><td>{html.escape(s['purpose'])}</td>"
+        f"<tr><td><code>{html.escape(current_path(s['path']))}</code></td><td>{html.escape(s['purpose'])}</td>"
         f'<td><code title="{s["sha256"]}">{s["sha256"][:12]}</code></td></tr>'
         for s in d["sources"]
     )

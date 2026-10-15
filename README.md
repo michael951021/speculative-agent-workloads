@@ -8,12 +8,25 @@ LLM-as-judge quality check, deploy configs, and a React explorer — to answer: 
 agent tokens could a draft model have guessed, per kind of content, and what speedup does
 that buy?** Results and figures: [`REPORT.md`](REPORT.md), `results/`.
 
-## Engineering report
+## Results
 
-The [interactive report](report/index.html) and [printable PDF](report/speculative-agent-workloads-report.pdf)
-cover the system, held-out results and lessons from six fixes in the commit history.
-This October 6 snapshot includes the evaluation corrections and marks incomplete
-benchmarks as pending. Aggregate evidence and CSV downloads are included in the report.
+On 14 held-out agent runs, against a Qwen2.5-1.5B-Instruct target:
+
+| drafter | alpha (95% CI) | measured CPU speedup |
+|---|---|---|
+| n-gram lookup | 0.3228 [0.3074, 0.3389] | 1.50× at k=8 |
+| Qwen2.5-0.5B + LoRA | 0.7120 [0.7061, 0.7187] | 1.58× at k=2, 1.25× at k=4 |
+| LoRA + DPO | 0.7135 [0.7078, 0.7201] | no difference from LoRA |
+| distilled tiny model | 0.0114 | — |
+
+Tool calls are the most predictable content and thinking the least. Speedups are wall clock,
+head to head with plain decoding in one process (`tools/bench_speedup.py`), and they are CPU
+numbers. [`REPORT.md`](REPORT.md) has the per-kind tables, the full draft-length grid, a
+quality judge, and a corrections section for five bugs found in an audit of the first
+version. `tools/check_report.py` recomputes every number in it from `results/`.
+
+The [interactive report](report/index.html) is the earlier engineering write-up, a snapshot
+from before the speed benchmark finished.
 
 ## Architecture
 
@@ -82,7 +95,7 @@ speculative_agent_workloads/   data, jaxlm (target+engine), drafters, kernels, s
 gateway/    Go module (proxy + metrics + /ui)
 web/        Vite + React + TS explorer
 deploy/     docker, helm, terraform, grafana, prometheus, kind
-tools/      bootstrap helpers, host-only export, checks (check_report.py, check_sweep_*.py)
+tools/      bootstrap helpers, host-only export, bench_speedup.py, check_report.py
 results/    committed numbers (parquet/json) + figs/
 scripts/    gpu_run.sh (host-only)
 ```

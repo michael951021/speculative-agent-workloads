@@ -113,7 +113,7 @@ def main() -> int:
                 q, valid = drafter.dists([], ids)
                 L = len(p["ids"])
                 gen = np.asarray(traj[i])
-                # row L+j predicts gen[j] (row r predicts ids[r+1]... with empty ctx: q[L+j] -> gen[j])
+                # row L+j predicts gen[j] (row r predicts ids[r+1]; empty ctx: q[L+j] -> gen[j])
                 hit = (q[L : L + len(gen)].argmax(axis=-1) == gen) & valid[L : L + len(gen)]
                 # k=1 at T=0: each step drafts at pos; a hit emits draft + bonus (pos += 2), a miss
                 # emits the target token (pos += 1). Draft positions are NOT the first n_steps ones:

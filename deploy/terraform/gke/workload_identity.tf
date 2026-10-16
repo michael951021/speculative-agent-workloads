@@ -4,7 +4,7 @@
 # The cluster's identity namespace (see workload_identity_config) makes that
 # binding impersonate this GCP SA without workload-identity user setup.
 
-resource "google_service_account" "speculative-agent-workloads" {
+resource "google_service_account" "speculative_agent_workloads" {
   project      = var.project_id
   account_id   = var.service_account_id
   display_name = "speculative-agent-workloads Workload Identity"

@@ -21,13 +21,24 @@ export default function Overview({ data, theme }: Props) {
       bestSpK = Number(k);
     }
   }
-  // KPI: measured best speedup = max speedup_vs_none over done sweep cells.
+  // KPI: measured best speedup = the head-to-head bench (summary.bench), largest target.
+  // The sweep's speedup_vs_none came from concurrent workers; it is only the fallback.
   let measSp = 0;
   let measLabel = '–';
-  for (const [name, cell] of Object.entries(sweep.cells)) {
-    if (cell.status === 'done' && cell.speedup_vs_none != null && cell.speedup_vs_none > measSp) {
-      measSp = cell.speedup_vs_none;
-      measLabel = name;
+  let measOn = sweep.target;
+  const benchBest = summary.bench?.best ?? {};
+  const benchTargets = Object.keys(benchBest).sort();
+  if (benchTargets.length) {
+    measOn = benchTargets[benchTargets.length - 1];
+    const b = benchBest[measOn];
+    measSp = b.speedup;
+    measLabel = `${b.drafter} k=${b.k} · range ${fmt(b.speedup_range[0], 2)}–${fmt(b.speedup_range[1], 2)}×`;
+  } else {
+    for (const [name, cell] of Object.entries(sweep.cells)) {
+      if (cell.status === 'done' && cell.speedup_vs_none != null && cell.speedup_vs_none > measSp) {
+        measSp = cell.speedup_vs_none;
+        measLabel = name;
+      }
     }
   }
   const splits = summary.corpus.splits;
@@ -63,9 +74,9 @@ export default function Overview({ data, theme }: Props) {
           </p>
         </div>
         <div className="tile" data-testid="tile-measured-speedup">
-          <p className="k">best measured speedup (engine, CPU)</p>
+          <p className="k">best measured speedup (head-to-head, CPU)</p>
           <p className="v">{fmt(measSp, 2)}×</p>
-          <p className="d">{measLabel} · vs none on {sweep.target}</p>
+          <p className="d">{measLabel} · vs plain decoding on {measOn}</p>
         </div>
         <div className="tile" data-testid="tile-corpus">
           <p className="k">corpus</p>

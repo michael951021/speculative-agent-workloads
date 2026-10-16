@@ -36,6 +36,17 @@ export interface SweepCell {
   by_kind?: Record<string, { tok_s: number; speedup_vs_none: number }>;
 }
 
+export interface BenchBest {
+  config: string;
+  n_prompts: number;
+  drafter: string;
+  k: number;
+  temp: number;
+  speedup: number;
+  speedup_range: [number, number];
+  accept: number | null;
+}
+
 export interface SummaryData {
   schema_version: number;
   generated_at: string;
@@ -48,6 +59,7 @@ export interface SummaryData {
     n_cells_expected: number;
     cells: Record<string, SweepCell>;
   };
+  bench?: { status: string; n_gen?: number; reps?: number; split?: string; best?: Record<string, BenchBest> };
   replays: {
     status: string;
     n_blocks: number;

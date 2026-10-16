@@ -40,6 +40,7 @@ RESULTS = ROOT / "results"
 ALPHA_DIR = RESULTS / "alpha"
 SWEEP_PARQUET = RESULTS / "sweep.parquet"
 CORPUS_STATS = RESULTS / "corpus_stats.json"
+BENCH = RESULTS / "speedup_bench.json"
 OUT_DIR = ROOT / "web" / "public" / "data"
 
 SCHEMA_VERSION = 1
@@ -200,6 +201,22 @@ def build_sweep() -> tuple[dict, dict, set[str]]:
     return out, summary, set(cells)
 
 
+def build_bench() -> dict:
+    """Best head-to-head config per target from speedup_bench.json: the measured speedups
+    REPORT.md quotes (same process, interleaved reps). The sweep's speedup_vs_none came
+    from concurrent workers, so it is not a speed measurement."""
+    if not BENCH.exists():
+        return {"status": "pending"}
+    b = json.loads(BENCH.read_text())
+    best = {}
+    for target, t in b["targets"].items():
+        name, c = max(t["configs"].items(), key=lambda kv: kv[1]["speedup"])
+        keep = ("drafter", "k", "temp", "speedup", "speedup_range", "accept")
+        best[target] = {"config": name, "n_prompts": t["n_prompts"], **{k: c[k] for k in keep}}
+    run = {k: b[k] for k in ("n_gen", "reps", "split")}
+    return {"status": "done", **run, "best": best}
+
+
 def build_summary(alpha: dict[str, dict], sweep_summary: dict, replays_path: Path) -> dict:
     corpus = json.loads(CORPUS_STATS.read_text())
     al = {
@@ -227,9 +244,11 @@ def build_summary(alpha: dict[str, dict], sweep_summary: dict, replays_path: Pat
         }
     else:
         replays = {"status": "pending", "note": "replays not (re)generated this run"}
-    inputs = ["results/sweep.parquet", "results/corpus_stats.json"] + sorted(
-        str(p.relative_to(ROOT)) for p in ALPHA_DIR.glob("*.json")
-    )
+    inputs = [
+        "results/sweep.parquet",
+        "results/corpus_stats.json",
+        "results/speedup_bench.json",
+    ] + sorted(str(p.relative_to(ROOT)) for p in ALPHA_DIR.glob("*.json"))
     return {
         "schema_version": SCHEMA_VERSION,
         "generated_at": datetime.now(UTC).isoformat(timespec="seconds"),
@@ -238,6 +257,7 @@ def build_summary(alpha: dict[str, dict], sweep_summary: dict, replays_path: Pat
         "alpha": {**al, "best": best_drafter(alpha)},
         "sweep": sweep_summary,
         "replays": replays,
+        "bench": build_bench(),
     }
 
 

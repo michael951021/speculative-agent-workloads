@@ -1,9 +1,10 @@
 {
  "schema_version": 1,
- "generated_at": "2026-10-07T15:41:31+00:00",
+ "generated_at": "2026-10-16T15:59:51+00:00",
  "inputs": [
   "results/sweep.parquet",
   "results/corpus_stats.json",
+  "results/speedup_bench.json",
   "results/alpha/dpo.json",
   "results/alpha/lora.json",
   "results/alpha/ngram.json",
@@ -579,5 +580,39 @@
    "ngram"
   ],
   "target": "qwen2.5-1.5b-instruct"
+ },
+ "bench": {
+  "status": "done",
+  "n_gen": 32,
+  "reps": 3,
+  "split": "heldout",
+  "best": {
+   "qwen2.5-0.5b-instruct": {
+    "config": "ngram-k8-T0.0",
+    "n_prompts": 34,
+    "drafter": "ngram",
+    "k": 8,
+    "temp": 0.0,
+    "speedup": 1.379502393443176,
+    "speedup_range": [
+     1.3458432886571874,
+     1.4114028167094474
+    ],
+    "accept": 0.1319406267179769
+   },
+   "qwen2.5-1.5b-instruct": {
+    "config": "lora-k2-T0.0",
+    "n_prompts": 34,
+    "drafter": "lora",
+    "k": 2,
+    "temp": 0.0,
+    "speedup": 1.5778284196363135,
+    "speedup_range": [
+     1.5152860041965732,
+     1.6486706997871459
+    ],
+    "accept": 0.4547826086956522
+   }
+  }
  }
 }

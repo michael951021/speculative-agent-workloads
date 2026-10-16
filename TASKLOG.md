@@ -172,3 +172,7 @@
 - Goal: Figures + UI data
 - Approach: compute job dl-figs ran .venv/bin/python tools/make_figures.py && .venv/bin/python -m speculative_agent_workloads.export_ui --no-replays (exit 0)
 - Blockers: none
+## make check
+- Goal: make check
+- Approach: compute job dl-check ran PATH=/work/.tools/go/bin:/work/.tools/bin:/work/.venv/bin:$PATH make check (exit 0)
+- Blockers: none
